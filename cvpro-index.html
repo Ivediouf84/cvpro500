@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV PRO 500 - Créez votre CV Professionnel en 10 minutes</title>
+    <link rel="stylesheet" href="styles.css?v=cvpro1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Specific overrides for CV PRO 500 if needed */
+        .cv-hero {
+            padding: 100px 0;
+            text-align: center;
+            background: var(--grad-surface);
+            position: relative;
+            overflow: hidden;
+        }
+        .cv-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 60%);
+            z-index: 0;
+            pointer-events: none;
+        }
+        .cv-hero .container { position: relative; z-index: 1; }
+        .cv-hero h1 { font-size: 3rem; margin-bottom: 1.5rem; color: var(--text-main); font-weight: 800; line-height: 1.2; }
+        .cv-hero h1 span { background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .cv-hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 2.5rem; }
+        .cv-hero .btn-group { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        
+        .cv-features, .cv-pricing, .cv-faq { padding: 80px 0; }
+        .section-title { text-align: center; font-size: 2rem; margin-bottom: 3rem; color: var(--text-main); }
+        .section-title span { color: var(--primary); }
+        
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+        .feature-card { padding: 2rem; text-align: center; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); transition: var(--transition); }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .feature-card i { font-size: 2.5rem; color: var(--primary); margin-bottom: 1.5rem; }
+        .feature-card h3 { font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-main); }
+        .feature-card p { color: var(--text-muted); font-size: 0.9rem; }
+        
+        .steps-container { display: flex; flex-direction: column; gap: 2rem; max-width: 800px; margin: 0 auto; }
+        .step-item { display: flex; align-items: flex-start; gap: 1.5rem; background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border); }
+        .step-number { width: 50px; height: 50px; border-radius: 50%; background: var(--grad-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; flex-shrink: 0; }
+        .step-content h3 { font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-main); }
+        .step-content p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
+        
+        .pricing-card { max-width: 400px; margin: 0 auto; background: var(--surface); border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center; border: 2px solid var(--primary); box-shadow: var(--shadow-glow); }
+        .pricing-price { font-size: 4rem; font-weight: 800; color: var(--text-main); margin: 1.5rem 0; line-height: 1; }
+        .pricing-currency { font-size: 1.5rem; color: var(--text-muted); font-weight: normal; }
+        .pricing-list { list-style: none; padding: 0; margin: 2rem 0; text-align: left; }
+        .pricing-list li { margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.75rem; }
+        .pricing-list li i { color: var(--secondary); font-size: 1.2rem; }
+        
+        .faq-list { max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+        .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.5rem; }
+        .faq-question { font-weight: 600; color: var(--text-main); margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .faq-answer { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
+        
+        .payment-logos { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; align-items: center; }
+        .payment-logos img { height: 30px; object-fit: contain; filter: grayscale(0.5); transition: var(--transition); }
+        .payment-logos img:hover { filter: grayscale(0); }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+            <a href="cvpro-index.html" class="logo" style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-file-signature" style="color: var(--primary);"></i> CV PRO 500
+            </a>
+            <div class="nav-links" style="display: flex; gap: 1.5rem;">
+                <a href="#fonctionnement" style="color: var(--text-main); text-decoration: none;">Fonctionnement</a>
+                <a href="cvpro-builder.html" style="color: var(--text-main); text-decoration: none;">Modèles</a>
+                <a href="#tarifs" style="color: var(--text-main); text-decoration: none;">Tarif</a>
+            </div>
+            <div class="nav-actions" style="display: flex; gap: 1rem;">
+                <a href="cvpro-builder.html" class="btn btn-primary" style="padding: 0.5rem 1rem; background: var(--grad-primary); color: white; border: none; border-radius: var(--radius-md); text-decoration: none; font-weight: 600;"><i class="fa-solid fa-wand-magic-sparkles"></i> Créer mon CV</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="cv-hero">
+        <div class="container">
+            <h1>Créez votre CV <span>Professionnel</span><br>en moins de 10 minutes</h1>
+            <p>Décrochez l'emploi de vos rêves avec un CV moderne, élégant et optimisé pour les recruteurs. Adapté au marché de l'emploi en Afrique.</p>
+            <div class="btn-group">
+                <a href="cvpro-builder.html" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; border-radius: var(--radius-lg); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; box-shadow: var(--shadow-glow);"><i class="fa-solid fa-wand-magic-sparkles"></i> Créer mon CV maintenant</a>
+                <a href="cvpro-builder.html" class="btn btn-ghost" style="padding: 1rem 2rem; font-size: 1.1rem; border-radius: var(--radius-lg); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border); color: var(--text-main);"><i class="fa-regular fa-eye"></i> Voir les modèles</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Pourquoi choisir -->
+    <section class="cv-features container">
+        <h2 class="section-title">Pourquoi choisir <span>CV PRO 500</span> ?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fa-solid fa-bolt"></i>
+                <h3>Ultra Rapide</h3>
+                <p>Remplissez vos informations dans notre assistant intuitif et obtenez votre CV en un rien de temps.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fa-solid fa-palette"></i>
+                <h3>Design Premium</h3>
+                <p>Démarquez-vous avec des modèles conçus par des experts en recrutement et des designers UI.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fa-solid fa-file-pdf"></i>
+                <h3>Export PDF Haute Qualité</h3>
+                <p>Générez un PDF au format A4, parfaitement dimensionné pour l'impression et les logiciels ATS.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fa-solid fa-envelope-open-text"></i>
+                <h3>Lettre de Motivation IA</h3>
+                <p>Générez automatiquement une lettre de motivation cohérente basée sur le contenu de votre CV.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fonctionnement -->
+    <section id="fonctionnement" class="cv-features" style="background: var(--surface);">
+        <div class="container">
+            <h2 class="section-title">Comment ça <span>marche</span> ?</h2>
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Saisissez vos informations</h3>
+                        <p>Laissez-vous guider par notre assistant étape par étape pour remplir vos expériences, formations et compétences. L'aperçu se met à jour en temps réel.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Choisissez votre modèle</h3>
+                        <p>Sélectionnez parmi nos modèles premium (Moderne, Classique, Élégant, Minimaliste...) celui qui correspond le mieux à votre profil.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Payez 500 FCFA et téléchargez</h3>
+                        <p>Payez facilement via Wave, Orange Money ou Carte Bancaire, et téléchargez instantanément votre CV en PDF haute résolution.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tarifs -->
+    <section id="tarifs" class="cv-pricing container">
+        <h2 class="section-title">Un tarif unique et <span>accessible</span></h2>
+        <div class="pricing-card">
+            <h3>Pack Réussite</h3>
+            <div class="pricing-price">500 <span class="pricing-currency">FCFA</span></div>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Paiement unique par CV généré</p>
+            
+            <a href="cvpro-builder.html" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); text-decoration: none; display: inline-block; font-weight: bold; margin-bottom: 1.5rem; text-align: center;">Commencer la création</a>
+            
+            <ul class="pricing-list">
+                <li><i class="fa-solid fa-check-circle"></i> Accès à tous les modèles Premium</li>
+                <li><i class="fa-solid fa-check-circle"></i> Téléchargement PDF Haute Qualité</li>
+                <li><i class="fa-solid fa-check-circle"></i> Lettre de motivation générée</li>
+                <li><i class="fa-solid fa-check-circle"></i> Modifications illimitées pendant 24h</li>
+                <li><i class="fa-solid fa-check-circle"></i> Sans filigrane</li>
+            </ul>
+            
+            <div class="payment-logos">
+                <!-- Mocks for payment icons, replacing real logos with text/fontawesome for now if images don't exist -->
+                <span style="background: #1C1CFF; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">WAVE</span>
+                <span style="background: #FF6600; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">Orange Money</span>
+                <i class="fa-brands fa-stripe" style="color: #635bff; font-size: 2rem;"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="cv-faq container">
+        <h2 class="section-title">Questions <span>Fréquentes</span></h2>
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question">Dois-je payer avant de créer mon CV ?</div>
+                <div class="faq-answer">Non. Vous pouvez créer votre CV, tester tous les modèles et voir l'aperçu complet gratuitement. Vous ne payez que si vous êtes satisfait et souhaitez télécharger le PDF.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Puis-je modifier mon CV après avoir payé ?</div>
+                <div class="faq-answer">Oui, votre paiement vous donne droit à des modifications illimitées et de nouveaux téléchargements pour le CV concerné pendant une durée de 24 heures.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Les CV sont-ils compatibles avec les logiciels de recrutement (ATS) ?</div>
+                <div class="faq-answer">Absolument. Nos modèles sont structurés pour être facilement lisibles par les Applicant Tracking Systems (ATS) utilisés par les grandes entreprises.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: var(--surface); border-top: 1px solid var(--border); padding: 3rem 0; margin-top: 4rem;">
+        <div class="container" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem;">
+            <div style="max-width: 300px;">
+                <h3 style="color: var(--text-main); font-size: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-file-signature" style="color: var(--primary);"></i> CV PRO 500</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">La solution la plus rapide et élégante pour créer un CV professionnel adapté au marché africain.</p>
+            </div>
+            <div>
+                <h4 style="color: var(--text-main); margin-bottom: 1rem;">Produit</h4>
+                <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li><a href="cvpro-builder.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Modèles de CV</a></li>
+                    <li><a href="#tarifs" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Tarifs</a></li>
+                    <li><a href="cvpro-builder.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Créer un CV</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="color: var(--text-main); margin-bottom: 1rem;">Légal</h4>
+                <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li><a href="#" onclick="alert('Bientôt disponible')" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Conditions générales</a></li>
+                    <li><a href="#" onclick="alert('Bientôt disponible')" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Confidentialité</a></li>
+                    <li><a href="mailto:contact@cvpro500.sn" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="container" style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem;">
+            &copy; 2026 CV PRO 500. Tous droits réservés.
+        </div>
+    </footer>
+    
+    <script>
+        // Check if theme preference is stored, for now assuming dark mode as requested by context
+        document.body.classList.add('dark-theme');
+    </script>
+</body>
+</html>

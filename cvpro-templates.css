@@ -1,0 +1,431 @@
+/* 
+ * CV PRO 500 - Modèles de CV CSS 
+ * Ces styles s'appliquent uniquement à l'intérieur du conteneur .cv-page-container
+ */
+
+.cv-page-container {
+    font-family: 'Inter', sans-serif;
+    color: #000000;
+    line-height: 1.5;
+    background: #ffffff;
+    box-sizing: border-box;
+    text-align: left;
+    overflow: hidden;
+}
+
+.cv-page-container * {
+    box-sizing: border-box;
+}
+
+/* =========================================
+   TEMPLATE 1: MODERNE (Two-column layout)
+   ========================================= */
+.cv-template-modern {
+    display: flex;
+    flex-direction: column;
+}
+
+.cv-template-modern .cv-header {
+    background: var(--primary, #4F46E5);
+    color: #ffffff;
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cv-template-modern .cv-header-name h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 36pt;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    line-height: 1.1;
+    color: #ffffff;
+}
+
+.cv-template-modern .cv-header-name h1 .text-primary {
+    color: #a5b4fc; /* Light indigo */
+}
+
+.cv-template-modern .cv-header-name h2 {
+    font-size: 16pt;
+    font-weight: 400;
+    margin: 0;
+    opacity: 0.9;
+    letter-spacing: 1px;
+}
+
+.cv-template-modern .cv-header-contact {
+    font-size: 10pt;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: right;
+}
+
+.cv-template-modern .cv-body {
+    display: flex;
+    flex: 1;
+}
+
+.cv-template-modern .cv-sidebar {
+    width: 30%;
+    background: #f8fafc;
+    padding: 30px;
+    border-right: 1px solid #e2e8f0;
+}
+
+.cv-template-modern .cv-main {
+    width: 70%;
+    padding: 30px 40px;
+}
+
+.cv-template-modern .cv-section {
+    margin-bottom: 25px;
+}
+
+.cv-template-modern .cv-section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14pt;
+    font-weight: 700;
+    color: var(--primary, #4F46E5);
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    margin-top: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cv-template-modern .cv-summary {
+    font-size: 10.5pt;
+    color: #000000;
+    text-align: justify;
+}
+
+.cv-template-modern .cv-item {
+    margin-bottom: 15px;
+}
+
+.cv-template-modern .cv-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 5px;
+}
+
+.cv-template-modern .cv-item-title {
+    font-weight: 700;
+    font-size: 11.5pt;
+    color: #000000;
+}
+
+.cv-template-modern .cv-item-company {
+    font-weight: 500;
+    color: #000000;
+}
+
+.cv-template-modern .cv-item-date {
+    font-size: 9.5pt;
+    color: #000000;
+    font-weight: 500;
+}
+
+.cv-template-modern .cv-item-desc {
+    font-size: 10pt;
+    color: #000000;
+    margin: 0;
+}
+
+.cv-template-modern .cv-skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cv-template-modern .cv-skill-tag {
+    background: #e0e7ff;
+    color: var(--primary, #4F46E5);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 9pt;
+    font-weight: 500;
+}
+
+.cv-template-modern .cv-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.cv-template-modern .cv-list li {
+    font-size: 10pt;
+    color: #000000;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.cv-template-modern .cv-list li::before {
+    content: "•";
+    color: var(--primary, #4F46E5);
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+}
+
+/* =========================================
+   TEMPLATE 2: CLASSIQUE
+   ========================================= */
+.cv-template-classic {
+    padding: 40px;
+    font-family: 'Georgia', serif;
+}
+.cv-classic-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 2px solid var(--primary, #333);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+.cv-classic-header img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--primary, #333);
+}
+.cv-classic-header .cv-header-text h1 {
+    font-size: 26pt;
+    margin: 0 0 5px 0;
+    color: var(--primary, inherit);
+}
+.cv-classic-header .cv-header-text h2 {
+    font-size: 14pt;
+    margin: 0 0 10px 0;
+    color: #555;
+    font-weight: normal;
+}
+.cv-classic-header .cv-contact-info span {
+    font-size: 11pt;
+    margin-right: 15px;
+}
+.cv-classic-body .cv-section {
+    margin-bottom: 25px;
+}
+.cv-classic-body h3 {
+    border-bottom: 1px solid var(--primary, #ccc);
+    font-size: 14pt;
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    color: var(--primary, inherit);
+    text-transform: uppercase;
+}
+.cv-classic-body .cv-item {
+    margin-bottom: 15px;
+}
+.cv-classic-body .cv-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+.cv-classic-body .cv-item p {
+    margin: 5px 0 0 0;
+    font-size: 11pt;
+}
+.cv-classic-grid {
+    display: flex;
+    gap: 40px;
+}
+.cv-classic-grid .cv-section {
+    flex: 1;
+}
+.cv-classic-grid ul {
+    padding-left: 20px;
+    margin: 0;
+}
+.cv-classic-grid li {
+    margin-bottom: 5px;
+}
+
+/* =========================================
+   TEMPLATE 3: ELEGANT
+   ========================================= */
+.cv-template-elegant {
+    font-family: 'Inter', sans-serif;
+}
+.cv-elegant-header {
+    background: var(--primary, #2c3e50);
+    color: white;
+    padding: 40px;
+}
+.cv-elegant-header-content {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 20px;
+}
+.cv-elegant-header img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+}
+.cv-elegant-header h1 {
+    font-size: 30pt;
+    margin: 0;
+    letter-spacing: 2px;
+}
+.cv-elegant-header h2 {
+    font-size: 14pt;
+    font-weight: 300;
+    margin: 5px 0 0 0;
+    opacity: 0.8;
+}
+.cv-elegant-header .cv-contact-info {
+    display: flex;
+    gap: 20px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding-top: 15px;
+    font-size: 10pt;
+}
+.cv-elegant-body {
+    display: flex;
+}
+.cv-elegant-body .cv-sidebar {
+    width: 30%;
+    background: #f4f6f7;
+    padding: 30px;
+}
+.cv-elegant-body .cv-main {
+    width: 70%;
+    padding: 30px;
+}
+.cv-elegant-body h3 {
+    color: var(--primary, #2c3e50);
+    border-bottom: 2px solid var(--primary, #2c3e50);
+    padding-bottom: 5px;
+    margin-top: 0;
+}
+.cv-elegant-body .cv-item h4 {
+    margin: 0 0 5px 0;
+    font-size: 12pt;
+}
+.cv-elegant-body .cv-item h4 span {
+    font-weight: normal;
+}
+.cv-elegant-body .cv-date {
+    font-size: 10pt;
+    color: #666;
+    margin-bottom: 5px;
+}
+.cv-elegant-body .cv-item p {
+    margin: 0 0 15px 0;
+}
+.cv-sidebar .cv-skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+.cv-sidebar .cv-skill-tag {
+    background: var(--primary, #2c3e50);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 9pt;
+}
+.cv-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.cv-sidebar li {
+    margin-bottom: 10px;
+}
+
+/* =========================================
+   TEMPLATE 4: MINIMALIST
+   ========================================= */
+.cv-template-minimalist {
+    padding: 40px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #333;
+}
+.cv-template-minimalist .cv-header {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+.cv-template-minimalist .cv-header img {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+.cv-template-minimalist h1 {
+    font-size: 34pt;
+    margin: 0 0 10px 0;
+    letter-spacing: -1px;
+}
+.cv-template-minimalist h2 {
+    font-size: 16pt;
+    color: var(--primary, #000);
+    margin: 0 0 15px 0;
+}
+.cv-template-minimalist .cv-contact-info span {
+    margin-right: 20px;
+    font-size: 10pt;
+    color: #666;
+}
+.cv-template-minimalist .cv-section {
+    display: flex;
+    margin-bottom: 30px;
+}
+.cv-template-minimalist .cv-section-left {
+    width: 25%;
+    font-weight: bold;
+    color: var(--primary, #000);
+    text-transform: uppercase;
+    font-size: 10pt;
+    letter-spacing: 1px;
+}
+.cv-template-minimalist .cv-section-right {
+    width: 75%;
+}
+.cv-template-minimalist .cv-section-right p {
+    margin: 0 0 15px 0;
+    line-height: 1.6;
+}
+.cv-template-minimalist .cv-item {
+    display: flex;
+    margin-bottom: 20px;
+}
+.cv-template-minimalist .cv-item .cv-date {
+    width: 25%;
+    color: #777;
+    font-size: 10pt;
+}
+.cv-template-minimalist .cv-item .cv-content {
+    width: 75%;
+}
+.cv-template-minimalist .cv-item h4 {
+    margin: 0 0 5px 0;
+    font-size: 12pt;
+}
+.cv-template-minimalist .cv-company {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.cv-template-minimalist .cv-skills-list span {
+    display: inline-block;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    margin: 0 5px 5px 0;
+    font-size: 9pt;
+    border-radius: 4px;
+}
