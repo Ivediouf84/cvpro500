@@ -36,16 +36,84 @@ let cvData = {
     references: []
 };
 
-// Current zoom level
-let currentZoom = 0.8;
+// Supabase Configuration
+const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_glyRa7Jq7_SVD11IZUamSg_fyaND8B4';
+let supabaseClient = null;
+let currentUserId = null;
+let cloudDocumentId = null;
+let saveTimeout = null;
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Try to initialize Supabase
+    if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        await initCloud();
+    }
+    
     initTabs();
     renderForms();
     renderCV();
     setupTemplateSelector();
 });
+
+async function initCloud() {
+    try {
+        // 1. Get or create anonymous session
+        const { data: authData, error: authError } = await supabaseClient.auth.getSession();
+        
+        if (!authData.session) {
+            const { data: signInData, error: signInError } = await supabaseClient.auth.signInAnonymously();
+            if (signInError) throw signInError;
+            currentUserId = signInData.user.id;
+        } else {
+            currentUserId = authData.session.user.id;
+        }
+
+        // 2. Fetch existing CV
+        const { data: cvDoc, error: fetchError } = await supabaseClient
+            .from('cv_documents')
+            .select('*')
+            .eq('user_id', currentUserId)
+            .single();
+
+        if (cvDoc) {
+            cloudDocumentId = cvDoc.id;
+            cvData = cvDoc.cv_data; // Replace local default with cloud data
+        }
+    } catch (err) {
+        console.error("Cloud Init Error:", err);
+    }
+}
+
+function triggerCloudSave() {
+    if (!supabaseClient || !currentUserId) return;
+    
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(async () => {
+        try {
+            const payload = {
+                user_id: currentUserId,
+                cv_data: cvData,
+                updated_at: new Date().toISOString()
+            };
+            if (cloudDocumentId) payload.id = cloudDocumentId;
+
+            const { data, error } = await supabaseClient
+                .from('cv_documents')
+                .upsert(payload)
+                .select()
+                .single();
+                
+            if (data && !cloudDocumentId) {
+                cloudDocumentId = data.id; // Save ID for future upserts
+            }
+        } catch (err) {
+            console.error("Auto-save Error:", err);
+        }
+    }, 1500); // Save 1.5 seconds after user stops typing
+}
 
 function initTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
@@ -225,6 +293,7 @@ function updateData(e) {
     const field = e.target.dataset.field;
     cvData[sec][field] = e.target.value;
     renderCV();
+    triggerCloudSave();
 }
 
 function updateListItem(e, section, id, field) {
@@ -232,6 +301,7 @@ function updateListItem(e, section, id, field) {
     if (item) {
         item[field] = e.target.value;
         renderCV();
+        triggerCloudSave();
     }
 }
 
@@ -240,12 +310,14 @@ function addDynamicItem(section) {
     cvData[section].push({ id: newId, name: '', title: '', degree: '' }); // defaults
     renderDynamicLists();
     renderCV();
+    triggerCloudSave();
 }
 
 function removeDynamicItem(section, id) {
     cvData[section] = cvData[section].filter(i => i.id !== id);
     renderDynamicLists();
     renderCV();
+    triggerCloudSave();
 }
 
 function handlePhotoUpload(e) {
@@ -260,6 +332,7 @@ function handlePhotoUpload(e) {
                 preview.style.display = 'block';
             }
             renderCV();
+            triggerCloudSave();
         };
         reader.readAsDataURL(file);
     }
@@ -613,30 +686,68 @@ function selectPayment(el) {
     el.classList.add('selected');
 }
 
-function processPayment() {
+async function processPayment() {
+    if (!supabaseClient || !cloudDocumentId) {
+        alert("Veuillez remplir au moins un champ du CV pour le sauvegarder avant de payer.");
+        return;
+    }
+
     const btn = document.getElementById('btn-confirm-payment');
     const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Traitement en cours...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Création de la facture...';
     btn.disabled = true;
     
-    // Mock API call (simulate network delay)
-    setTimeout(() => {
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Paiement réussi ! Génération...';
-        btn.style.background = '#10b981'; // Green success color
+    try {
+        // 1. Appeler l'Edge Function Supabase pour créer la facture PayDunya
+        const { data, error } = await supabaseClient.functions.invoke('init-payment', {
+            body: { document_id: cloudDocumentId }
+        });
         
-        // Wait 1.5s then close modal and generate PDF
-        setTimeout(() => {
-            closePaymentModal();
-            generatePDF();
+        if (error) throw error;
+        
+        if (data && data.url) {
+            // Ouvrir la page de paiement PayDunya dans un nouvel onglet
+            window.open(data.url, '_blank');
             
-            // Reset button after a while
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.style.background = 'var(--grad-primary)';
-                btn.disabled = false;
-            }, 2000);
-        }, 1500);
-    }, 2000);
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> En attente du paiement... (Regardez votre téléphone)';
+            
+            // 2. Écouter la base de données en temps réel pour savoir quand PayDunya a confirmé
+            supabaseClient
+                .channel('payment-check')
+                .on('postgres_changes', { 
+                    event: 'UPDATE', 
+                    schema: 'public', 
+                    table: 'cv_documents', 
+                    filter: `id=eq.${cloudDocumentId}` 
+                }, (payload) => {
+                    if (payload.new.payment_status === true) {
+                        // L'argent a été reçu !
+                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Paiement réussi ! Génération...';
+                        btn.style.background = '#10b981';
+                        
+                        setTimeout(() => {
+                            closePaymentModal();
+                            generatePDF();
+                            
+                            // Reset button
+                            setTimeout(() => {
+                                btn.innerHTML = originalText;
+                                btn.style.background = 'var(--grad-primary)';
+                                btn.disabled = false;
+                            }, 2000);
+                        }, 1500);
+                    }
+                })
+                .subscribe();
+        } else {
+            throw new Error("Pas d'URL de paiement renvoyée");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Erreur lors de l'initialisation du paiement. Vérifiez votre connexion.");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
 }
 
 function generatePDF() {
