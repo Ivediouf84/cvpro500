@@ -72,7 +72,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     const importedData = localStorage.getItem('importedCVData');
     if (importedData) {
         try {
-            cvData = JSON.parse(importedData);
+            const parsed = JSON.parse(importedData);
+            
+            // Map flat AI structure to cvData nested structure
+            cvData.personal = {
+                firstName: parsed.firstName || '',
+                lastName: parsed.lastName || '',
+                jobTitle: parsed.jobTitle || '',
+                email: parsed.email || '',
+                phone: parsed.phone || '',
+                address: parsed.location || '',
+                city: parsed.location ? parsed.location.split(',')[0] : '',
+                nationality: '',
+                linkedin: '',
+                portfolio: '',
+                photo: ''
+            };
+            cvData.profile = { summary: parsed.summary || '' };
+            cvData.experiences = parsed.experience || parsed.experiences || [];
+            cvData.education = parsed.education || [];
+            cvData.skills = parsed.skills || [];
+            
             localStorage.removeItem('importedCVData');
             // Trigger save after import
             setTimeout(triggerCloudSave, 1000);
