@@ -114,6 +114,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             cvData.experiences = parsed.experience || parsed.experiences || [];
             cvData.education = parsed.education || [];
             cvData.skills = parsed.skills || [];
+            cvData.languages = parsed.languages || [];
+            cvData.interests = parsed.interests || [];
+            
+            // Map references to personal.references since that's how it's handled in the form
+            if (parsed.references && parsed.references.length > 0) {
+                cvData.personal.references = parsed.references.map(r => `${r.name || ''} - ${r.title || ''} (${r.contact || ''})`).join('\n');
+            }
             
             localStorage.removeItem('importedCVData');
             // Trigger save after import
