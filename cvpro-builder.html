@@ -110,15 +110,22 @@
 
     <nav class="builder-nav">
         <a href="index.html" class="builder-nav-brand" title="Retour à l'accueil"><i class="fa-solid fa-arrow-left"></i> CV PRO 500</a>
-        <div class="builder-actions">
-            <!-- IA Button as requested to enrich -->
-            <button class="btn btn-ghost" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md);" title="Fonctionnalité Premium" onclick="alert('L\'IA analysera bientôt votre CV !')">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Améliorer via IA
-            </button>
-            <button class="btn btn-primary" id="btn-open-payment" style="font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer;">
-                <i class="fa-solid fa-download"></i> Télécharger PDF (500F)
-            </button>
-        </div>
+            <div class="builder-actions" style="display: flex; align-items: center; gap: 1rem;">
+                <!-- User auth status -->
+                <div id="builder-user-menu" style="display: none; align-items: center; gap: 1rem;">
+                    <span id="builder-user-email" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+                    <button onclick="handleLogout()" class="btn btn-ghost" style="color: #ef4444; padding: 0.4rem 0.8rem; border-radius: var(--radius-md); font-size: 0.85rem;" title="Déconnexion"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
+                <a href="auth.html" id="btn-login" class="btn btn-ghost" style="display: none; color: var(--text-main); font-size: 0.85rem;">Connexion</a>
+                
+                <!-- IA Button -->
+                <button class="btn btn-ghost" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md);" title="Fonctionnalité Premium" onclick="openScannerModal()">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Importer ancien CV
+                </button>
+                <button class="btn btn-primary" id="btn-open-payment" style="font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer;">
+                    <i class="fa-solid fa-download"></i> Télécharger PDF (500F)
+                </button>
+            </div>
     </nav>
 
     <div class="builder-container">
@@ -198,6 +205,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="cvpro-app.js"></script>
 </body>
 </html>

@@ -38,7 +38,8 @@ let cvData = {
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+// Read key from localStorage or prompt if missing (for dev)
+const SUPABASE_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
 let supabaseClient = null;
 let currentUserId = null;
 let cloudDocumentId = null;
@@ -46,6 +47,21 @@ let saveTimeout = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
+    // Check for SenePay payment success redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment') === 'success') {
+        alert("Paiement réussi avec SenePay ! Votre CV va être généré et téléchargé automatiquement.");
+        // Nettoyer l'URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // Générer le PDF
+        setTimeout(() => {
+            if (typeof generatePDF === 'function') generatePDF();
+        }, 1500);
+    } else if (urlParams.get('payment') === 'cancel') {
+        alert("Le paiement SenePay a été annulé.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     // Try to initialize Supabase
     if (window.supabase) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -56,12 +72,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const importedData = localStorage.getItem('importedCVData');
     if (importedData) {
         try {
-            const parsedData = JSON.parse(importedData);
-            cvData = parsedData;
+            cvData = JSON.parse(importedData);
             localStorage.removeItem('importedCVData');
-            // Force save to cloud immediately since we have new data
-            triggerCloudSave();
-        } catch(e) {
+            // Trigger save after import
+            setTimeout(triggerCloudSave, 1000);
+        } catch (e) {
             console.error("Error parsing imported CV data", e);
         }
     }
@@ -74,16 +89,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initCloud() {
     try {
-        // 1. Get or create anonymous session
         const { data: authData, error: authError } = await supabaseClient.auth.getSession();
         
         if (!authData.session) {
-            const { data: signInData, error: signInError } = await supabaseClient.auth.signInAnonymously();
-            if (signInError) throw signInError;
-            currentUserId = signInData.user.id;
-        } else {
-            currentUserId = authData.session.user.id;
+            // Utilisateur non connecté : on redirige vers auth.html
+            window.location.href = "auth.html";
+            return;
         }
+        
+        currentUserId = authData.session.user.id;
+        
+        // Mettre à jour l'interface avec l'email
+        const userMenu = document.getElementById('builder-user-menu');
+        const userEmail = document.getElementById('builder-user-email');
+        const btnLogin = document.getElementById('btn-login');
+        
+        if (userMenu && userEmail) {
+            userMenu.style.display = 'flex';
+            userEmail.innerText = authData.session.user.email;
+            if (btnLogin) btnLogin.style.display = 'none';
+        }
+        
+        // Ajouter la fonction de déconnexion globale
+        window.handleLogout = async () => {
+            await supabaseClient.auth.signOut();
+            window.location.href = "index.html";
+        };
 
         // 2. Fetch existing CV
         const { data: cvDoc, error: fetchError } = await supabaseClient
@@ -92,13 +123,16 @@ async function initCloud() {
             .eq('user_id', currentUserId)
             .single();
 
-        if (cvDoc) {
+        if (cvDoc && cvDoc.cv_data) {
             cloudDocumentId = cvDoc.id;
             cvData = cvDoc.cv_data; // Replace local default with cloud data
         }
     } catch (err) {
         console.error("Cloud Init Error:", err);
-        alert("Erreur de connexion Supabase (Init) : " + (err.message || JSON.stringify(err)));
+        // Si l'erreur vient du single() parce qu'il n'y a pas encore de document, on ignore
+        if (err.code !== 'PGRST116') {
+            console.warn("Note: No existing document found or minor error.");
+        }
     }
 }
 
@@ -703,64 +737,64 @@ function selectPayment(el) {
 }
 
 async function processPayment() {
-    if (!supabaseClient || !cloudDocumentId) {
-        alert("Veuillez remplir au moins un champ du CV pour le sauvegarder avant de payer.");
-        return;
-    }
-
     const btn = document.getElementById('btn-confirm-payment');
     const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Création de la facture...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirection SenePay...';
     btn.disabled = true;
     
     try {
-        // 1. Appeler l'Edge Function Supabase pour créer la facture PayDunya
-        const { data, error } = await supabaseClient.functions.invoke('init-payment', {
-            body: { document_id: cloudDocumentId }
-        });
+        // Pour les tests sans backend, on utilise la méthode Directe
+        // ATTENTION : En production, un vrai client ne doit jamais voir ce prompt.
+        // Ce prompt est uniquement pour vous, le développeur, pour tester SenePay.
+        let senepayKey = localStorage.getItem('senepay_api_key');
+        let senepaySecret = localStorage.getItem('senepay_api_secret');
         
-        if (error) throw error;
-        
-        if (data && data.url) {
-            // Ouvrir la page de paiement PayDunya dans un nouvel onglet
-            window.open(data.url, '_blank');
-            
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> En attente du paiement... (Regardez votre téléphone)';
-            
-            // 2. Écouter la base de données en temps réel pour savoir quand PayDunya a confirmé
-            supabaseClient
-                .channel('payment-check')
-                .on('postgres_changes', { 
-                    event: 'UPDATE', 
-                    schema: 'public', 
-                    table: 'cv_documents', 
-                    filter: `id=eq.${cloudDocumentId}` 
-                }, (payload) => {
-                    if (payload.new.payment_status === true) {
-                        // L'argent a été reçu !
-                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Paiement réussi ! Génération...';
-                        btn.style.background = '#10b981';
-                        
-                        setTimeout(() => {
-                            closePaymentModal();
-                            generatePDF();
-                            
-                            // Reset button
-                            setTimeout(() => {
-                                btn.innerHTML = originalText;
-                                btn.style.background = 'var(--grad-primary)';
-                                btn.disabled = false;
-                            }, 2000);
-                        }, 1500);
-                    }
-                })
-                .subscribe();
-        } else {
-            throw new Error("Pas d'URL de paiement renvoyée");
+        if (!senepayKey || !senepaySecret) {
+            senepayKey = prompt("DEVELOPPEUR (Test) : Collez votre clé SenePay (X-Api-Key) publique (ex: pk_test_...) :");
+            senepaySecret = prompt("DEVELOPPEUR (Test) : Collez votre clé SenePay (X-Api-Secret) secrète (ex: sk_test_...) :");
+            if (senepayKey && senepaySecret) {
+                localStorage.setItem('senepay_api_key', senepayKey);
+                localStorage.setItem('senepay_api_secret', senepaySecret);
+            } else {
+                throw new Error("Clés SenePay manquantes pour le test.");
+            }
         }
+
+        // 1. Créer la session de paiement Checkout (Méthode A de la documentation)
+        const response = await fetch('https://api.sene-pay.com/api/v1/checkout/sessions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Api-Key': senepayKey,
+                'X-Api-Secret': senepaySecret
+            },
+            body: JSON.stringify({
+                amount: 500,
+                currency: "XOF",
+                orderReference: "CVPRO-" + Date.now(),
+                description: "Téléchargement de CV Premium (CV PRO)",
+                returnUrl: window.location.href.split('?')[0] + "?payment=success",
+                cancelUrl: window.location.href.split('?')[0] + "?payment=cancel"
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.checkoutUrl) {
+            // 2. Rediriger le client vers la page de paiement SenePay
+            window.location.href = data.checkoutUrl;
+        } else {
+            // Si la clé est invalide, on efface pour redemander
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem('senepay_api_key');
+                localStorage.removeItem('senepay_api_secret');
+            }
+            throw new Error(data.message || data.error || JSON.stringify(data));
+        }
+
     } catch (err) {
-        console.error("Payment Error:", err);
-        alert("Erreur lors de l'initialisation du paiement : " + (err.message || JSON.stringify(err)));
+        console.error("SenePay Error:", err);
+        alert("Erreur SenePay : " + err.message);
         btn.innerHTML = originalText;
         btn.disabled = false;
     }

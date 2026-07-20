@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion / Inscription - CV PRO 500</title>
+    <link rel="stylesheet" href="styles.css?v=cvpro1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            background: var(--body-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-main);
+        }
+        .auth-container {
+            background: var(--surface);
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .auth-container h2 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-size: 1.75rem;
+            color: var(--text-main);
+        }
+        .auth-container p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .btn-auth {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--grad-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+        }
+        .btn-auth:hover {
+            box-shadow: var(--shadow-glow);
+        }
+        .toggle-text {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .toggle-text a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .toggle-text a:hover {
+            text-decoration: underline;
+        }
+        .alert {
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            display: none;
+        }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <div class="auth-container">
+        <a href="index.html" style="text-decoration: none; display: inline-block; margin-bottom: 1rem;">
+            <i class="fa-solid fa-file-signature" style="color: var(--primary); font-size: 2.5rem;"></i>
+        </a>
+        <h2 id="auth-title">Connexion</h2>
+        <p class="subtitle" id="auth-subtitle">Accédez à votre espace CV PRO</p>
+        
+        <div id="auth-alert" class="alert"></div>
+
+        <form id="auth-form" onsubmit="handleAuth(event)">
+            <div class="form-group">
+                <label for="email">Adresse E-mail</label>
+                <input type="email" id="email" class="form-control" placeholder="nom@exemple.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-auth" id="btn-submit">
+                <i class="fa-solid fa-right-to-bracket"></i> Se connecter
+            </button>
+        </form>
+
+        <p class="toggle-text" id="toggle-container">
+            Pas encore de compte ? <a onclick="toggleAuthMode()">S'inscrire</a>
+        </p>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+        // Check if key is available in localStorage, otherwise prompt the developer
+        let SUPABASE_KEY = localStorage.getItem('supabase_anon_key');
+        if (!SUPABASE_KEY) {
+            SUPABASE_KEY = prompt("DEVELOPPEUR (Test): Veuillez coller votre clé publique Supabase (sb_publishable_...) pour la page Auth");
+            if (SUPABASE_KEY) localStorage.setItem('supabase_anon_key', SUPABASE_KEY);
+        }
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let isSignUp = false;
+
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            document.getElementById('auth-title').innerText = isSignUp ? "Créer un compte" : "Connexion";
+            document.getElementById('auth-subtitle').innerText = isSignUp ? "Commencez à créer votre CV pro gratuit" : "Accédez à votre espace CV PRO";
+            document.getElementById('btn-submit').innerHTML = isSignUp ? '<i class="fa-solid fa-user-plus"></i> M\'inscrire' : '<i class="fa-solid fa-right-to-bracket"></i> Se connecter';
+            document.getElementById('toggle-container').innerHTML = isSignUp 
+                ? 'Déjà un compte ? <a onclick="toggleAuthMode()">Se connecter</a>'
+                : 'Pas encore de compte ? <a onclick="toggleAuthMode()">S\'inscrire</a>';
+            hideAlert();
+        }
+
+        function showAlert(msg, isError = true) {
+            const alertEl = document.getElementById('auth-alert');
+            alertEl.style.display = 'block';
+            alertEl.innerText = msg;
+            alertEl.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
+        }
+
+        function hideAlert() {
+            document.getElementById('auth-alert').style.display = 'none';
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            hideAlert();
+            const btn = document.getElementById('btn-submit');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Chargement...';
+            btn.disabled = true;
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                if (isSignUp) {
+                    const { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: password,
+                    });
+                    if (error) throw error;
+                    showAlert("Compte créé avec succès ! Veuillez vous connecter.", false);
+                    toggleAuthMode();
+                } else {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+                    if (error) throw error;
+                    
+                    // Redirect to builder
+                    window.location.href = "cvpro-builder.html";
+                }
+            } catch (err) {
+                console.error("Auth error:", err);
+                let msg = err.message;
+                if (msg.includes("Invalid login credentials")) msg = "Email ou mot de passe incorrect.";
+                if (msg.includes("User already registered")) msg = "Un compte existe déjà avec cet email.";
+                showAlert(msg, true);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
+
+        // Redirect if already logged in
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data } = await supabase.auth.getSession();
+            if (data.session) {
+                window.location.href = "cvpro-builder.html";
+            }
+        });
+    </script>
+</body>
+</html>
