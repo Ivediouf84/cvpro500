@@ -311,25 +311,26 @@
                 const mimeType = selectedFile.type || 'application/pdf';
                 const base64Clean = base64Data.split(',')[1];
                 
-                // Call Supabase Edge Function
-                const { data, error } = await supabaseClient.functions.invoke('analyze-cv', {
-                    body: { imageBase64: base64Clean, mimeType: mimeType }
+                // Call Supabase Edge Function using raw fetch to get clear error messages
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${supabaseKey}`
+                    },
+                    body: JSON.stringify({ imageBase64: base64Clean, mimeType: mimeType })
                 });
 
-                if (error) {
-                    console.error("Supabase Edge Function Error:", error);
-                    let errMsg = error.message;
-                    // Attempt to parse if it's JSON
-                    try {
-                        const parsed = JSON.parse(error.message);
-                        if (parsed.error) errMsg = parsed.error;
-                    } catch(e) {}
-                    throw new Error(errMsg);
+                const result = await response.json();
+
+                if (!response.ok) {
+                    console.error("Supabase Edge Function Error:", result);
+                    throw new Error(result.error || result.message || "Erreur inconnue du serveur Supabase.");
                 }
                 
-                if (data) {
+                if (result) {
                     // Save the extracted data
-                    localStorage.setItem('importedCVData', JSON.stringify(data));
+                    localStorage.setItem('importedCVData', JSON.stringify(result));
                     // Redirect to builder
                     window.location.href = 'cvpro-builder.html';
                 } else {
