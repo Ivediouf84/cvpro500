@@ -239,12 +239,14 @@
                 });
 
                 const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+                const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
                 
-                // Call the Edge Function WITHOUT Authorization header to avoid Kong issues
+                // Call the Edge Function
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/import-cv`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
                     },
                     body: JSON.stringify({ fileData: base64Data, mimeType: selectedFile.type })
                 });
