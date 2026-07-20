@@ -127,6 +127,16 @@
         <div id="auth-alert" class="alert"></div>
 
         <form id="auth-form" onsubmit="handleAuth(event)">
+            <div id="signup-fields" style="display: none;">
+                <div class="form-group">
+                    <label for="prenom">Prénom</label>
+                    <input type="text" id="prenom" class="form-control" placeholder="Votre prénom">
+                </div>
+                <div class="form-group">
+                    <label for="nom">Nom</label>
+                    <input type="text" id="nom" class="form-control" placeholder="Votre nom">
+                </div>
+            </div>
             <div class="form-group">
                 <label for="email">Adresse E-mail</label>
                 <input type="email" id="email" class="form-control" placeholder="nom@exemple.com" required>
@@ -162,10 +172,17 @@
             isSignUp = !isSignUp;
             document.getElementById('auth-title').innerText = isSignUp ? "Créer un compte" : "Connexion";
             document.getElementById('auth-subtitle').innerText = isSignUp ? "Commencez à créer votre CV pro gratuit" : "Accédez à votre espace CV PRO";
-            document.getElementById('btn-submit').innerHTML = isSignUp ? '<i class="fa-solid fa-user-plus"></i> M\'inscrire' : '<i class="fa-solid fa-right-to-bracket"></i> Se connecter';
+            document.getElementById('btn-submit').innerHTML = isSignUp ? '<i class="fa-solid fa-user-plus"></i> S\'inscrire' : '<i class="fa-solid fa-right-to-bracket"></i> Se connecter';
             document.getElementById('toggle-container').innerHTML = isSignUp 
                 ? 'Déjà un compte ? <a onclick="toggleAuthMode()">Se connecter</a>'
                 : 'Pas encore de compte ? <a onclick="toggleAuthMode()">S\'inscrire</a>';
+            
+            // Toggle Extra Fields
+            const signupFields = document.getElementById('signup-fields');
+            signupFields.style.display = isSignUp ? 'block' : 'none';
+            document.getElementById('prenom').required = isSignUp;
+            document.getElementById('nom').required = isSignUp;
+
             hideAlert();
         }
 
@@ -193,12 +210,24 @@
 
             try {
                 if (isSignUp) {
+                    const prenom = document.getElementById('prenom').value;
+                    const nom = document.getElementById('nom').value;
+
                     const { data, error } = await supabase.auth.signUp({
                         email: email,
                         password: password,
+                        options: {
+                            data: {
+                                first_name: prenom,
+                                last_name: nom
+                            }
+                        }
                     });
                     if (error) throw error;
-                    showAlert("Compte créé avec succès ! Veuillez vous connecter.", false);
+                    
+                    // Réinitialiser le formulaire
+                    document.getElementById('auth-form').reset();
+                    showAlert("Compte créé avec succès ! Veuillez vous connecter avec vos nouveaux identifiants.", false);
                     toggleAuthMode();
                 } else {
                     const { data, error } = await supabase.auth.signInWithPassword({
