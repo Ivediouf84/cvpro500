@@ -328,9 +328,9 @@
                     throw new Error(result.error || result.message || "Erreur inconnue du serveur Supabase.");
                 }
                 
-                if (result) {
-                    // Save the extracted data
-                    localStorage.setItem('importedCVData', JSON.stringify(result));
+                if (result && result.html) {
+                    // Save the extracted HTML
+                    localStorage.setItem('importedCVHtml', result.html);
                     // Redirect to AI builder
                     window.location.href = 'cvpro-ai-builder.html';
                 } else {

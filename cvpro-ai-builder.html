@@ -134,18 +134,7 @@
         
         <!-- Preview Panel -->
         <div class="preview-panel">
-            <div class="preview-toolbar">
-                <div class="template-selector">
-                    <span style="font-size: 0.85rem; color: var(--text-main);">Modèle :</span>
-                    <select id="template-select">
-                        <option value="modern">Moderne</option>
-                        <option value="classic">Classique</option>
-                        <option value="elegant">Élégant</option>
-                        <option value="minimalist">Minimaliste</option>
-                    </select>
-                    <span style="font-size: 0.85rem; color: var(--text-main); margin-left: 0.5rem;">Couleur :</span>
-                    <input type="color" id="theme-color" value="#4F46E5" style="border: none; width: 25px; height: 25px; cursor: pointer; padding: 0; background: transparent; border-radius: 4px;" title="Choisir une couleur principale">
-                </div>
+            <div class="preview-toolbar" style="justify-content: flex-end;">
                 <div style="display:flex; gap:0.5rem;">
                     <button class="btn btn-ghost" onclick="zoomIn()" style="padding: 0.3rem 0.6rem; border-radius: 4px;"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
                     <button class="btn btn-ghost" onclick="zoomOut()" style="padding: 0.3rem 0.6rem; border-radius: 4px;"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
