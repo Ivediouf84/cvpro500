@@ -51,6 +51,7 @@
             margin-bottom: 1rem;
             text-align: left;
             display: block;
+            position: relative; /* For absolute positioning of eye icon */
         }
         .form-group label {
             display: block;
@@ -74,6 +75,17 @@
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
+        }
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            bottom: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .password-toggle:hover {
+            color: var(--text-main);
         }
         .btn-auth {
             display: block;
@@ -155,6 +167,7 @@
             <div class="form-group">
                 <label for="password">Mot de passe</label>
                 <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                <i class="fa-regular fa-eye password-toggle" id="toggle-password"></i>
             </div>
             <button type="submit" class="btn-auth" id="btn-submit">
                 <i class="fa-solid fa-right-to-bracket"></i> Se connecter
@@ -246,7 +259,7 @@
                     
                     if (data.session) {
                         // Supabase auto-logged the user in (email confirmations disabled)
-                        window.location.href = "cvpro-builder.html";
+                        window.location.href = "index.html";
                     } else {
                         // Needs login or email confirmation
                         document.getElementById('auth-form').reset();
@@ -263,8 +276,8 @@
                     });
                     if (error) throw error;
                     
-                    // Redirect to builder
-                    window.location.href = "cvpro-builder.html";
+                    // Redirect to home dashboard
+                    window.location.href = "index.html";
                 }
             } catch (err) {
                 console.error("Auth error:", err);
@@ -283,6 +296,15 @@
             // Attach event listeners
             document.getElementById('auth-form').addEventListener('submit', handleAuth);
             document.getElementById('link-toggle').addEventListener('click', toggleAuthMode);
+            
+            // Toggle Password Visibility
+            document.getElementById('toggle-password').addEventListener('click', function() {
+                const passwordInput = document.getElementById('password');
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
 
             // Check URL for mode=signup
             const urlParams = new URLSearchParams(window.location.search);
@@ -294,7 +316,7 @@
             // Redirect if already logged in
             const { data } = await supabase.auth.getSession();
             if (data.session) {
-                window.location.href = "cvpro-builder.html";
+                window.location.href = "index.html";
             }
         });
     </script>
