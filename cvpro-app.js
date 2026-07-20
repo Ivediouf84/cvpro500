@@ -52,6 +52,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         await initCloud();
     }
     
+    // Check if we have AI-imported CV data
+    const importedData = localStorage.getItem('importedCVData');
+    if (importedData) {
+        try {
+            const parsedData = JSON.parse(importedData);
+            cvData = parsedData;
+            localStorage.removeItem('importedCVData');
+            // Force save to cloud immediately since we have new data
+            triggerCloudSave();
+        } catch(e) {
+            console.error("Error parsing imported CV data", e);
+        }
+    }
+    
     initTabs();
     renderForms();
     renderCV();
@@ -84,6 +98,7 @@ async function initCloud() {
         }
     } catch (err) {
         console.error("Cloud Init Error:", err);
+        alert("Erreur de connexion Supabase (Init) : " + (err.message || JSON.stringify(err)));
     }
 }
 
@@ -111,6 +126,7 @@ function triggerCloudSave() {
             }
         } catch (err) {
             console.error("Auto-save Error:", err);
+            alert("Erreur de connexion à la base de données : " + (err.message || err.error_description || JSON.stringify(err)));
         }
     }, 1500); // Save 1.5 seconds after user stops typing
 }
@@ -743,8 +759,8 @@ async function processPayment() {
             throw new Error("Pas d'URL de paiement renvoyée");
         }
     } catch (err) {
-        console.error(err);
-        alert("Erreur lors de l'initialisation du paiement. Vérifiez votre connexion.");
+        console.error("Payment Error:", err);
+        alert("Erreur lors de l'initialisation du paiement : " + (err.message || JSON.stringify(err)));
         btn.innerHTML = originalText;
         btn.disabled = false;
     }

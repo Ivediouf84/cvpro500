@@ -89,10 +89,153 @@
             <p>Décrochez l'emploi de vos rêves avec un CV moderne, élégant et optimisé pour les recruteurs. Adapté au marché de l'emploi en Afrique.</p>
             <div class="btn-group">
                 <a href="cvpro-builder.html" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; border-radius: var(--radius-lg); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; box-shadow: var(--shadow-glow);"><i class="fa-solid fa-wand-magic-sparkles"></i> Créer mon CV maintenant</a>
-                <a href="cvpro-builder.html" class="btn btn-ghost" style="padding: 1rem 2rem; font-size: 1.1rem; border-radius: var(--radius-lg); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border); color: var(--text-main);"><i class="fa-regular fa-eye"></i> Voir les modèles</a>
+                <button onclick="openScannerModal()" class="btn btn-ghost" style="padding: 1rem 2rem; font-size: 1.1rem; border-radius: var(--radius-lg); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border); color: var(--text-main); margin: 0; background: transparent;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Scanner un ancien CV (IA)
+                </button>
             </div>
         </div>
     </header>
+
+    <div id="scanner-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9998; justify-content: center; align-items: center; font-family: sans-serif;">
+        <div style="background: var(--surface); padding: 2rem; border-radius: var(--radius-lg); max-width: 500px; width: 90%; text-align: center; border: 1px solid var(--border); position: relative;">
+            <button onclick="closeScannerModal()" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+            
+            <h2 style="color: var(--text-main); margin-bottom: 1.5rem; font-size: 1.5rem;">Importer un ancien CV</h2>
+            
+            <div id="scanner-options" style="display: flex; flex-direction: column; gap: 1rem;">
+                <label for="cv-camera" class="btn btn-primary" style="padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--grad-primary); color: white; border: none;">
+                    <i class="fa-solid fa-camera"></i> Photographier mon CV
+                </label>
+                <input type="file" id="cv-camera" accept="image/*" capture="environment" style="display: none;" onchange="handleFileSelect(event)">
+                
+                <div style="color: var(--text-muted); margin: 0.5rem 0;">ou</div>
+                
+                <label for="cv-file" class="btn btn-ghost" style="padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: 1px solid var(--border); color: var(--text-main); background: transparent;">
+                    <i class="fa-regular fa-folder-open"></i> Insérer un fichier (PDF/Image)
+                </label>
+                <input type="file" id="cv-file" accept=".pdf,image/*" style="display: none;" onchange="handleFileSelect(event)">
+            </div>
+
+            <div id="scanner-preview" style="display: none; flex-direction: column; align-items: center; gap: 1.5rem;">
+                <div id="file-preview-container" style="width: 100%; height: 200px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); display: flex; justify-content: center; align-items: center; overflow: hidden; border: 1px solid var(--border);">
+                    <img id="image-preview" src="" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;">
+                    <div id="pdf-preview" style="display: none; flex-direction: column; align-items: center; color: var(--text-muted);">
+                        <i class="fa-solid fa-file-pdf" style="font-size: 3rem; color: #ff4757; margin-bottom: 0.5rem;"></i>
+                        <span id="pdf-filename">document.pdf</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; width: 100%;">
+                    <button onclick="resetScanner()" class="btn btn-ghost" style="flex: 1; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border); color: var(--text-main); background: transparent; cursor: pointer;">
+                        Annuler
+                    </button>
+                    <button onclick="processAI()" class="btn btn-primary" style="flex: 2; padding: 0.75rem; border-radius: var(--radius-md); background: var(--grad-primary); color: white; border: none; cursor: pointer; font-weight: bold;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Analyser avec l'IA
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ai-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif;">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary);"></i>
+        <h2 style="margin: 0; font-size: 1.5rem;">L'IA analyse votre CV...</h2>
+        <p style="margin-top: 0.5rem; color: #ccc;">Veuillez patienter quelques instants.</p>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        function openScannerModal() {
+            document.getElementById('scanner-modal').style.display = 'flex';
+            resetScanner();
+        }
+
+        function closeScannerModal() {
+            document.getElementById('scanner-modal').style.display = 'none';
+        }
+
+        function resetScanner() {
+            selectedFile = null;
+            document.getElementById('cv-camera').value = '';
+            document.getElementById('cv-file').value = '';
+            
+            document.getElementById('scanner-options').style.display = 'flex';
+            document.getElementById('scanner-preview').style.display = 'none';
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('pdf-preview').style.display = 'none';
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            selectedFile = file;
+
+            document.getElementById('scanner-options').style.display = 'none';
+            document.getElementById('scanner-preview').style.display = 'flex';
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('image-preview').src = e.target.result;
+                    document.getElementById('image-preview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else if (file.type === 'application/pdf') {
+                document.getElementById('pdf-filename').textContent = file.name;
+                document.getElementById('pdf-preview').style.display = 'flex';
+            }
+        }
+
+        async function processAI() {
+            if (!selectedFile) return;
+
+            const overlay = document.getElementById('ai-loading-overlay');
+            const modal = document.getElementById('scanner-modal');
+            
+            modal.style.display = 'none';
+            overlay.style.display = 'flex';
+
+            try {
+                // Convert file to base64
+                const reader = new FileReader();
+                reader.readAsDataURL(selectedFile);
+                reader.onload = async () => {
+                    const base64Data = reader.result;
+                    
+                    const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+                    const SUPABASE_KEY = 'sb_publishable_glyRa7Jq7_SVD11IZUamSg_fyaND8B4';
+                    
+                    // Call the Edge Function
+                    const response = await fetch(`${SUPABASE_URL}/functions/v1/import-cv`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
+                        },
+                        body: JSON.stringify({ fileData: base64Data, mimeType: selectedFile.type })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.data) {
+                        // Save the extracted data
+                        localStorage.setItem('importedCVData', JSON.stringify(result.data));
+                        // Redirect to builder
+                        window.location.href = 'cvpro-builder.html';
+                    } else {
+                        throw new Error(result.error || "Erreur lors de l'analyse du CV");
+                    }
+                };
+            } catch (err) {
+                alert("Désolé, une erreur est survenue : " + err.message);
+                overlay.style.display = 'none';
+                modal.style.display = 'flex'; // reopen modal on error
+            }
+        }
+    </script>
+
 
     <!-- Pourquoi choisir -->
     <section class="cv-features container">
