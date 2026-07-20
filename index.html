@@ -206,8 +206,8 @@
                     reader.readAsDataURL(selectedFile);
                 });
                 
-                const SUPABASE_URL = 'https://utnnbqdamugcebjxwjqz.supabase.co';
-                const SUPABASE_KEY = 'sb_publishable_zWYl-0C0hUcH62psGEeQqA_FlU8H_eL';
+                const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+                const SUPABASE_KEY = 'sb_publishable_glyRa7Jq7_SVD11IZUamSg_fyaND8B4';
                 
                 // Call the Edge Function
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/import-cv`, {
@@ -227,11 +227,11 @@
                     // Redirect to builder
                     window.location.href = 'cvpro-builder.html';
                 } else {
-                    throw new Error(result.error || "Erreur lors de l'analyse du CV");
+                    throw new Error("Détail de l'erreur du serveur : " + JSON.stringify(result));
                 }
             } catch (err) {
                 console.error(err);
-                alert("Désolé, une erreur est survenue : " + err.message);
+                alert("Désolé, une erreur est survenue :\n\n" + err.message);
                 overlay.style.display = 'none';
                 modal.style.display = 'flex'; // reopen modal on error
             }
