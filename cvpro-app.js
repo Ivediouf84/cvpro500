@@ -37,8 +37,8 @@ let cvData = {
 };
 
 // Supabase Configuration
-const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_glyRa7Jq7_SVD11IZUamSg_fyaND8B4';
+const SUPABASE_URL = 'https://utnnbqdamugcebjxwjqz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zWYl-0C0hUcH62psGEeQqA_FlU8H_eL';
 let supabaseClient = null;
 let currentUserId = null;
 let cloudDocumentId = null;
