@@ -333,31 +333,25 @@
 
                 // If still 404, the API key might only have older models (like gemini-pro-vision)
                 if (response.status === 404 && result.error && result.error.message.includes("not found")) {
-                    console.log("Gemini Pro not found either, checking available models...");
-                    const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`);
-                    const modelsData = await modelsRes.json();
-                    if (modelsData && modelsData.models) {
-                        // Find any model that supports generateContent and vision
-                        const validModel = modelsData.models.find(m => m.supportedGenerationMethods.includes("generateContent") && m.name.includes("vision"));
-                        const fallbackName = validModel ? validModel.name : "models/gemini-pro-vision"; // Fallback to 1.0 vision
-                        console.log("Using ultimate fallback model:", fallbackName);
-                        
-                        // We must remove responseMimeType for older models like gemini-pro-vision
-                        const oldRequestBody = JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: "Tu es un expert en recrutement. Je te donne un CV (image). Extrais les infos en JSON valide avec cette structure : {\"firstName\": \"...\", \"lastName\": \"...\"} Ne mets que le JSON." },
-                                    { inline_data: { mime_type: mimeType, data: base64Clean } }
-                                ]
-                            }],
-                            generationConfig: { temperature: 0.1 }
-                        });
-                        
-                        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fallbackName}:generateContent?key=${geminiKey}`, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: oldRequestBody
-                        });
-                        result = await response.json();
-                    }
+                    console.log("Gemini Pro not found either, using ultimate fallback gemini-pro-vision...");
+                    
+                    const fallbackName = "models/gemini-pro-vision";
+                    
+                    // We must remove responseMimeType for older models like gemini-pro-vision
+                    const oldRequestBody = JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: "Tu es un expert en recrutement. Je te donne un CV (image). Extrais les infos en JSON valide avec cette structure : {\"firstName\": \"...\", \"lastName\": \"...\"} Ne mets que le JSON." },
+                                { inline_data: { mime_type: mimeType, data: base64Clean } }
+                            ]
+                        }],
+                        generationConfig: { temperature: 0.1 }
+                    });
+                    
+                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fallbackName}:generateContent?key=${geminiKey}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: oldRequestBody
+                    });
+                    result = await response.json();
                 }
                 
                 if (response.ok && result.candidates && result.candidates[0].content.parts[0].text) {
@@ -371,9 +365,13 @@
                     window.location.href = 'cvpro-builder.html';
                 } else if (response.status === 400 && result.error && result.error.message.includes("API key not valid")) {
                     localStorage.removeItem('gemini_api_key');
-                    throw new Error("La clé API Gemini que vous avez fournie est invalide. Veuillez réessayer.");
+                    throw new Error("Clé API invalide. Veuillez vérifier votre clé.");
+                } else if (response.status === 404) {
+                    localStorage.removeItem('gemini_api_key');
+                    throw new Error("Modèle d'IA introuvable. Votre clé API (probablement ancienne ou restreinte) n'a pas accès aux modèles Gemini actuels. Nous l'avons supprimée pour que vous puissiez en entrer une nouvelle (Générez-la sur Google AI Studio).");
                 } else {
-                    throw new Error("Détail de l'erreur du serveur : " + JSON.stringify(result));
+                    const errorText = JSON.stringify(result.error || result);
+                    throw new Error(errorText);
                 }
             } catch (err) {
                 console.error(err);
