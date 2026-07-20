@@ -168,11 +168,11 @@
 
     <script>
         const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-        // Check if key is available in localStorage, otherwise prompt the developer
-        let SUPABASE_KEY = localStorage.getItem('supabase_anon_key');
-        if (!SUPABASE_KEY) {
-            SUPABASE_KEY = prompt("DEVELOPPEUR (Test): Veuillez coller votre clé publique Supabase (sb_publishable_...) pour la page Auth");
-            if (SUPABASE_KEY) localStorage.setItem('supabase_anon_key', SUPABASE_KEY);
+        const SUPABASE_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+        
+        // Sauvegarde la clé pour le reste de l'app si elle manquait
+        if (!localStorage.getItem('supabase_anon_key')) {
+            localStorage.setItem('supabase_anon_key', SUPABASE_KEY);
         }
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
