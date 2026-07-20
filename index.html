@@ -321,27 +321,49 @@
                     }
                 });
 
-                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: requestBody
-                });
-                
+                const reqOptions = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: requestBody };
+                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiKey}`, reqOptions);
                 let result = await response.json();
 
-                // Fallback to gemini-1.5-pro-latest if flash is not found in their region/key
                 if (response.status === 404 && result.error && result.error.message.includes("not found")) {
                     console.log("Gemini Flash not found, trying Pro model...");
-                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${geminiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: requestBody
-                    });
+                    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${geminiKey}`, reqOptions);
                     result = await response.json();
+                }
+
+                // If still 404, the API key might only have older models (like gemini-pro-vision)
+                if (response.status === 404 && result.error && result.error.message.includes("not found")) {
+                    console.log("Gemini Pro not found either, checking available models...");
+                    const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`);
+                    const modelsData = await modelsRes.json();
+                    if (modelsData && modelsData.models) {
+                        // Find any model that supports generateContent and vision
+                        const validModel = modelsData.models.find(m => m.supportedGenerationMethods.includes("generateContent") && m.name.includes("vision"));
+                        const fallbackName = validModel ? validModel.name : "models/gemini-pro-vision"; // Fallback to 1.0 vision
+                        console.log("Using ultimate fallback model:", fallbackName);
+                        
+                        // We must remove responseMimeType for older models like gemini-pro-vision
+                        const oldRequestBody = JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: "Tu es un expert en recrutement. Je te donne un CV (image). Extrais les infos en JSON valide avec cette structure : {\"firstName\": \"...\", \"lastName\": \"...\"} Ne mets que le JSON." },
+                                    { inline_data: { mime_type: mimeType, data: base64Clean } }
+                                ]
+                            }],
+                            generationConfig: { temperature: 0.1 }
+                        });
+                        
+                        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fallbackName}:generateContent?key=${geminiKey}`, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: oldRequestBody
+                        });
+                        result = await response.json();
+                    }
                 }
                 
                 if (response.ok && result.candidates && result.candidates[0].content.parts[0].text) {
-                    const jsonString = result.candidates[0].content.parts[0].text;
+                    let jsonString = result.candidates[0].content.parts[0].text;
+                    // Clean up markdown just in case older models added it
+                    jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
                     const extractedData = JSON.parse(jsonString);
                     // Save the extracted data
                     localStorage.setItem('importedCVData', JSON.stringify(extractedData));
