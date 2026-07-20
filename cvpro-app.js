@@ -37,8 +37,8 @@ let cvData = {
 };
 
 // Supabase Configuration
-const SUPABASE_URL = 'https://utnnbqdamugcebjxwjqz.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_zWYl-0C0hUcH62psGEeQqA_FlU8H_eL';
+const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
 let supabaseClient = null;
 let currentUserId = null;
 let cloudDocumentId = null;
