@@ -198,37 +198,39 @@
             overlay.style.display = 'flex';
 
             try {
-                // Convert file to base64
-                const reader = new FileReader();
-                reader.readAsDataURL(selectedFile);
-                reader.onload = async () => {
-                    const base64Data = reader.result;
-                    
-                    const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-                    const SUPABASE_KEY = 'sb_publishable_glyRa7Jq7_SVD11IZUamSg_fyaND8B4';
-                    
-                    // Call the Edge Function
-                    const response = await fetch(`${SUPABASE_URL}/functions/v1/import-cv`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${SUPABASE_KEY}`
-                        },
-                        body: JSON.stringify({ fileData: base64Data, mimeType: selectedFile.type })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (response.ok && result.data) {
-                        // Save the extracted data
-                        localStorage.setItem('importedCVData', JSON.stringify(result.data));
-                        // Redirect to builder
-                        window.location.href = 'cvpro-builder.html';
-                    } else {
-                        throw new Error(result.error || "Erreur lors de l'analyse du CV");
-                    }
-                };
+                // Convert file to base64 using a Promise
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = (error) => reject(error);
+                    reader.readAsDataURL(selectedFile);
+                });
+                
+                const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+                const SUPABASE_KEY = 'sb_publishable_glyRa7Jq7_SVD11IZUamSg_fyaND8B4';
+                
+                // Call the Edge Function
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/import-cv`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
+                    body: JSON.stringify({ fileData: base64Data, mimeType: selectedFile.type })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.data) {
+                    // Save the extracted data
+                    localStorage.setItem('importedCVData', JSON.stringify(result.data));
+                    // Redirect to builder
+                    window.location.href = 'cvpro-builder.html';
+                } else {
+                    throw new Error(result.error || "Erreur lors de l'analyse du CV");
+                }
             } catch (err) {
+                console.error(err);
                 alert("Désolé, une erreur est survenue : " + err.message);
                 overlay.style.display = 'none';
                 modal.style.display = 'flex'; // reopen modal on error
