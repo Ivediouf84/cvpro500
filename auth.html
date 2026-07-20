@@ -137,7 +137,7 @@
         
         <div id="auth-alert" class="alert"></div>
 
-        <form id="auth-form" onsubmit="handleAuth(event)">
+        <form id="auth-form">
             <div id="signup-fields" style="display: none;">
                 <div class="form-group">
                     <label for="prenom">Prénom</label>
@@ -162,39 +162,47 @@
         </form>
 
         <p class="toggle-text" id="toggle-container">
-            Pas encore de compte ? <a onclick="toggleAuthMode()">S'inscrire</a>
+            Pas encore de compte ? <a href="#" id="link-toggle">S'inscrire</a>
         </p>
     </div>
 
-    <script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
         const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
         const SUPABASE_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
         
-        // Sauvegarde la clé pour le reste de l'app si elle manquait
         if (!localStorage.getItem('supabase_anon_key')) {
             localStorage.setItem('supabase_anon_key', SUPABASE_KEY);
         }
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         
         let isSignUp = false;
 
-        function toggleAuthMode() {
+        function toggleAuthMode(e) {
+            if (e) e.preventDefault();
             isSignUp = !isSignUp;
+            updateUI();
+            hideAlert();
+        }
+
+        function updateUI() {
             document.getElementById('auth-title').innerText = isSignUp ? "Créer un compte" : "Connexion";
             document.getElementById('auth-subtitle').innerText = isSignUp ? "Commencez à créer votre CV pro gratuit" : "Accédez à votre espace CV PRO";
             document.getElementById('btn-submit').innerHTML = isSignUp ? '<i class="fa-solid fa-user-plus"></i> S\'inscrire' : '<i class="fa-solid fa-right-to-bracket"></i> Se connecter';
             document.getElementById('toggle-container').innerHTML = isSignUp 
-                ? 'Déjà un compte ? <a onclick="toggleAuthMode()">Se connecter</a>'
-                : 'Pas encore de compte ? <a onclick="toggleAuthMode()">S\'inscrire</a>';
+                ? 'Déjà un compte ? <a href="#" id="link-toggle">Se connecter</a>'
+                : 'Pas encore de compte ? <a href="#" id="link-toggle">S\'inscrire</a>';
+            
+            // Re-attach listener to the new link
+            document.getElementById('link-toggle').addEventListener('click', toggleAuthMode);
             
             // Toggle Extra Fields
             const signupFields = document.getElementById('signup-fields');
             signupFields.style.display = isSignUp ? 'block' : 'none';
             document.getElementById('prenom').required = isSignUp;
             document.getElementById('nom').required = isSignUp;
-
-            hideAlert();
         }
 
         function showAlert(msg, isError = true) {
@@ -239,7 +247,8 @@
                     // Réinitialiser le formulaire
                     document.getElementById('auth-form').reset();
                     showAlert("Compte créé avec succès ! Veuillez vous connecter avec vos nouveaux identifiants.", false);
-                    toggleAuthMode();
+                    isSignUp = false;
+                    updateUI();
                 } else {
                     const { data, error } = await supabase.auth.signInWithPassword({
                         email: email,
@@ -254,7 +263,7 @@
                 console.error("Auth error:", err);
                 let msg = err.message;
                 if (msg.includes("Invalid login credentials")) msg = "Email ou mot de passe incorrect.";
-                if (msg.includes("User already registered")) msg = "Un compte existe déjà avec cet email.";
+                if (msg.includes("User already registered") || msg.includes("already registered")) msg = "Un compte existe déjà avec cet email.";
                 showAlert(msg, true);
             } finally {
                 btn.innerHTML = originalHtml;
@@ -262,8 +271,20 @@
             }
         }
 
-        // Redirect if already logged in
+        // Initialize Page
         document.addEventListener('DOMContentLoaded', async () => {
+            // Attach event listeners
+            document.getElementById('auth-form').addEventListener('submit', handleAuth);
+            document.getElementById('link-toggle').addEventListener('click', toggleAuthMode);
+
+            // Check URL for mode=signup
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mode') === 'signup') {
+                isSignUp = true;
+                updateUI();
+            }
+
+            // Redirect if already logged in
             const { data } = await supabase.auth.getSession();
             if (data.session) {
                 window.location.href = "cvpro-builder.html";
