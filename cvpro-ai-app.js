@@ -68,7 +68,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         await initCloud();
     }
     
-    // Check if we have AI-imported CV data
+    // 1. Charger les données temporaires locales (fallback)
+    const localData = localStorage.getItem('cvpro_data');
+    if (localData && !currentUserId) {
+        try {
+            const parsedLocal = JSON.parse(localData);
+            // Ensure object structure is not poisoned
+            cvData = {
+                ...cvData,
+                ...parsedLocal,
+                personal: parsedLocal.personal || cvData.personal,
+                profile: parsedLocal.profile || cvData.profile,
+                experiences: Array.isArray(parsedLocal.experiences) ? parsedLocal.experiences : [],
+                education: Array.isArray(parsedLocal.education) ? parsedLocal.education : [],
+                skills: Array.isArray(parsedLocal.skills) ? parsedLocal.skills : [],
+                languages: Array.isArray(parsedLocal.languages) ? parsedLocal.languages : [],
+                interests: Array.isArray(parsedLocal.interests) ? parsedLocal.interests : []
+            };
+        } catch (e) {
+            console.error("Error parsing local CV data", e);
+        }
+    }
+
+    // 2. Check if we have AI-imported CV data
     const importedData = localStorage.getItem('importedCVData');
     if (importedData) {
         try {
@@ -100,6 +122,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error("Error parsing imported CV data", e);
         }
     }
+
+    
+    // 4. Sanity check / Repair any poisoned data before rendering
+    cvData.personal = cvData.personal || {};
+    cvData.profile = cvData.profile || {};
+    cvData.experiences = Array.isArray(cvData.experiences) ? cvData.experiences : [];
+    cvData.education = Array.isArray(cvData.education) ? cvData.education : [];
+    cvData.skills = Array.isArray(cvData.skills) ? cvData.skills : [];
+    cvData.languages = Array.isArray(cvData.languages) ? cvData.languages : [];
+    cvData.interests = Array.isArray(cvData.interests) ? cvData.interests : [];
     
     renderCV();
     setupTemplateSelector();
