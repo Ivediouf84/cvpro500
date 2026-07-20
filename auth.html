@@ -244,11 +244,18 @@
                     });
                     if (error) throw error;
                     
-                    // Réinitialiser le formulaire
-                    document.getElementById('auth-form').reset();
-                    showAlert("Compte créé avec succès ! Veuillez vous connecter avec vos nouveaux identifiants.", false);
-                    isSignUp = false;
-                    updateUI();
+                    if (data.session) {
+                        // Supabase auto-logged the user in (email confirmations disabled)
+                        window.location.href = "cvpro-builder.html";
+                    } else {
+                        // Needs login or email confirmation
+                        document.getElementById('auth-form').reset();
+                        showAlert("Compte créé avec succès ! Vous pouvez maintenant vous connecter.", false);
+                        isSignUp = false;
+                        updateUI();
+                        // Clear the ?mode=signup from URL so it doesn't stick
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
                 } else {
                     const { data, error } = await supabase.auth.signInWithPassword({
                         email: email,
