@@ -409,19 +409,20 @@ function updateCVStyles() {
         document.head.appendChild(styleTag);
     }
 
-    styleTag.innerHTML = \`n        #cv-document {
-            color: \ !important;
-            font-size: \px !important;
-            font-family: \ !important;
-            line-height: \ !important;
+    styleTag.innerHTML = `
+        #cv-document {
+            color: ${color} !important;
+            font-size: ${fontSize}px !important;
+            font-family: ${fontFamily} !important;
+            line-height: ${lineHeight} !important;
         }
         #cv-document h1, #cv-document h2, #cv-document h3, #cv-document h4, #cv-document h5, #cv-document h6 {
-            font-family: \ !important;
+            font-family: ${fontFamily} !important;
         }
         #cv-document p, #cv-document ul, #cv-document div, #cv-document span {
-            margin-bottom: \rem;
+            margin-bottom: ${spacing}rem;
         }
-    \;
+    `;
 }
 
 // Add event listeners to style controls
@@ -455,11 +456,12 @@ document.addEventListener('DOMContentLoaded', () => {
     toolbar.style.padding = '0.25rem';
     toolbar.style.gap = '0.25rem';
     
-    toolbar.innerHTML = \`n        <button class=\"btn btn-ghost\" id=\"btn-block-up\" title=\"Monter\" style=\"padding: 0.25rem 0.5rem; font-size: 0.8rem;\"><i class=\"fa-solid fa-arrow-up\"></i></button>
-        <button class=\"btn btn-ghost\" id=\"btn-block-down\" title=\"Descendre\" style=\"padding: 0.25rem 0.5rem; font-size: 0.8rem;\"><i class=\"fa-solid fa-arrow-down\"></i></button>
-        <button class=\"btn btn-ghost\" id=\"btn-block-duplicate\" title=\"Dupliquer\" style=\"padding: 0.25rem 0.5rem; color: #10b981; font-size: 0.8rem;\"><i class=\"fa-solid fa-copy\"></i></button>
-        <button class=\"btn btn-ghost\" id=\"btn-block-delete\" title=\"Supprimer\" style=\"padding: 0.25rem 0.5rem; color: #ef4444; font-size: 0.8rem;\"><i class=\"fa-solid fa-trash\"></i></button>
-    \;
+    toolbar.innerHTML = `
+        <button class="btn btn-ghost" id="btn-block-up" title="Monter" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"><i class="fa-solid fa-arrow-up"></i></button>
+        <button class="btn btn-ghost" id="btn-block-down" title="Descendre" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"><i class="fa-solid fa-arrow-down"></i></button>
+        <button class="btn btn-ghost" id="btn-block-duplicate" title="Dupliquer" style="padding: 0.25rem 0.5rem; color: #10b981; font-size: 0.8rem;"><i class="fa-solid fa-copy"></i></button>
+        <button class="btn btn-ghost" id="btn-block-delete" title="Supprimer" style="padding: 0.25rem 0.5rem; color: #ef4444; font-size: 0.8rem;"><i class="fa-solid fa-trash"></i></button>
+    `;
     
     document.body.appendChild(toolbar);
 
@@ -616,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dx = (e.clientX - startX) / currentZoom;
         const dy = (e.clientY - startY) / currentZoom;
         
-        draggedElement.style.transform = \`translate(\${initialLeft + dx}px, \${initialTop + dy}px)\`;
+        draggedElement.style.transform = `translate(${initialLeft + dx}px, ${initialTop + dy}px)`;
     });
 
     document.addEventListener('mouseup', () => {
