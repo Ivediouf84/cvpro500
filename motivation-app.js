@@ -131,12 +131,10 @@ async function generateDocuments(event) {
             } catch(e) {}
         }
 
-        if (result && result.demandeText && result.motivationText) {
-            // Convert newline to br for HTML display
-            const formatText = (txt) => txt.replace(/\n/g, '<br>');
+        if (result && (result.demandeHtml || result.demandeText)) {
             
-            generatedDemandeHtml = formatText(result.demandeText);
-            generatedMotivationHtml = formatText(result.motivationText);
+            generatedDemandeHtml = result.demandeHtml || result.demandeText;
+            generatedMotivationHtml = result.motivationHtml || result.motivationText;
             
             document.getElementById('doc-demande').innerHTML = generatedDemandeHtml;
             document.getElementById('doc-motivation').innerHTML = generatedMotivationHtml;
