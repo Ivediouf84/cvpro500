@@ -147,7 +147,7 @@ async function generateDocuments(event) {
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('results-section').style.display = 'flex';
         } else {
-            throw new Error("Format de réponse IA invalide");
+            throw new Error("Format de réponse IA invalide: " + JSON.stringify(result));
         }
         
     } catch (error) {
