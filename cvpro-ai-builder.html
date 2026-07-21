@@ -179,14 +179,36 @@
             .builder-nav-brand { font-size: 1rem; }
         }
         
-        /* Style Panel */
-        .style-panel { width: 300px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; padding: 1.5rem; overflow-y: auto; }
-        .style-panel-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: flex; justify-content: space-between; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.5rem; }
+        /* Main Layout */
+        .builder-container { display: flex; flex-direction: row; flex: 1; overflow: auto; height: calc(100vh - 60px); }
         
+        /* Style Panel - Desktop */
+        .style-panel { width: 280px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; padding: 1rem; overflow-y: auto; }
+        .style-panel-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
+        .form-group { margin-bottom: 0.75rem; }
+        .form-group label { display: flex; justify-content: space-between; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.25rem; }
+        
+        /* Mobile Layout for Panel (Horizontal Toolbar above CV) */
         @media (max-width: 1024px) {
-            .style-panel { width: 100%; border-right: none; border-bottom: 2px solid var(--primary); height: auto; max-height: none; }
+            body { height: auto; overflow: auto; }
+            .builder-container { flex-direction: column; height: auto; overflow: visible; }
+            .style-panel { 
+                width: 100%; border-right: none; border-bottom: 2px solid var(--primary); 
+                height: auto; max-height: none; padding: 0.5rem; flex-direction: row; flex-wrap: wrap; 
+                align-items: center; justify-content: flex-start; gap: 0.5rem;
+            }
+            .style-panel-title { display: none; } /* Hide title on mobile to save space */
+            .style-panel > .form-row { display: flex; gap: 0.5rem; flex-direction: row !important; margin: 0; width: auto; }
+            .style-panel .form-group { margin-bottom: 0; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+            .style-panel .form-group label { margin-bottom: 0; font-size: 0.65rem; }
+            .style-panel input[type="range"] { width: 60px; }
+            .style-panel select { padding: 0.2rem; font-size: 0.8rem; }
+            .style-panel .rich-text-toolbar { margin-bottom: 0; padding: 2px; }
+            .style-panel > button, .style-panel > div.form-group { flex: 0 0 auto; }
+            
+            /* Hide description texts on mobile */
+            .style-panel p { display: none; }
+            .style-panel .btn { padding: 0.4rem; font-size: 0.75rem; white-space: nowrap; }
         }
         
         /* Interactive Block Manipulation */
@@ -246,7 +268,7 @@
                     <button onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '2'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Réduire"><i class="fa-solid fa-text-height"></i>-</button>
                     <button onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '3'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Normal" style="font-size:0.8rem;">Normal</button>
                     <div style="width:1px; height:20px; background:var(--border);"></div>
-                    <input type="color" onchange="document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, this.value); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Couleur sélection" style="width:25px; height:25px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                    <input type="color" oninput="document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, this.value); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Couleur sélection" style="width:25px; height:25px; padding:0; border:none; border-radius:4px; cursor:pointer;">
                 </div>
             </div>
 
