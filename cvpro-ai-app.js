@@ -1,6 +1,6 @@
 // cvpro-ai-app.js (Simplified for AI HTML flow)
 const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-const SUPABASE_KEY = localStorage.getItem('supabase_anon_key');
+const SUPABASE_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
 let supabaseClient = null;
 let currentUserId = null;
 let cloudDocumentId = null;
