@@ -337,9 +337,23 @@
                 }
                 
                 try {
-                    // Gemini might return JSON block
+                    // Extract only the JSON object, ignoring any text before or after
                     let cleanJson = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
-                    const resultData = JSON.parse(cleanJson);
+                    const startIndex = cleanJson.indexOf('{');
+                    const endIndex = cleanJson.lastIndexOf('}');
+                    if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+                        cleanJson = cleanJson.substring(startIndex, endIndex + 1);
+                    }
+                    
+                    // Attempt to parse
+                    let resultData;
+                    try {
+                        resultData = JSON.parse(cleanJson);
+                    } catch (parseErr) {
+                        // Attempt to fix common AI JSON issues (trailing commas, unescaped newlines)
+                        cleanJson = cleanJson.replace(/,\s*([\]}])/g, '$1');
+                        resultData = JSON.parse(cleanJson);
+                    }
                     
                     // Save extracted JSON data
                     localStorage.setItem('importedCVData', JSON.stringify(resultData));
@@ -347,7 +361,8 @@
                     // Redirect to the AI builder for scanned CVs
                     window.location.href = 'cvpro-ai-builder.html';
                 } catch (e) {
-                    throw new Error("Le format renvoyé par l'IA n'est pas valide. Réponse: " + resultText.substring(0, 50));
+                    console.error("JSON parse error:", e);
+                    throw new Error("Le format renvoyé par l'IA n'est pas valide. Réponse partielle: " + resultText.substring(0, 150));
                 }
                 
             } catch (err) {
