@@ -61,6 +61,15 @@
         .payment-logos { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; align-items: center; }
         .payment-logos img { height: 30px; object-fit: contain; filter: grayscale(0.5); transition: var(--transition); }
         .payment-logos img:hover { filter: grayscale(0); }
+        
+        @media (max-width: 768px) {
+            #user-menu { flex-direction: column !important; align-items: flex-end !important; gap: 0.25rem !important; }
+            #user-email { font-size: 0.75rem !important; line-height: 1; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .logo { font-size: 1rem !important; white-space: nowrap; }
+            .navbar .container { align-items: center !important; padding: 0.5rem 1rem !important; justify-content: space-between !important; }
+            .nav-actions .btn { padding: 0.4rem 0.6rem !important; font-size: 0.8rem !important; }
+            .nav-links { display: none !important; } /* Hide links on mobile to save space, standard behavior */
+        }
     </style>
 </head>
 <body class="dark-theme">
@@ -311,7 +320,6 @@
                 const mimeType = selectedFile.type || 'application/pdf';
                 const base64Clean = base64Data.split(',')[1];
                 
-                // Call Supabase Edge Function using raw fetch to get clear error messages
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
                     method: 'POST',
                     headers: {
@@ -321,21 +329,27 @@
                     body: JSON.stringify({ imageBase64: base64Clean, mimeType: mimeType })
                 });
 
-                const result = await response.json();
-
+                const resultText = await response.text();
+                
                 if (!response.ok) {
-                    console.error("Supabase Edge Function Error:", result);
-                    throw new Error(result.error || result.message || "Erreur inconnue du serveur Supabase.");
+                    console.error("Supabase Edge Function Error:", resultText);
+                    throw new Error("Erreur serveur Supabase. Assurez-vous d'avoir déployé la fonction avec 'supabase functions deploy analyze-cv'. Détail: " + resultText);
                 }
                 
-                if (result && result.html) {
-                    // Save the extracted HTML
-                    localStorage.setItem('importedCVHtml', result.html);
-                    // Redirect to AI builder
-                    window.location.href = 'cvpro-ai-builder.html';
-                } else {
-                    throw new Error("Aucune donnée reçue du serveur.");
+                try {
+                    // Gemini might return JSON block
+                    let cleanJson = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const resultData = JSON.parse(cleanJson);
+                    
+                    // Save extracted JSON data
+                    localStorage.setItem('importedCVData', JSON.stringify(resultData));
+                    
+                    // Redirect to the manual builder where they have the left panel
+                    window.location.href = 'cvpro-builder.html';
+                } catch (e) {
+                    throw new Error("Le format renvoyé par l'IA n'est pas valide. Réponse: " + resultText.substring(0, 50));
                 }
+                
             } catch (err) {
                 console.error(err);
                 alert("Désolé, une erreur est survenue :\n\n" + err.message);

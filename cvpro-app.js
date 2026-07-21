@@ -5,33 +5,55 @@
 // Initial State
 let cvData = {
     personal: {
-        firstName: 'Moussa', lastName: 'Diouf', jobTitle: 'Développeur Full Stack',
-        email: 'moussa.diouf@email.com', phone: '+221 77 123 45 67',
-        address: 'Dakar', city: 'Dakar', nationality: 'Sénégalaise',
-        linkedin: 'linkedin.com/in/mdiouf', portfolio: 'moussadiouf.dev',
-        photo: ''
+        firstName: 'Moussa',
+        lastName: 'Diop',
+        jobTitle: 'Assistant Administratif et Commercial',
+        email: 'moussa.diop@example.com',
+        phone: '+221 77 123 45 67',
+        city: 'Dakar, Sénégal',
+        linkedin: 'linkedin.com/in/moussadiop',
+        photo: null
     },
     profile: {
-        summary: 'Développeur Full Stack passionné avec plus de 5 ans d\'expérience dans la conception et le développement d\'applications web robustes.'
+        summary: 'Professionnel dynamique avec 3 ans d\'expérience dans la gestion administrative, l\'accueil et le service client. Reconnu pour mon organisation, ma rigueur et ma capacité à m\'adapter rapidement à de nouveaux environnements.'
     },
-    experiences: [
-        { id: 1, title: 'Développeur Web Senior', company: 'TechAfrica', startDate: '2021', endDate: 'Présent', description: 'Développement d\'applications SaaS en React et Node.js. Management d\'une équipe de 3 développeurs juniors.' }
-    ],
     education: [
-        { id: 1, degree: 'Master Ingénierie Logicielle', school: 'ESMT Dakar', startDate: '2016', endDate: '2021', description: 'Major de promotion.' }
+        { id: 1, studyType: 'Études Primaires', school: 'École Primaire Point E 1', degree: 'CFEE', year: '6 ans' },
+        { id: 2, studyType: 'Études Secondaires', school: 'CEM David Diop', degree: 'BFEM', year: '4 ans' },
+        { id: 3, studyType: 'Lycée', school: 'Lycée Blaise Diagne', degree: 'Baccalauréat Série L2', year: '3 ans' },
+        { id: 4, studyType: 'Études Supérieures', school: 'Université Cheikh Anta Diop (UCAD)', degree: 'Licence en Gestion (FASEG)', year: '3 ans' }
+    ],
+    formations: [
+        { id: 1, title: 'Formation en Secrétariat Bureautique', institution: 'Chambre de Commerce de Dakar', startDate: 'Janv 2022', endDate: 'Juin 2022', description: 'Apprentissage de la gestion du courrier, du classement et des outils de bureau.' },
+        { id: 2, title: 'Certificat en Marketing Digital', institution: 'ONFP Sénégal', startDate: 'Sept 2021', endDate: 'Nov 2021', description: 'Techniques de communication et vente sur les réseaux sociaux.' },
+        { id: 3, title: 'Formation en Entrepreneuriat', institution: 'ADEPME', startDate: 'Avril 2021', endDate: 'Juin 2021', description: 'Création de PME, élaboration de business plan et stratégie de vente.' },
+        { id: 4, title: 'Séminaire en Techniques de Vente', institution: 'Cabinet Cible RH', startDate: 'Fév 2021', endDate: 'Mars 2021', description: 'Formation pratique sur la prospection, la négociation et la fidélisation client.' }
+    ],
+    experiences: [
+        { id: 1, title: 'Assistant Commercial', company: 'Sonatel', startDate: 'Août 2022', endDate: 'Présent', description: 'Accueil des clients, traitement des réclamations et promotion des offres.' },
+        { id: 2, title: 'Stagiaire en Administration', company: 'SENELEC', startDate: 'Sept 2021', endDate: 'Déc 2021', description: 'Classement des dossiers, saisie de données et appui aux ressources humaines.' }
     ],
     skills: [
-        { id: 1, name: 'JavaScript / TypeScript' },
-        { id: 2, name: 'React.js & Node.js' },
-        { id: 3, name: 'Architecture Cloud (AWS)' }
+        { id: 1, name: 'Maîtrise du Pack Office (Word, Excel)' },
+        { id: 2, name: 'Gestion de la relation client' },
+        { id: 3, name: 'Accueil physique et téléphonique' },
+        { id: 4, name: 'Techniques de vente et négociation' },
+        { id: 5, name: 'Rédaction de courriers administratifs' },
+        { id: 6, name: 'Gestion des réseaux sociaux' }
     ],
     languages: [
         { id: 1, name: 'Français', level: 'Courant' },
-        { id: 2, name: 'Anglais', level: 'Professionnel' }
+        { id: 2, name: 'Anglais', level: 'Intermédiaire' },
+        { id: 3, name: 'Arabe', level: 'Lu et écrit' },
+        { id: 4, name: 'Wolof', level: 'Langue Maternelle' },
+        { id: 5, name: 'Sérère', level: 'Bien parlé' },
+        { id: 6, name: 'Pulaar', level: 'Notions de base' }
     ],
     interests: [
-        { id: 1, name: 'Intelligence Artificielle' },
-        { id: 2, name: 'Football' }
+        { id: 1, name: 'Bénévolat et associatif' },
+        { id: 2, name: 'Sport (Football, Basket)' },
+        { id: 3, name: 'Nouvelles technologies' },
+        { id: 4, name: 'Voyages et découverte' }
     ],
     references: []
 };
@@ -46,7 +68,7 @@ let cloudDocumentId = null;
 let saveTimeout = null;
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     // Check for SenePay payment success redirect
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
@@ -65,7 +87,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Try to initialize Supabase
     if (window.supabase) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        await initCloud();
+        initCloud().then(() => {
+            renderForms();
+            renderCV();
+        });
     }
     
     // 1. Charger les données temporaires locales (fallback)
@@ -77,13 +102,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             cvData = {
                 ...cvData,
                 ...parsedLocal,
-                personal: parsedLocal.personal || cvData.personal,
-                profile: parsedLocal.profile || cvData.profile,
-                experiences: Array.isArray(parsedLocal.experiences) ? parsedLocal.experiences : [],
-                education: Array.isArray(parsedLocal.education) ? parsedLocal.education : [],
-                skills: Array.isArray(parsedLocal.skills) ? parsedLocal.skills : [],
-                languages: Array.isArray(parsedLocal.languages) ? parsedLocal.languages : [],
-                interests: Array.isArray(parsedLocal.interests) ? parsedLocal.interests : []
+                personal: { ...cvData.personal, ...(parsedLocal.personal || {}) },
+                profile: { ...cvData.profile, ...(parsedLocal.profile || {}) },
+                experiences: Array.isArray(parsedLocal.experiences) ? parsedLocal.experiences : cvData.experiences,
+                education: Array.isArray(parsedLocal.education) ? parsedLocal.education : cvData.education,
+                skills: Array.isArray(parsedLocal.skills) ? parsedLocal.skills : cvData.skills,
+                languages: Array.isArray(parsedLocal.languages) ? parsedLocal.languages : cvData.languages,
+                formations: Array.isArray(parsedLocal.formations) ? parsedLocal.formations : cvData.formations,
+                interests: Array.isArray(parsedLocal.interests) ? parsedLocal.interests : cvData.interests
             };
         } catch (e) {
             console.error("Error parsing local CV data", e);
@@ -98,21 +124,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Map flat AI structure to cvData nested structure
             cvData.personal = {
-                firstName: parsed.firstName || '',
-                lastName: parsed.lastName || '',
-                jobTitle: parsed.jobTitle || '',
-                email: parsed.email || '',
-                phone: parsed.phone || '',
-                address: parsed.location || '',
-                city: parsed.location ? parsed.location.split(',')[0] : '',
-                nationality: '',
-                linkedin: '',
-                portfolio: '',
-                photo: ''
+                firstName: parsed.personal?.firstName || parsed.firstName || '',
+                lastName: parsed.personal?.lastName || parsed.lastName || '',
+                jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || '',
+                email: parsed.personal?.email || parsed.email || '',
+                phone: parsed.personal?.phone || parsed.phone || '',
+                address: parsed.personal?.address || parsed.personal?.location || parsed.location || '',
+                city: parsed.personal?.city || (parsed.location ? parsed.location.split(',')[0] : ''),
+                nationality: parsed.personal?.nationality || '',
+                linkedin: parsed.personal?.linkedin || parsed.linkedin || '',
+                portfolio: parsed.personal?.portfolio || parsed.portfolio || '',
+                photo: parsed.personal?.photo || parsed.photo || ''
             };
-            cvData.profile = { summary: parsed.summary || '' };
-            cvData.experiences = parsed.experience || parsed.experiences || [];
+            cvData.profile = { summary: parsed.profile?.summary || parsed.summary || '' };
+            cvData.experiences = parsed.experiences || parsed.experience || [];
             cvData.education = parsed.education || [];
+            cvData.formations = parsed.formations || [];
             cvData.skills = parsed.skills || [];
             cvData.languages = parsed.languages || [];
             cvData.interests = parsed.interests || [];
@@ -144,6 +171,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderForms();
     renderCV();
     setupTemplateSelector();
+
+    // Zoom on double click (especially for mobile)
+    const cvDoc = document.getElementById('cv-document');
+    if (cvDoc) {
+        cvDoc.addEventListener('dblclick', function() {
+            if (window.innerWidth <= 600) {
+                this.classList.toggle('zoomed');
+            }
+        });
+    }
 });
 
 async function initCloud() {
@@ -196,6 +233,9 @@ async function initCloud() {
 }
 
 function triggerCloudSave() {
+    // ALWAYS save locally first
+    localStorage.setItem('cvpro_data', JSON.stringify(cvData));
+
     if (!supabaseClient || !currentUserId) return;
     
     clearTimeout(saveTimeout);
@@ -243,45 +283,50 @@ function renderForms() {
         <!-- Step 1: Infos -->
         <div id="step-1" class="step-section active">
             <h3 class="step-title">1. Informations Personnelles</h3>
-            <div class="form-group" style="text-align: center; margin-bottom: 1.5rem;">
+            <div class="form-group">
                 <label>Photo de profil</label>
-                <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px dashed #cbd5e1;">
                     <img id="photo-preview" src="${cvData.personal.photo || ''}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); display: ${cvData.personal.photo ? 'block' : 'none'};">
-                    <input type="file" accept="image/*" onchange="handlePhotoUpload(event)" style="font-size: 0.85rem; color: var(--text-muted);">
+                    <div style="flex:1;">
+                        <label for="cv-photo-upload" style="display: inline-block; background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; box-sizing: border-box;">
+                            <i class="fa-solid fa-camera"></i> Choisir une photo
+                        </label>
+                        <input id="cv-photo-upload" type="file" accept="image/*" onchange="handlePhotoUpload(event)" style="display: none;">
+                    </div>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Prénom</label>
-                    <input type="text" class="form-control" data-section="personal" data-field="firstName" value="${cvData.personal.firstName}" oninput="updateData(event)">
+                    <label>Prénom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Aminata</small>
+                    <input type="text" class="form-control" data-section="personal" data-field="firstName" value="${cvData.personal.firstName}" oninput="updateData(event)" placeholder="Votre prénom">
                 </div>
                 <div class="form-group">
-                    <label>Nom</label>
-                    <input type="text" class="form-control" data-section="personal" data-field="lastName" value="${cvData.personal.lastName}" oninput="updateData(event)">
+                    <label>Nom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Sow</small>
+                    <input type="text" class="form-control" data-section="personal" data-field="lastName" value="${cvData.personal.lastName}" oninput="updateData(event)" placeholder="Votre nom de famille">
                 </div>
             </div>
             <div class="form-group">
-                <label>Titre Professionnel</label>
-                <input type="text" class="form-control" data-section="personal" data-field="jobTitle" value="${cvData.personal.jobTitle}" oninput="updateData(event)">
+                <label>Titre Professionnel</label><br><small style="color:#888;font-size:0.75rem;">Ex: Responsable Marketing, Développeur Web...</small>
+                <input type="text" class="form-control" data-section="personal" data-field="jobTitle" value="${cvData.personal.jobTitle}" oninput="updateData(event)" placeholder="Le poste que vous visez">
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" class="form-control" data-section="personal" data-field="email" value="${cvData.personal.email}" oninput="updateData(event)">
+                    <label>Email</label><br><small style="color:#888;font-size:0.75rem;">Ex: aminata.sow@email.com</small>
+                    <input type="email" class="form-control" data-section="personal" data-field="email" value="${cvData.personal.email}" oninput="updateData(event)" placeholder="Votre adresse email">
                 </div>
                 <div class="form-group">
-                    <label>Téléphone</label>
-                    <input type="text" class="form-control" data-section="personal" data-field="phone" value="${cvData.personal.phone}" oninput="updateData(event)">
+                    <label>Téléphone</label><br><small style="color:#888;font-size:0.75rem;">Ex: +221 77 000 00 00</small>
+                    <input type="text" class="form-control" data-section="personal" data-field="phone" value="${cvData.personal.phone}" oninput="updateData(event)" placeholder="Votre numéro de téléphone">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Ville / Adresse</label>
-                    <input type="text" class="form-control" data-section="personal" data-field="city" value="${cvData.personal.city}" oninput="updateData(event)">
+                    <label>Ville / Adresse</label><br><small style="color:#888;font-size:0.75rem;">Ex: Dakar, Sénégal</small>
+                    <input type="text" class="form-control" data-section="personal" data-field="city" value="${cvData.personal.city}" oninput="updateData(event)" placeholder="Votre lieu de résidence">
                 </div>
                 <div class="form-group">
-                    <label>LinkedIn</label>
-                    <input type="text" class="form-control" data-section="personal" data-field="linkedin" value="${cvData.personal.linkedin}" oninput="updateData(event)">
+                    <label>LinkedIn</label><br><small style="color:#888;font-size:0.75rem;">Ex: linkedin.com/in/aminatasow (Optionnel)</small>
+                    <input type="text" class="form-control" data-section="personal" data-field="linkedin" value="${cvData.personal.linkedin}" oninput="updateData(event)" placeholder="Lien vers votre profil">
                 </div>
             </div>
         </div>
@@ -290,49 +335,56 @@ function renderForms() {
         <div id="step-2" class="step-section">
             <h3 class="step-title">2. Profil Professionnel <button class="btn btn-ghost" style="font-size:0.7rem; color:var(--secondary); border:1px solid var(--secondary); padding:0.2rem 0.5rem;" onclick="alert('Génération par IA bientôt disponible')"><i class="fa-solid fa-wand-magic-sparkles"></i> Générer IA</button></h3>
             <div class="form-group">
-                <label>Description court de votre parcours</label>
-                <textarea class="form-control" data-section="profile" data-field="summary" oninput="updateData(event)">${cvData.profile.summary}</textarea>
+                <label>Description courte de votre parcours</label><br><small style="color:#888;font-size:0.75rem;">Résumez en 2-3 phrases vos années d'expérience, vos atouts majeurs et ce que vous recherchez.</small>
+                <textarea class="form-control" data-section="profile" data-field="summary" oninput="updateData(event)" placeholder="Ex: Professionnel motivé avec 5 ans d'expérience dans la gestion de projets. Je suis à la recherche de nouveaux défis...">${cvData.profile.summary}</textarea>
             </div>
         </div>
 
-        <!-- Step 3: Experiences -->
+        <!-- Step 3: Formations -->
         <div id="step-3" class="step-section">
-            <h3 class="step-title">3. Expériences Professionnelles</h3>
-            <div id="experiences-list" class="dynamic-list"></div>
-            <button class="btn-add" onclick="addDynamicItem('experiences')"><i class="fa-solid fa-plus"></i> Ajouter une expérience</button>
+            <h3 class="step-title">3. Études</h3>
+            <div id="education-list" class="dynamic-list"></div>
+            <button class="btn-add" onclick="addDynamicItem('education')"><i class="fa-solid fa-plus"></i> Ajouter une étude</button>
         </div>
 
         <!-- Step 4: Formations -->
         <div id="step-4" class="step-section">
             <h3 class="step-title">4. Formations</h3>
-            <div id="education-list" class="dynamic-list"></div>
-            <button class="btn-add" onclick="addDynamicItem('education')"><i class="fa-solid fa-plus"></i> Ajouter une formation</button>
+            <div id="formations-list" class="dynamic-list"></div>
+            <button class="btn-add" onclick="addDynamicItem('formations')"><i class="fa-solid fa-plus"></i> Ajouter une formation</button>
+        </div>
+
+        <!-- Step 5: Experiences -->
+        <div id="step-5" class="step-section">
+            <h3 class="step-title">5. Expériences Professionnelles</h3>
+            <div id="experiences-list" class="dynamic-list"></div>
+            <button class="btn-add" onclick="addDynamicItem('experiences')"><i class="fa-solid fa-plus"></i> Ajouter une expérience</button>
         </div>
         
-        <!-- Step 5: Compétences -->
-        <div id="step-5" class="step-section">
-            <h3 class="step-title">5. Compétences</h3>
+        <!-- Step 6: Compétences -->
+        <div id="step-6" class="step-section">
+            <h3 class="step-title">6. Compétences</h3>
             <div id="skills-list" class="dynamic-list"></div>
             <button class="btn-add" onclick="addDynamicItem('skills')"><i class="fa-solid fa-plus"></i> Ajouter une compétence</button>
         </div>
 
-        <!-- Step 6: Langues -->
-        <div id="step-6" class="step-section">
-            <h3 class="step-title">6. Langues</h3>
+        <!-- Step 7: Langues -->
+        <div id="step-7" class="step-section">
+            <h3 class="step-title">7. Langues</h3>
             <div id="languages-list" class="dynamic-list"></div>
             <button class="btn-add" onclick="addDynamicItem('languages')"><i class="fa-solid fa-plus"></i> Ajouter une langue</button>
         </div>
 
-        <!-- Step 7: Intérêts -->
-        <div id="step-7" class="step-section">
-            <h3 class="step-title">7. Centres d'intérêt</h3>
+        <!-- Step 8: Intérêts -->
+        <div id="step-8" class="step-section">
+            <h3 class="step-title">8. Centres d'intérêt</h3>
             <div id="interests-list" class="dynamic-list"></div>
             <button class="btn-add" onclick="addDynamicItem('interests')"><i class="fa-solid fa-plus"></i> Ajouter un intérêt</button>
         </div>
 
-        <!-- Step 8: Ref -->
-        <div id="step-8" class="step-section">
-            <h3 class="step-title">8. Références</h3>
+        <!-- Step 9: Ref -->
+        <div id="step-9" class="step-section">
+            <h3 class="step-title">9. Références</h3>
             <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">Optionnel. Vous pouvez ajouter "Sur demande" ou lister des contacts.</p>
             <div class="form-group">
                 <textarea class="form-control" data-section="personal" data-field="references" oninput="updateData(event)" placeholder="Références disponibles sur demande..."></textarea>
@@ -355,13 +407,20 @@ function renderDynamicLists() {
     `);
 
     renderList('education', (item) => `
-        <div class="form-group"><input type="text" class="form-control" placeholder="Diplôme" value="${item.degree}" oninput="updateListItem(event, 'education', ${item.id}, 'degree')"></div>
-        <div class="form-group"><input type="text" class="form-control" placeholder="École / Université" value="${item.school}" oninput="updateListItem(event, 'education', ${item.id}, 'school')"></div>
+        <div class="form-group"><input type="text" class="form-control" placeholder="Étude (ex: Primaire, Supérieure...)" value="${item.studyType || ''}" oninput="updateListItem(event, 'education', ${item.id}, 'studyType')"></div>
+        <div class="form-group"><input type="text" class="form-control" placeholder="Établissement" value="${item.school || ''}" oninput="updateListItem(event, 'education', ${item.id}, 'school')"></div>
+        <div class="form-group"><input type="text" class="form-control" placeholder="Diplôme" value="${item.degree || ''}" oninput="updateListItem(event, 'education', ${item.id}, 'degree')"></div>
+        <div class="form-group"><input type="text" class="form-control" placeholder="Année (ex: 2021 ou '3 ans')" value="${item.year || ''}" oninput="updateListItem(event, 'education', ${item.id}, 'year')"></div>
+    `);
+
+    renderList('formations', (item) => `
+        <div class="form-group"><input type="text" class="form-control" placeholder="Formation (ex: Certificat en Secourisme)" value="${item.title || ''}" oninput="updateListItem(event, 'formations', ${item.id}, 'title')"></div>
+        <div class="form-group"><input type="text" class="form-control" placeholder="Centre / Institution" value="${item.institution || ''}" oninput="updateListItem(event, 'formations', ${item.id}, 'institution')"></div>
         <div class="form-row">
-            <div class="form-group"><input type="text" class="form-control" placeholder="De (ex: 2016)" value="${item.startDate}" oninput="updateListItem(event, 'education', ${item.id}, 'startDate')"></div>
-            <div class="form-group"><input type="text" class="form-control" placeholder="À (ex: 2021)" value="${item.endDate}" oninput="updateListItem(event, 'education', ${item.id}, 'endDate')"></div>
+            <div class="form-group"><input type="text" class="form-control" placeholder="De (ex: Mars 2021)" value="${item.startDate || ''}" oninput="updateListItem(event, 'formations', ${item.id}, 'startDate')"></div>
+            <div class="form-group"><input type="text" class="form-control" placeholder="À (ex: Juin 2021)" value="${item.endDate || ''}" oninput="updateListItem(event, 'formations', ${item.id}, 'endDate')"></div>
         </div>
-        <div class="form-group"><input type="text" class="form-control" placeholder="Description" value="${item.description || ''}" oninput="updateListItem(event, 'education', ${item.id}, 'description')"></div>
+        <div class="form-group"><textarea class="form-control" placeholder="Description des apprentissages" oninput="updateListItem(event, 'formations', ${item.id}, 'description')">${item.description || ''}</textarea></div>
     `);
     
     renderList('skills', (item) => `
@@ -482,6 +541,33 @@ function renderCV() {
                         <p class="cv-summary">${cvData.profile.summary}</p>
                     </div>` : ''}
                     
+                    ${cvData.education.length > 0 ? `
+                    <div class="cv-section">
+                        <h3 class="cv-section-title">Études</h3>
+                        ${cvData.education.map(e => `
+                            <div class="cv-item">
+                                <div class="cv-item-header">
+                                    <div class="cv-item-title">${e.studyType ? e.studyType + ' - ' : ''}${e.degree || 'Diplôme'} - <span class="cv-item-company">${e.school || 'Établissement'}</span></div>
+                                    <div class="cv-item-date">${e.year || ''}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+
+                    ${cvData.formations.length > 0 ? `
+                    <div class="cv-section">
+                        <h3 class="cv-section-title">Formations</h3>
+                        ${cvData.formations.map(f => `
+                            <div class="cv-item">
+                                <div class="cv-item-header">
+                                    <div class="cv-item-title">${f.title || 'Formation'} - <span class="cv-item-company">${f.institution || 'Institution'}</span></div>
+                                    <div class="cv-item-date">${f.startDate || ''} ${f.endDate ? '- ' + f.endDate : ''}</div>
+                                </div>
+                                <p class="cv-item-desc">${f.description || ''}</p>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+
                     ${cvData.experiences.length > 0 ? `
                     <div class="cv-section">
                         <h3 class="cv-section-title">Expérience Professionnelle</h3>
@@ -489,20 +575,6 @@ function renderCV() {
                             <div class="cv-item">
                                 <div class="cv-item-header">
                                     <div class="cv-item-title">${e.title || 'Poste'} - <span class="cv-item-company">${e.company || 'Entreprise'}</span></div>
-                                    <div class="cv-item-date">${e.startDate || ''} ${e.endDate ? '- ' + e.endDate : ''}</div>
-                                </div>
-                                <p class="cv-item-desc">${e.description || ''}</p>
-                            </div>
-                        `).join('')}
-                    </div>` : ''}
-                    
-                    ${cvData.education.length > 0 ? `
-                    <div class="cv-section">
-                        <h3 class="cv-section-title">Formation</h3>
-                        ${cvData.education.map(e => `
-                            <div class="cv-item">
-                                <div class="cv-item-header">
-                                    <div class="cv-item-title">${e.degree || 'Diplôme'} - <span class="cv-item-company">${e.school || 'École'}</span></div>
                                     <div class="cv-item-date">${e.startDate || ''} ${e.endDate ? '- ' + e.endDate : ''}</div>
                                 </div>
                                 <p class="cv-item-desc">${e.description || ''}</p>
@@ -559,6 +631,33 @@ function renderCV() {
                     <p>${cvData.profile.summary}</p>
                 </div>` : ''}
                 
+                ${cvData.education.length > 0 ? `
+                <div class="cv-section">
+                    <h3>Études</h3>
+                    ${cvData.education.map(e => `
+                        <div class="cv-item">
+                            <div class="cv-item-header">
+                                <div class="cv-title">${e.studyType ? e.studyType + ' - ' : ''}${e.degree || 'Diplôme'} - ${e.school || 'Établissement'}</div>
+                                <div class="cv-date">${e.year || ''}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>` : ''}
+
+                ${cvData.formations.length > 0 ? `
+                <div class="cv-section">
+                    <h3>Formations</h3>
+                    ${cvData.formations.map(f => `
+                        <div class="cv-item">
+                            <div class="cv-item-header">
+                                <div class="cv-title">${f.title} - ${f.institution}</div>
+                                <div class="cv-date">${f.startDate} ${f.endDate ? '- ' + f.endDate : ''}</div>
+                            </div>
+                            <p>${f.description}</p>
+                        </div>
+                    `).join('')}
+                </div>` : ''}
+
                 ${cvData.experiences.length > 0 ? `
                 <div class="cv-section">
                     <h3>Expériences</h3>
@@ -569,20 +668,6 @@ function renderCV() {
                                 <div class="cv-date">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</div>
                             </div>
                             <p>${e.description}</p>
-                        </div>
-                    `).join('')}
-                </div>` : ''}
-
-                ${cvData.education.length > 0 ? `
-                <div class="cv-section">
-                    <h3>Formation</h3>
-                    ${cvData.education.map(e => `
-                        <div class="cv-item">
-                            <div class="cv-item-header">
-                                <div class="cv-title">${e.degree} - ${e.school}</div>
-                                <div class="cv-date">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</div>
-                            </div>
-                            <p>${e.description || ''}</p>
                         </div>
                     `).join('')}
                 </div>` : ''}
@@ -652,6 +737,29 @@ function renderCV() {
                         <h3>Profil</h3>
                         <p>${cvData.profile.summary}</p>
                     </div>` : ''}
+                    ${cvData.education.length > 0 ? `
+                    <div class="cv-section">
+                        <h3>Études</h3>
+                        ${cvData.education.map(e => `
+                            <div class="cv-item">
+                                <h4>${e.studyType ? e.studyType + ' - ' : ''}${e.degree || 'Diplôme'} - <span>${e.school || 'Établissement'}</span></h4>
+                                <div class="cv-date">${e.year || ''}</div>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+
+                    ${cvData.formations.length > 0 ? `
+                    <div class="cv-section">
+                        <h3>Formations</h3>
+                        ${cvData.formations.map(f => `
+                            <div class="cv-item">
+                                <h4>${f.title} - <span>${f.institution}</span></h4>
+                                <div class="cv-date">${f.startDate} ${f.endDate ? '- ' + f.endDate : ''}</div>
+                                <p>${f.description || ''}</p>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+
                     ${cvData.experiences.length > 0 ? `
                     <div class="cv-section">
                         <h3>Expériences</h3>
@@ -660,17 +768,6 @@ function renderCV() {
                                 <h4>${e.title} - <span>${e.company}</span></h4>
                                 <div class="cv-date">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</div>
                                 <p>${e.description}</p>
-                            </div>
-                        `).join('')}
-                    </div>` : ''}
-                    ${cvData.education.length > 0 ? `
-                    <div class="cv-section">
-                        <h3>Formation</h3>
-                        ${cvData.education.map(e => `
-                            <div class="cv-item">
-                                <h4>${e.degree} - <span>${e.school}</span></h4>
-                                <div class="cv-date">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</div>
-                                <p>${e.description || ''}</p>
                             </div>
                         `).join('')}
                     </div>` : ''}
@@ -700,6 +797,39 @@ function renderCV() {
                     <div class="cv-section-right"><p>${cvData.profile.summary}</p></div>
                 </div>` : ''}
                 
+                ${cvData.education.length > 0 ? `
+                <div class="cv-section">
+                    <div class="cv-section-left">Études</div>
+                    <div class="cv-section-right">
+                        ${cvData.education.map(e => `
+                            <div class="cv-item">
+                                <div class="cv-date">${e.year || ''}</div>
+                                <div class="cv-content">
+                                    <h4>${e.studyType ? e.studyType + ' - ' : ''}${e.degree || 'Diplôme'}</h4>
+                                    <div class="cv-company">${e.school || 'Établissement'}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>` : ''}
+
+                ${cvData.formations.length > 0 ? `
+                <div class="cv-section">
+                    <div class="cv-section-left">Formations</div>
+                    <div class="cv-section-right">
+                        ${cvData.formations.map(f => `
+                            <div class="cv-item">
+                                <div class="cv-date">${f.startDate} ${f.endDate ? '- ' + f.endDate : ''}</div>
+                                <div class="cv-content">
+                                    <h4>${f.title}</h4>
+                                    <div class="cv-company">${f.institution}</div>
+                                    <p>${f.description || ''}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>` : ''}
+
                 ${cvData.experiences.length > 0 ? `
                 <div class="cv-section">
                     <div class="cv-section-left">Expériences</div>
@@ -711,23 +841,6 @@ function renderCV() {
                                     <h4>${e.title}</h4>
                                     <div class="cv-company">${e.company}</div>
                                     <p>${e.description}</p>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>` : ''}
-                
-                ${cvData.education.length > 0 ? `
-                <div class="cv-section">
-                    <div class="cv-section-left">Formation</div>
-                    <div class="cv-section-right">
-                        ${cvData.education.map(e => `
-                            <div class="cv-item">
-                                <div class="cv-date">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</div>
-                                <div class="cv-content">
-                                    <h4>${e.degree}</h4>
-                                    <div class="cv-company">${e.school}</div>
-                                    <p>${e.description || ''}</p>
                                 </div>
                             </div>
                         `).join('')}
@@ -874,3 +987,18 @@ function generatePDF() {
     // Generate and save
     html2pdf().set(opt).from(element).save();
 }
+
+// Allow clicking on empty spaces to add text
+document.getElementById('cv-document')?.addEventListener('click', (e) => {
+    if (e.target.id === 'cv-document') {
+        const p = document.createElement('p');
+        p.innerHTML = '<br>';
+        e.target.appendChild(p);
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(p);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+});
