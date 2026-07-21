@@ -21,7 +21,7 @@
         .builder-container { display: flex; flex: 1; overflow: hidden; }
         
         /* Left Panel - Wizard */
-        .wizard-panel { width: 50%; max-width: 600px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; }
+        .wizard-panel { width: 35%; max-width: 450px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; }
         .wizard-tabs { display: flex; overflow-x: auto; background: var(--background); border-bottom: 1px solid var(--border); padding: 0.5rem 1rem 0; flex-shrink: 0; }
         .tab-btn { padding: 0.75rem 1rem; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 600; white-space: nowrap; font-size: 0.85rem; }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
@@ -138,17 +138,31 @@
             background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
             display: none; align-items: center; justify-content: center; z-index: 1000;
         }
-        .modal-overlay.active { display: flex; }
         .modal-content {
-            background: var(--surface); width: 100%; max-width: 400px;
-            border-radius: var(--radius-lg); padding: 2rem; position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid var(--border);
-            text-align: center;
+            background: var(--surface); padding: 2rem; border-radius: var(--radius-lg);
+            width: 90%; max-width: 450px; position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            animation: modalFadeIn 0.3s;
         }
+        @keyframes modalFadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         .modal-close {
-            position: absolute; top: 1rem; right: 1rem; background: transparent;
-            border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;
+            position: absolute; top: 1rem; right: 1rem; background: transparent; border: none;
+            color: var(--text-muted); cursor: pointer; font-size: 1.2rem;
         }
+        .modal-close:hover { color: var(--text-main); }
+        
+        /* Toolbars */
+        .rich-text-toolbar {
+            display: flex; gap: 5px; align-items: center; background: var(--background);
+            padding: 5px; border-radius: var(--radius-md); border: 1px solid var(--border);
+            margin-bottom: 1rem; flex-wrap: wrap;
+        }
+        .rich-text-toolbar button {
+            background: transparent; border: none; color: var(--text-main); cursor: pointer;
+            padding: 5px 8px; border-radius: 4px; font-size: 0.9rem;
+        }
+        .rich-text-toolbar button:hover { background: var(--border); }
+        
         .payment-methods { display: flex; flex-direction: column; gap: 1rem; margin: 1.5rem 0; }
         .payment-method {
             border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius-md);
@@ -170,8 +184,6 @@
         .style-panel-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: flex; justify-content: space-between; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.5rem; }
-        .form-control { width: 100%; min-height: 35px; padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--background); color: var(--text-main); transition: var(--transition); }
-        .form-control:focus { outline: none; border-color: var(--primary); }
         
         @media (max-width: 1024px) {
             .style-panel { width: 100%; border-right: none; border-bottom: 2px solid var(--primary); height: auto; max-height: none; }
@@ -210,8 +222,8 @@
     <div class="builder-container">
         
         <!-- Style Panel -->
-        <div class="style-panel">
-            <h3 class="style-panel-title"><i class="fa-solid fa-paintbrush"></i> Style du CV</h3>
+        <div class="style-panel" style="padding: 1.5rem; overflow-y: auto; border-right: 1px solid var(--border); width: 35%; max-width: 450px;">
+            <h3 class="style-panel-title" style="margin-top:0;"><i class="fa-solid fa-paintbrush"></i> Style du CV</h3>
             <div class="form-row">
                 <div class="form-group">
                     <label>Couleur du texte principal</label>
@@ -222,6 +234,22 @@
                     <input type="color" id="style-header-color" class="form-control" value="#4f46e5" style="height: 40px; padding: 2px; cursor: pointer;">
                 </div>
             </div>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Outils d'édition (Texte sélectionné)</label>
+                <div class="rich-text-toolbar">
+                    <button onmousedown="event.preventDefault(); document.execCommand('bold', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Gras"><i class="fa-solid fa-bold"></i></button>
+                    <button onmousedown="event.preventDefault(); document.execCommand('italic', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Italique"><i class="fa-solid fa-italic"></i></button>
+                    <button onmousedown="event.preventDefault(); document.execCommand('underline', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Souligné"><i class="fa-solid fa-underline"></i></button>
+                    <div style="width:1px; height:20px; background:var(--border);"></div>
+                    <button onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '5'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Agrandir"><i class="fa-solid fa-text-height"></i>+</button>
+                    <button onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '2'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Réduire"><i class="fa-solid fa-text-height"></i>-</button>
+                    <button onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '3'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Normal" style="font-size:0.8rem;">Normal</button>
+                    <div style="width:1px; height:20px; background:var(--border);"></div>
+                    <input type="color" onchange="document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, this.value); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Couleur sélection" style="width:25px; height:25px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                </div>
+            </div>
+
             <div class="form-group">
                 <label>Taille du texte globale <span id="val-font-size">14px</span></label>
                 <input type="range" id="style-font-size" class="form-control" min="10" max="24" value="14" style="padding: 0;">

@@ -411,8 +411,20 @@ function updateCVStyles() {
     }
 
     styleTag.innerHTML = `
+        #cv-document,
+        #cv-document p,
+        #cv-document li,
+        #cv-document span,
+        #cv-document div:not(.cv-header):not(.cv-header-name):not(.cv-header-contact),
+        #cv-document .cv-summary,
+        #cv-document .cv-item-title,
+        #cv-document .cv-item-company,
+        #cv-document .cv-item-date,
+        #cv-document .cv-item-desc {
+            color: ${color};
+        }
+        
         #cv-document {
-            color: ${color} !important;
             font-size: ${fontSize}px !important;
             font-family: ${fontFamily} !important;
             line-height: ${lineHeight} !important;
