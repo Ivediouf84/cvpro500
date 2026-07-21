@@ -345,14 +345,20 @@
                         cleanJson = cleanJson.substring(startIndex, endIndex + 1);
                     }
                     
-                    // Attempt to parse
+                    // Attempt to parse robustly
                     let resultData;
                     try {
-                        resultData = JSON.parse(cleanJson);
+                        // 1. Remove literal control characters (newlines, tabs, etc) that break JSON.parse when inside strings
+                        let sanitizedJson = cleanJson.replace(/[\u0000-\u001F]+/g, " ");
+                        // 2. Fix trailing commas before closing braces/brackets
+                        sanitizedJson = sanitizedJson.replace(/,\s*([\]}])/g, '$1');
+                        
+                        resultData = JSON.parse(sanitizedJson);
                     } catch (parseErr) {
-                        // Attempt to fix common AI JSON issues (trailing commas, unescaped newlines)
-                        cleanJson = cleanJson.replace(/,\s*([\]}])/g, '$1');
-                        resultData = JSON.parse(cleanJson);
+                        console.error("JSON parse error:", parseErr);
+                        console.error("Raw JSON was:", cleanJson);
+                        // Provide a much clearer error message to the user, showing the exact syntax error
+                        throw new Error("Erreur de lecture des données de l'IA (" + parseErr.message + "). Veuillez réessayer avec une image plus nette.");
                     }
                     
                     // Save extracted JSON data
@@ -361,8 +367,8 @@
                     // Redirect to the AI builder for scanned CVs
                     window.location.href = 'cvpro-ai-builder.html';
                 } catch (e) {
-                    console.error("JSON parse error:", e);
-                    throw new Error("Le format renvoyé par l'IA n'est pas valide. Réponse partielle: " + resultText.substring(0, 150));
+                    console.error("Processing error:", e);
+                    throw e;
                 }
                 
             } catch (err) {
