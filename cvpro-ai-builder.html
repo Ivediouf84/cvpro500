@@ -92,6 +92,46 @@
             .cv-page-container { transform: scale(0.4); }
         }
         
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #cv-document, #cv-document * {
+                visibility: visible;
+            }
+            #cv-document {
+                position: absolute;
+                left: 0;
+                top: 0;
+                transform: none !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+            }
+            /* Hide the toolbars and scrollbars */
+            .builder-nav, .style-panel, .preview-toolbar {
+                display: none !important;
+            }
+            body {
+                overflow: visible !important;
+                background: white !important;
+            }
+            .builder-container {
+                overflow: visible !important;
+            }
+            .preview-scroll-area {
+                overflow: visible !important;
+                padding: 0 !important;
+            }
+            #cv-scale-wrapper {
+                transform: none !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+        }
+        
         /* Payment Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -172,9 +212,15 @@
         <!-- Style Panel -->
         <div class="style-panel">
             <h3 class="style-panel-title"><i class="fa-solid fa-paintbrush"></i> Style du CV</h3>
-            <div class="form-group">
-                <label>Couleur du texte principal</label>
-                <input type="color" id="style-text-color" class="form-control" value="#1a1a1a" style="height: 40px; padding: 2px; cursor: pointer;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Couleur du texte principal</label>
+                    <input type="color" id="style-text-color" class="form-control" value="#1a1a1a" style="height: 40px; padding: 2px; cursor: pointer;">
+                </div>
+                <div class="form-group">
+                    <label>Couleur de l'entête</label>
+                    <input type="color" id="style-header-color" class="form-control" value="#4f46e5" style="height: 40px; padding: 2px; cursor: pointer;">
+                </div>
             </div>
             <div class="form-group">
                 <label>Taille du texte globale <span id="val-font-size">14px</span></label>

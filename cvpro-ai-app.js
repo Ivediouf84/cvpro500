@@ -397,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Style Panel Logic
 function updateCVStyles() {
     const color = document.getElementById('style-text-color')?.value || '#1a1a1a';
+    const headerColor = document.getElementById('style-header-color')?.value || '#4f46e5';
     const fontSize = document.getElementById('style-font-size')?.value || '14';
     const fontFamily = document.getElementById('style-font-family')?.value || 'inherit';
     const lineHeight = document.getElementById('style-line-height')?.value || '1.3';
@@ -422,11 +423,14 @@ function updateCVStyles() {
         #cv-document p, #cv-document ul, #cv-document div, #cv-document span {
             margin-bottom: ${spacing}rem;
         }
+        #cv-document .cv-header {
+            background-color: ${headerColor} !important;
+        }
     `;
 }
 
 // Add event listeners to style controls
-['style-text-color', 'style-font-size', 'style-font-family', 'style-line-height', 'style-spacing'].forEach(id => {
+['style-text-color', 'style-header-color', 'style-font-size', 'style-font-family', 'style-line-height', 'style-spacing'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
         el.addEventListener('input', (e) => {
@@ -534,6 +538,70 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Save state
             triggerCloudSaveHtml(cvDoc.innerHTML);
+        }
+    });
+});
+
+// ----------------------------------------------------
+// FLOATING RICH TEXT FORMATTING TOOLBAR
+// ----------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    const textToolbar = document.createElement('div');
+    textToolbar.id = 'text-format-toolbar';
+    textToolbar.style.display = 'none';
+    textToolbar.style.position = 'absolute';
+    textToolbar.style.zIndex = '1000';
+    textToolbar.style.background = '#1e1e2d';
+    textToolbar.style.border = '1px solid #333';
+    textToolbar.style.borderRadius = '8px';
+    textToolbar.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    textToolbar.style.padding = '5px';
+    textToolbar.style.gap = '5px';
+    textToolbar.style.alignItems = 'center';
+    
+    textToolbar.innerHTML = `
+        <button class="btn btn-ghost" onmousedown="event.preventDefault(); document.execCommand('bold', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Gras" style="padding: 0.35rem 0.6rem; color: white; cursor: pointer; border-radius: 4px;"><i class="fa-solid fa-bold"></i></button>
+        <button class="btn btn-ghost" onmousedown="event.preventDefault(); document.execCommand('italic', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Italique" style="padding: 0.35rem 0.6rem; color: white; cursor: pointer; border-radius: 4px;"><i class="fa-solid fa-italic"></i></button>
+        <button class="btn btn-ghost" onmousedown="event.preventDefault(); document.execCommand('underline', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Souligné" style="padding: 0.35rem 0.6rem; color: white; cursor: pointer; border-radius: 4px;"><i class="fa-solid fa-underline"></i></button>
+        <div style="width: 1px; height: 20px; background: #444; margin: 0 5px;"></div>
+        <button class="btn btn-ghost" onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '5'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Agrandir" style="padding: 0.35rem 0.6rem; color: white; cursor: pointer; border-radius: 4px;"><i class="fa-solid fa-text-height"></i> <i class="fa-solid fa-plus" style="font-size:0.6em;"></i></button>
+        <button class="btn btn-ghost" onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '2'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Réduire" style="padding: 0.35rem 0.6rem; color: white; cursor: pointer; border-radius: 4px;"><i class="fa-solid fa-text-height"></i> <i class="fa-solid fa-minus" style="font-size:0.6em;"></i></button>
+        <button class="btn btn-ghost" onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '3'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Normal" style="padding: 0.35rem 0.6rem; color: white; cursor: pointer; border-radius: 4px; font-size: 0.8rem;">Normal</button>
+        <div style="width: 1px; height: 20px; background: #444; margin: 0 5px;"></div>
+        <input type="color" onchange="document.execCommand('foreColor', false, this.value); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Couleur du texte" style="width: 28px; height: 28px; padding: 0; border: none; border-radius: 4px; cursor: pointer; background: transparent;">
+    `;
+    
+    document.body.appendChild(textToolbar);
+
+    const cvDoc = document.getElementById('cv-document');
+    if (!cvDoc) return;
+
+    cvDoc.addEventListener('mouseup', () => {
+        setTimeout(() => {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0 && !selection.isCollapsed) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                textToolbar.style.display = 'flex';
+                textToolbar.style.top = (window.scrollY + rect.top - 55) + 'px';
+                
+                let leftPos = window.scrollX + rect.left + (rect.width / 2) - (textToolbar.offsetWidth / 2 || 150);
+                if (leftPos < 10) leftPos = 10;
+                textToolbar.style.left = leftPos + 'px';
+            } else {
+                textToolbar.style.display = 'none';
+            }
+        }, 10);
+    });
+    
+    cvDoc.addEventListener('keydown', () => {
+        textToolbar.style.display = 'none';
+    });
+
+    document.addEventListener('mousedown', (e) => {
+        if (!textToolbar.contains(e.target) && !cvDoc.contains(e.target)) {
+            textToolbar.style.display = 'none';
         }
     });
 });
