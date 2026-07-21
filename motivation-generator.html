@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Demande & Lettre de Motivation (IA)</title>
+    <link rel="stylesheet" href="styles.css?v=cvpro1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf for client-side PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--body-bg); color: var(--text-main); font-family: 'Inter', sans-serif; }
+        
+        /* Top Navigation */
+        .builder-nav { height: 60px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; flex-shrink: 0; }
+        .builder-nav-brand { font-weight: 800; font-size: 1.2rem; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+        
+        .container-main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; flex: 1; width: 100%; box-sizing: border-box; }
+        
+        .header-title { text-align: center; margin-bottom: 2rem; }
+        .header-title h1 { color: var(--primary); font-size: 1.8rem; text-transform: uppercase; line-height: 1.4; }
+        
+        .form-card { background: var(--surface); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        
+        .form-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .form-control { width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--background); color: var(--text-main); font-size: 1rem; box-sizing: border-box; }
+        .form-control:focus { outline: none; border-color: var(--primary); }
+        
+        .upload-area { border: 2px dashed var(--primary); padding: 2rem; text-align: center; border-radius: var(--radius-md); cursor: pointer; background: rgba(79, 70, 229, 0.05); transition: all 0.2s; }
+        .upload-area:hover { background: rgba(79, 70, 229, 0.1); }
+        .upload-area i { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .upload-area h3 { margin: 0 0 0.5rem 0; color: var(--text-main); }
+        .upload-area p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+        
+        /* Preview Areas */
+        .documents-container { display: none; gap: 2rem; flex-direction: column; margin-top: 2rem; }
+        .document-box { background: white; color: black; padding: 3rem 4rem; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 297mm; max-width: 210mm; margin: 0 auto; width: 100%; box-sizing: border-box; line-height: 1.5; font-size: 11pt; font-family: 'Times New Roman', Times, serif; }
+        
+        .section-title { font-size: 1.5rem; color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
+        
+        /* Payment Modal (Reused) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: var(--surface); padding: 2.5rem; border-radius: var(--radius-lg); width: 90%; max-width: 400px; text-align: center; position: relative; border: 1px solid var(--border); }
+        
+        /* Loader */
+        #ai-loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        
+        @media (max-width: 768px) {
+            .header-title h1 { font-size: 1.2rem; }
+            .document-box { padding: 1.5rem; min-height: auto; }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <nav class="builder-nav">
+        <a href="index.html" class="builder-nav-brand"><i class="fa-solid fa-arrow-left"></i> CV PRO 500</a>
+    </nav>
+
+    <div class="container-main">
+        <div class="header-title">
+            <h1>Écris ton Prénom, Nom, Poste demandé et insère ton CV pour générer ta Demande et Lettre de Motivation</h1>
+        </div>
+        
+        <div class="form-card" id="input-section">
+            <form id="motivation-form" onsubmit="generateDocuments(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" id="input-prenom" class="form-control" required placeholder="Ex: Moussa">
+                    </div>
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" id="input-nom" class="form-control" required placeholder="Ex: Diop">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Poste demandé</label>
+                    <input type="text" id="input-poste" class="form-control" required placeholder="Ex: Développeur Web Junior, Comptable...">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label>Ton CV (Format : PDF, PNG, JPG)</label>
+                    <input type="file" id="input-cv" accept=".pdf,image/*" style="display: none;" onchange="handleFileSelect(event)" required>
+                    <div class="upload-area" onclick="document.getElementById('input-cv').click()">
+                        <i class="fa-regular fa-file-pdf"></i>
+                        <h3 id="file-name-display">Clique pour insérer ton CV</h3>
+                        <p>L'IA va lire ton CV pour rédiger des lettres ultra-personnalisées.</p>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer; font-weight: bold;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Générer avec l'IA
+                </button>
+            </form>
+        </div>
+
+        <div id="results-section" class="documents-container">
+            <!-- Payment CTA (Top) -->
+            <div style="background: rgba(79, 70, 229, 0.1); border: 1px solid var(--primary); padding: 1.5rem; border-radius: var(--radius-md); text-align: center; margin-bottom: 1rem;">
+                <h3 style="margin-top: 0; color: var(--text-main);">Tes documents sont prêts ! 🎉</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Télécharge les deux documents (Demande + Lettre de motivation) au format PDF.</p>
+                <button onclick="openPaymentModal()" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: bold; background: var(--grad-primary); border: none; color: white; border-radius: var(--radius-lg); cursor: pointer;">
+                    <i class="fa-solid fa-download"></i> Télécharger les 2 documents (500 FCFA)
+                </button>
+            </div>
+
+            <!-- Demande Preview -->
+            <div>
+                <div class="section-title">
+                    <span><i class="fa-solid fa-file-lines"></i> Aperçu : Demande d'emploi</span>
+                </div>
+                <div id="doc-demande" class="document-box"></div>
+            </div>
+            
+            <!-- Motivation Preview -->
+            <div style="margin-top: 2rem;">
+                <div class="section-title">
+                    <span><i class="fa-solid fa-envelope-open-text"></i> Aperçu : Lettre de Motivation</span>
+                </div>
+                <div id="doc-motivation" class="document-box"></div>
+            </div>
+            
+            <!-- Payment CTA (Bottom) -->
+            <div style="text-align: center; margin-top: 2rem; margin-bottom: 4rem;">
+                <button onclick="openPaymentModal()" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: bold; background: var(--grad-primary); border: none; color: white; border-radius: var(--radius-lg); cursor: pointer;">
+                    <i class="fa-solid fa-download"></i> Télécharger les 2 documents (500 FCFA)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SenePay Modal -->
+    <div id="payment-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+            <h2 style="color: var(--text-main); margin-top: 0;"><i class="fa-solid fa-lock"></i> Débloquer les PDF</h2>
+            <p style="color: var(--text-muted);">Paiement sécurisé via SenePay pour télécharger votre Demande et Lettre de Motivation (2 fichiers PDF).</p>
+            
+            <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 1.5rem 0;">
+                500 FCFA
+            </div>
+            
+            <div style="margin-top: 1.5rem;">
+                <label style="display: block; text-align: left; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Votre numéro Wave ou Orange Money :</label>
+                <input type="tel" id="senepay-phone" class="form-control" placeholder="Ex: 77 123 45 67" style="font-size: 1.2rem; text-align: center; letter-spacing: 2px;">
+            </div>
+            
+            <button id="btn-confirm-pay" onclick="processPayment()" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; margin-top: 1.5rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; font-weight: bold; cursor: pointer;">
+                Payer 500F et Télécharger
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="ai-loading-overlay">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary);"></i>
+        <h2 style="margin: 0; font-size: 1.5rem;">L'IA rédige vos documents...</h2>
+        <p style="margin-top: 0.5rem; color: #ccc;">Analyse de votre profil en cours (environ 15 secondes)</p>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="motivation-app.js"></script>
+</body>
+</html>
