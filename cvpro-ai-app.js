@@ -357,7 +357,7 @@ async function processPayment() {
                 'X-Api-Secret': senepaySecret
             },
             body: JSON.stringify({
-                amount: 500,
+                amount: 1000,
                 currency: "XOF",
                 orderReference: "CVPRO-AI-" + Date.now(),
                 description: "Téléchargement de CV Premium IA (CV PRO)",
