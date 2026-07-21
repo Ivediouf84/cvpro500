@@ -21,11 +21,132 @@ document.addEventListener('DOMContentLoaded', async () => {
         await initCloud();
     }
     
-    // Load AI generated HTML
+    // Load AI generated HTML or JSON
+    const importedDataStr = localStorage.getItem('importedCVData');
     const importedHtml = localStorage.getItem('importedCVHtml');
-    if (importedHtml) {
+    
+    if (importedDataStr) {
+        try {
+            const parsed = JSON.parse(importedDataStr);
+            const p = {
+                firstName: parsed.personal?.firstName || parsed.firstName || '',
+                lastName: parsed.personal?.lastName || parsed.lastName || '',
+                jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || '',
+                email: parsed.personal?.email || parsed.email || '',
+                phone: parsed.personal?.phone || parsed.phone || '',
+                city: parsed.personal?.city || parsed.personal?.location || parsed.location || '',
+                linkedin: parsed.personal?.linkedin || parsed.linkedin || '',
+                photo: parsed.personal?.photo || parsed.photo || ''
+            };
+            const profileSummary = parsed.profile?.summary || parsed.summary || '';
+            const education = parsed.education || [];
+            const formations = parsed.formations || [];
+            const experiences = parsed.experiences || parsed.experience || [];
+            const skills = parsed.skills || [];
+            const languages = parsed.languages || [];
+            const interests = parsed.interests || [];
+
+            const html = `
+                <div class="cv-header">
+                    <div class="cv-profile-pic" style="margin-right: 25px;"><img src="${p.photo}" alt="Profil" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+                    <div class="cv-header-name" style="flex: 1;">
+                        <h1>${p.firstName || 'Prénom'} <span class="text-primary">${p.lastName || 'Nom'}</span></h1>
+                        <h2>${p.jobTitle || 'Titre Professionnel'}</h2>
+                    </div>
+                    <div class="cv-header-contact">
+                        ${p.email ? `<div><i class="fa-solid fa-envelope"></i> ${p.email}</div>` : ''}
+                        ${p.phone ? `<div><i class="fa-solid fa-phone"></i> ${p.phone}</div>` : ''}
+                        ${p.city ? `<div><i class="fa-solid fa-location-dot"></i> ${p.city}</div>` : ''}
+                        ${p.linkedin ? `<div><i class="fa-brands fa-linkedin"></i> ${p.linkedin}</div>` : ''}
+                    </div>
+                </div>
+                
+                <div class="cv-body">
+                    <div class="cv-main">
+                        ${profileSummary ? `
+                        <div class="cv-section">
+                            <h3 class="cv-section-title">Profil</h3>
+                            <p class="cv-summary">${profileSummary}</p>
+                        </div>` : ''}
+                        
+                        ${education.length > 0 ? `
+                        <div class="cv-section">
+                            <h3 class="cv-section-title">Études</h3>
+                            ${education.map(e => `
+                                <div class="cv-item">
+                                    <div class="cv-item-header">
+                                        <div class="cv-item-title">${e.studyType ? e.studyType + ' - ' : ''}${e.degree || 'Diplôme'} - <span class="cv-item-company">${e.school || 'Établissement'}</span></div>
+                                        <div class="cv-item-date">${e.year || ''}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>` : ''}
+                        
+                        ${formations.length > 0 ? `
+                        <div class="cv-section">
+                            <h3 class="cv-section-title">Formations</h3>
+                            ${formations.map(f => `
+                                <div class="cv-item">
+                                    <div class="cv-item-header">
+                                        <div class="cv-item-title">${f.title || 'Formation'} - <span class="cv-item-company">${f.institution || 'Institution'}</span></div>
+                                        <div class="cv-item-date">${f.startDate || ''} ${f.endDate ? '- ' + f.endDate : ''}</div>
+                                    </div>
+                                    <p class="cv-item-desc">${f.description || ''}</p>
+                                </div>
+                            `).join('')}
+                        </div>` : ''}
+
+                        ${experiences.length > 0 ? `
+                        <div class="cv-section">
+                            <h3 class="cv-section-title">Expérience Professionnelle</h3>
+                            ${experiences.map(e => `
+                                <div class="cv-item">
+                                    <div class="cv-item-header">
+                                        <div class="cv-item-title">${e.title || 'Poste'} - <span class="cv-item-company">${e.company || 'Entreprise'}</span></div>
+                                        <div class="cv-item-date">${e.startDate || ''} ${e.endDate ? '- ' + e.endDate : ''}</div>
+                                    </div>
+                                    <p class="cv-item-desc">${e.description || ''}</p>
+                                </div>
+                            `).join('')}
+                        </div>` : ''}
+                    </div>
+                    
+                    <div class="cv-sidebar">
+                        ${skills.length > 0 ? `
+                        <div class="cv-section">
+                            <h3 class="cv-section-title">Compétences</h3>
+                            <div class="cv-skills-list">
+                                ${skills.map(s => s.name ? `<span class="cv-skill-tag">${s.name}</span>` : '').join('')}
+                            </div>
+                        </div>` : ''}
+                        
+                        ${languages.length > 0 ? `
+                        <div class="cv-section">
+                            <h3 class="cv-section-title">Langues</h3>
+                            <ul class="cv-list">
+                                ${languages.map(l => l.name ? `<li><strong>${l.name}</strong> ${l.level ? `<span class="cv-level-text">- ${l.level}</span>` : ''}</li>` : '').join('')}
+                            </ul>
+                        </div>` : ''}
+                        
+                        ${interests.length > 0 ? `
+                        <div class="cv-section">
+                            <h3 class="cv-section-title">Intérêts</h3>
+                            <ul class="cv-list">
+                                ${interests.map(i => i.name ? `<li>${i.name}</li>` : '').join('')}
+                            </ul>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('cv-document').innerHTML = html;
+            localStorage.removeItem('importedCVData');
+            triggerCloudSaveHtml(html);
+        } catch (e) {
+            console.error("Error generating HTML from imported JSON", e);
+        }
+    } else if (importedHtml) {
         document.getElementById('cv-document').innerHTML = importedHtml;
-        // Optionally trigger a save to cloud if logged in
         triggerCloudSaveHtml(importedHtml);
     } else {
         document.getElementById('cv-document').innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">Aucun CV importé. Veuillez scanner un CV depuis la page d\'accueil.</div>';
@@ -48,10 +169,12 @@ function setupPhotoUploader() {
         if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                const placeholders = document.querySelectorAll('.cv-photo-placeholder');
-                placeholders.forEach(img => {
-                    img.src = e.target.result;
-                });
+                const placeholders = document.querySelectorAll('.cv-photo-placeholder, img[alt*="Profil" i], img[alt*="Photo" i], .cv-profile-pic img, img');
+                if (placeholders.length > 0) {
+                    placeholders.forEach(img => {
+                        img.src = e.target.result;
+                    });
+                }
                 triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);
             };
             reader.readAsDataURL(file);
@@ -406,6 +529,104 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedBlock.remove();
             hideToolbar();
             triggerCloudSaveHtml(cvDocument.innerHTML);
+        }
+    });
+});
+
+// ----------------------------------------------------
+// FREE MOVE LOGIC (Drag & Drop for non-text elements)
+// ----------------------------------------------------
+let isFreeMoveActive = false;
+let draggedElement = null;
+let startX = 0, startY = 0;
+let initialLeft = 0, initialTop = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnFreeMove = document.getElementById('btn-free-move');
+    if (!btnFreeMove) return;
+    
+    btnFreeMove.addEventListener('click', (e) => {
+        isFreeMoveActive = !isFreeMoveActive;
+        const cvDoc = document.getElementById('cv-document');
+        
+        if (isFreeMoveActive) {
+            btnFreeMove.style.background = 'var(--primary)';
+            btnFreeMove.style.color = 'white';
+            btnFreeMove.innerHTML = '<i class="fa-solid fa-check"></i> Déplacement Libre Actif';
+            cvDoc.style.cursor = 'grab';
+        } else {
+            btnFreeMove.style.background = 'transparent';
+            btnFreeMove.style.color = 'var(--primary)';
+            btnFreeMove.innerHTML = 'Activer le déplacement libre';
+            cvDoc.style.cursor = 'default';
+            cvDoc.querySelectorAll('.free-move-element').forEach(el => el.style.cursor = '');
+        }
+    });
+
+    const cvDoc = document.getElementById('cv-document');
+    if (!cvDoc) return;
+
+    cvDoc.addEventListener('mousedown', (e) => {
+        if (!isFreeMoveActive) return;
+        
+        // Target images, icons, lines, or elements with specific classes
+        // Avoid text blocks like p, h1, span (unless it's an icon)
+        const target = e.target.closest('img, svg, i, hr, .cv-profile-pic, .cv-header-contact');
+        
+        if (target && target !== cvDoc) {
+            draggedElement = target;
+            draggedElement.classList.add('free-move-element');
+            
+            // Ensure position is relative or absolute so transform works well
+            if (window.getComputedStyle(draggedElement).position === 'static') {
+                draggedElement.style.position = 'relative';
+            }
+            
+            // Parse existing transform if any
+            const style = window.getComputedStyle(draggedElement);
+            const transform = style.transform;
+            initialLeft = 0;
+            initialTop = 0;
+            
+            if (transform !== 'none') {
+                const matrix = transform.match(/^matrix\((.+)\)$/);
+                if (matrix) {
+                    const values = matrix[1].split(', ');
+                    initialLeft = parseFloat(values[4]);
+                    initialTop = parseFloat(values[5]);
+                }
+            }
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            draggedElement.style.transition = 'none';
+            draggedElement.style.cursor = 'grabbing';
+            cvDoc.style.cursor = 'grabbing';
+            
+            e.preventDefault(); // Prevent text selection while dragging
+            e.stopPropagation();
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!draggedElement || !isFreeMoveActive) return;
+        
+        // Account for the zoom scale!
+        const dx = (e.clientX - startX) / currentZoom;
+        const dy = (e.clientY - startY) / currentZoom;
+        
+        draggedElement.style.transform = \`translate(\${initialLeft + dx}px, \${initialTop + dy}px)\`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (draggedElement) {
+            draggedElement.style.cursor = 'grab';
+            cvDoc.style.cursor = 'grab';
+            draggedElement = null;
+            
+            // Save state
+            triggerCloudSaveHtml(cvDoc.innerHTML);
         }
     });
 });

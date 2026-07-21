@@ -200,6 +200,20 @@
                 <label>Espace entre rubriques <span id="val-spacing">0.5rem</span></label>
                 <input type="range" id="style-spacing" class="form-control" min="0" max="2" step="0.1" value="0.5" style="padding: 0;">
             </div>
+            <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                <label style="color: var(--primary); font-weight: bold;"><i class="fa-solid fa-arrows-up-down-left-right"></i> Déplacement Libre</label>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: none;">Déplacez librement les photos, icônes et autres éléments non textuels.</p>
+                <button id="btn-free-move" class="btn btn-ghost" style="width: 100%; border: 1px solid var(--primary); color: var(--primary); padding: 0.5rem; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem; transition: all 0.2s;">
+                    Activer le déplacement libre
+                </button>
+            </div>
+            <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                <label style="color: var(--primary); font-weight: bold;"><i class="fa-solid fa-camera"></i> Changer la photo</label>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: none;">Remplacez la photo du CV (si présente).</p>
+                <button onclick="document.getElementById('photo-upload-input')?.click()" class="btn btn-ghost" style="width: 100%; border: 1px dashed var(--primary); color: var(--primary); padding: 0.5rem; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem;">
+                    <i class="fa-solid fa-upload"></i> Choisir une image
+                </button>
+            </div>
             <button class="btn btn-primary" onclick="window.print()" style="width: 100%; margin-top: 1rem; background: var(--grad-primary); border: none; padding: 0.75rem; border-radius: var(--radius-md); color: white; cursor: pointer;">
                 <i class="fa-solid fa-print"></i> Aperçu Impression
             </button>

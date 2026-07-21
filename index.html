@@ -344,8 +344,8 @@
                     // Save extracted JSON data
                     localStorage.setItem('importedCVData', JSON.stringify(resultData));
                     
-                    // Redirect to the manual builder where they have the left panel
-                    window.location.href = 'cvpro-builder.html';
+                    // Redirect to the AI builder for scanned CVs
+                    window.location.href = 'cvpro-ai-builder.html';
                 } catch (e) {
                     throw new Error("Le format renvoyé par l'IA n'est pas valide. Réponse: " + resultText.substring(0, 50));
                 }

@@ -117,45 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. Check if we have AI-imported CV data
-    const importedData = localStorage.getItem('importedCVData');
-    if (importedData) {
-        try {
-            const parsed = JSON.parse(importedData);
-            
-            // Map flat AI structure to cvData nested structure
-            cvData.personal = {
-                firstName: parsed.personal?.firstName || parsed.firstName || '',
-                lastName: parsed.personal?.lastName || parsed.lastName || '',
-                jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || '',
-                email: parsed.personal?.email || parsed.email || '',
-                phone: parsed.personal?.phone || parsed.phone || '',
-                address: parsed.personal?.address || parsed.personal?.location || parsed.location || '',
-                city: parsed.personal?.city || (parsed.location ? parsed.location.split(',')[0] : ''),
-                nationality: parsed.personal?.nationality || '',
-                linkedin: parsed.personal?.linkedin || parsed.linkedin || '',
-                portfolio: parsed.personal?.portfolio || parsed.portfolio || '',
-                photo: parsed.personal?.photo || parsed.photo || ''
-            };
-            cvData.profile = { summary: parsed.profile?.summary || parsed.summary || '' };
-            cvData.experiences = parsed.experiences || parsed.experience || [];
-            cvData.education = parsed.education || [];
-            cvData.formations = parsed.formations || [];
-            cvData.skills = parsed.skills || [];
-            cvData.languages = parsed.languages || [];
-            cvData.interests = parsed.interests || [];
-            
-            // Map references to personal.references since that's how it's handled in the form
-            if (parsed.references && parsed.references.length > 0) {
-                cvData.personal.references = parsed.references.map(r => `${r.name || ''} - ${r.title || ''} (${r.contact || ''})`).join('\n');
-            }
-            
-            localStorage.removeItem('importedCVData');
-            // Trigger save after import
-            setTimeout(triggerCloudSave, 1000);
-        } catch (e) {
-            console.error("Error parsing imported CV data", e);
-        }
-    }
 
     
     // 4. Sanity check / Repair any poisoned data before rendering
