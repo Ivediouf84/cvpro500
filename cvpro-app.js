@@ -903,11 +903,6 @@ function closePaymentModal() {
     document.getElementById('payment-modal').classList.remove('active');
 }
 
-function selectPayment(el) {
-    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
-    el.classList.add('selected');
-}
-
 async function processPayment() {
     const btn = document.getElementById('btn-confirm-payment');
     const originalText = btn.innerHTML;
@@ -915,36 +910,21 @@ async function processPayment() {
     btn.disabled = true;
     
     try {
-        // Pour les tests sans backend, on utilise la méthode Directe
-        // ATTENTION : En production, un vrai client ne doit jamais voir ce prompt.
-        // Ce prompt est uniquement pour vous, le développeur, pour tester SenePay.
-        let senepayKey = localStorage.getItem('senepay_api_key');
-        let senepaySecret = localStorage.getItem('senepay_api_secret');
+        const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+        const supabaseKey = localStorage.getItem('supabase_anon_key');
         
-        if (!senepayKey || !senepaySecret) {
-            senepayKey = prompt("DEVELOPPEUR (Test) : Collez votre clé SenePay (X-Api-Key) publique (ex: pk_test_...) :");
-            senepaySecret = prompt("DEVELOPPEUR (Test) : Collez votre clé SenePay (X-Api-Secret) secrète (ex: sk_test_...) :");
-            if (senepayKey && senepaySecret) {
-                localStorage.setItem('senepay_api_key', senepayKey);
-                localStorage.setItem('senepay_api_secret', senepaySecret);
-            } else {
-                throw new Error("Clés SenePay manquantes pour le test.");
-            }
+        if (!supabaseKey) {
+            throw new Error("Clé Supabase manquante. Veuillez rafraîchir la page.");
         }
 
-        // 1. Créer la session de paiement Checkout (Méthode A de la documentation)
-        const response = await fetch('https://api.sene-pay.com/api/v1/checkout/sessions', {
+        // Appeler la fonction backend sécurisée
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/init-senepay`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Api-Key': senepayKey,
-                'X-Api-Secret': senepaySecret
+                'Authorization': `Bearer ${supabaseKey}`
             },
             body: JSON.stringify({
-                amount: 500,
-                currency: "XOF",
-                orderReference: "CVPRO-" + Date.now(),
-                description: "Téléchargement de CV Premium (CV PRO)",
                 returnUrl: window.location.href.split('?')[0] + "?payment=success",
                 cancelUrl: window.location.href.split('?')[0] + "?payment=cancel"
             })
@@ -953,14 +933,9 @@ async function processPayment() {
         const data = await response.json();
 
         if (response.ok && data.checkoutUrl) {
-            // 2. Rediriger le client vers la page de paiement SenePay
+            // Rediriger le client vers la page de paiement SenePay
             window.location.href = data.checkoutUrl;
         } else {
-            // Si la clé est invalide, on efface pour redemander
-            if (response.status === 401 || response.status === 403) {
-                localStorage.removeItem('senepay_api_key');
-                localStorage.removeItem('senepay_api_secret');
-            }
             throw new Error(data.message || data.error || JSON.stringify(data));
         }
 
@@ -970,6 +945,11 @@ async function processPayment() {
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
+}
+
+function selectPayment(el) {
+    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+    el.classList.add('selected');
 }
 
 function generatePDF() {
