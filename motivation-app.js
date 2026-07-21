@@ -153,24 +153,19 @@ async function generateDocuments(event) {
         }
         
     } catch (error) {
-            console.error("Full error:", error);
-            
-            let errorMsg = error.message;
-            if (error.context && typeof error.context.json === 'function') {
-                try {
-                    const errorData = await error.context.json();
-                    if (errorData && errorData.error) {
-                        errorMsg = errorData.error;
-                    }
-                } catch(e) {}
-            }
-
-            alert("Erreur lors de la génération. " + errorMsg);
-        }
+        console.error("Full error:", error);
         
-    } catch (err) {
-        console.error("AI Generation error:", err);
-        alert("Erreur lors de la génération. " + (err.message || "Vérifiez que votre image est lisible."));
+        let errorMsg = error.message;
+        if (error.context && typeof error.context.json === 'function') {
+            try {
+                const errorData = await error.context.json();
+                if (errorData && errorData.error) {
+                    errorMsg = errorData.error;
+                }
+            } catch(e) {}
+        }
+
+        alert("Erreur lors de la génération. " + errorMsg);
     } finally {
         overlay.style.display = 'none';
     }
