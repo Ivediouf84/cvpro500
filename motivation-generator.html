@@ -81,6 +81,16 @@
                     <input type="text" id="input-poste" class="form-control" required placeholder="Ex: Développeur Web Junior, Comptable...">
                 </div>
                 
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Nom de la structure qui recrute</label>
+                    <input type="text" id="input-entreprise" class="form-control" placeholder="Ex: Sonatel, Ministère de l'Éducation..." required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Adressée à (Destinataire)</label>
+                    <input type="text" id="input-destinataire" class="form-control" placeholder="Ex: Monsieur le Directeur, Le Responsable RH..." required>
+                </div>
+
                 <div class="form-group" style="margin-bottom: 2rem;">
                     <label>Ton CV (Format : PDF, PNG, JPG)</label>
                     <input type="file" id="input-cv" accept=".pdf,image/*" style="display: none;" onchange="handleFileSelect(event)" required>

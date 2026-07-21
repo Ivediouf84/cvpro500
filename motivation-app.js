@@ -106,12 +106,17 @@ async function generateDocuments(event) {
         const b64Str = base64Data.split(',')[1];
         const mimeType = file.type || 'application/pdf';
 
+        const entreprise = document.getElementById('input-entreprise').value;
+        const destinataire = document.getElementById('input-destinataire').value;
+
         // 2. Call Supabase Edge Function
         const { data, error } = await supabaseClient.functions.invoke('generate-motivation', {
             body: {
                 firstName: prenom,
                 lastName: nom,
                 jobTitle: poste,
+                companyName: entreprise,
+                addressedTo: destinataire,
                 cvImageBase64: b64Str,
                 mimeType: mimeType
             }
