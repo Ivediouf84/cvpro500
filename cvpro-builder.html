@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Création de CV - CV PRO 500</title>
-    <link rel="stylesheet" href="styles.css?v=cvpro1">
-    <link rel="stylesheet" href="cvpro-templates.css">
+    <link rel="stylesheet" href="styles.css?v=20260722_99">
+    <link rel="stylesheet" href="cvpro-templates.css?v=20260722_99">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase JS & Auth Guard -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="auth-guard.js"></script>
+    <script src="auth-guard.js?v=20260722_99"></script>
     <!-- html2pdf for client-side PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -64,15 +64,15 @@
             width: 210mm;
             min-height: 297mm;
             background: white;
-            color: #1a1a1a; /* Fix: prevent inheriting white text from dark theme */
-            line-height: 1.3; /* Fix: tighter line spacing */
+            color: #1a1a1a;
+            line-height: 1.3;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             margin: 0 auto;
             position: relative;
             transform-origin: top center;
         }
         .cv-page-container h1, .cv-page-container h2, .cv-page-container h3, .cv-page-container h4, .cv-page-container h5, .cv-page-container h6 {
-            color: #111827; /* Force dark headings by default */
+            color: #111827;
             line-height: 1.2;
             margin-top: 1rem;
             margin-bottom: 0.3rem;
@@ -88,7 +88,7 @@
             .wizard-panel { width: 100%; max-width: 100%; height: auto; min-height: 60vh; border-right: none; border-bottom: 2px solid var(--primary); }
             .wizard-content { overflow: visible; }
             .preview-panel { height: auto; min-height: 60vh; overflow: visible; }
-            .cv-page-container { transform: scale(0.6); } /* Scale down on smaller screens */
+            .cv-page-container { transform: scale(0.6); }
         }
         @media (max-width: 600px) {
             .form-row { flex-direction: row; gap: 0.5rem; margin-bottom: 0.5rem; }
@@ -137,13 +137,6 @@
             .builder-nav { padding: 0 0.5rem; }
             .builder-nav-brand { font-size: 1rem; }
         }
-        
-        /* Interactive Block Manipulation */
-        .cv-block-selected {
-            outline: 2px dashed var(--primary) !important;
-            outline-offset: 2px;
-            cursor: move;
-        }
     </style>
 </head>
 <body class="dark-theme">
@@ -159,7 +152,7 @@
                 <a href="auth.html" id="btn-login" class="btn btn-ghost" style="display: none; color: var(--text-main); font-size: 0.85rem;">Connexion</a>
                 
                 <!-- IA Button -->
-                <button class="btn btn-ghost" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md);" title="Fonctionnalité Premium" onclick="openScannerModal()">
+                <button class="btn btn-ghost" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md);" title="Fonctionnalité Premium" onclick="alert('Importation par IA disponible très bientôt')">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hide-mobile">Importer ancien CV</span>
                 </button>
                 <button class="btn btn-primary" id="btn-open-payment" style="font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer;" title="Télécharger">
@@ -191,7 +184,116 @@
             </div>
             
             <div class="wizard-content" id="form-container">
-                <!-- Les formulaires seront générés par JavaScript -->
+                <!-- Step 1: Infos -->
+                <div id="step-1" class="step-section active">
+                    <h3 class="step-title">1. Informations Personnelles</h3>
+                    <div class="form-group">
+                        <label>Photo de profil</label>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                            <img id="photo-preview" src="" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); display: none;">
+                            <div style="flex:1;">
+                                <label for="cv-photo-upload" style="display: inline-block; background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; box-sizing: border-box;">
+                                    <i class="fa-solid fa-camera"></i> Choisir une photo
+                                </label>
+                                <input id="cv-photo-upload" type="file" accept="image/*" onchange="handlePhotoUpload(event)" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Prénom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Aminata</small>
+                            <input type="text" class="form-control" data-section="personal" data-field="firstName" value="Moussa" oninput="updateData(event)" placeholder="Votre prénom">
+                        </div>
+                        <div class="form-group">
+                            <label>Nom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Sow</small>
+                            <input type="text" class="form-control" data-section="personal" data-field="lastName" value="Diop" oninput="updateData(event)" placeholder="Votre nom de famille">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Titre Professionnel</label><br><small style="color:#888;font-size:0.75rem;">Ex: Responsable Marketing, Développeur Web...</small>
+                        <input type="text" class="form-control" data-section="personal" data-field="jobTitle" value="Assistant Administratif et Commercial" oninput="updateData(event)" placeholder="Le poste que vous visez">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email</label><br><small style="color:#888;font-size:0.75rem;">Ex: aminata.sow@email.com</small>
+                            <input type="email" class="form-control" data-section="personal" data-field="email" value="moussa.diop@example.com" oninput="updateData(event)" placeholder="Votre adresse email">
+                        </div>
+                        <div class="form-group">
+                            <label>Téléphone</label><br><small style="color:#888;font-size:0.75rem;">Ex: +221 77 000 00 00</small>
+                            <input type="text" class="form-control" data-section="personal" data-field="phone" value="+221 77 123 45 67" oninput="updateData(event)" placeholder="Votre numéro de téléphone">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Ville / Adresse</label><br><small style="color:#888;font-size:0.75rem;">Ex: Dakar, Sénégal</small>
+                            <input type="text" class="form-control" data-section="personal" data-field="city" value="Dakar, Sénégal" oninput="updateData(event)" placeholder="Votre lieu de résidence">
+                        </div>
+                        <div class="form-group">
+                            <label>LinkedIn</label><br><small style="color:#888;font-size:0.75rem;">Ex: linkedin.com/in/aminatasow (Optionnel)</small>
+                            <input type="text" class="form-control" data-section="personal" data-field="linkedin" value="linkedin.com/in/moussadiop" oninput="updateData(event)" placeholder="Lien vers votre profil">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Profil -->
+                <div id="step-2" class="step-section">
+                    <h3 class="step-title">2. Profil Professionnel</h3>
+                    <div class="form-group">
+                        <label>Description courte de votre parcours</label><br><small style="color:#888;font-size:0.75rem;">Résumez en 2-3 phrases vos années d'expérience, vos atouts majeurs et ce que vous recherchez.</small>
+                        <textarea class="form-control" data-section="profile" data-field="summary" oninput="updateData(event)" placeholder="Ex: Professionnel motivé avec 5 ans d'expérience...">Professionnel dynamique avec 3 ans d'expérience dans la gestion administrative, l'accueil et le service client. Reconnu pour mon organisation, ma rigueur et ma capacité à m'adapter rapidement à de nouveaux environnements.</textarea>
+                    </div>
+                </div>
+
+                <!-- Step 3: Études -->
+                <div id="step-3" class="step-section">
+                    <h3 class="step-title">3. Études</h3>
+                    <div id="education-list" class="dynamic-list"></div>
+                    <button class="btn-add" onclick="addDynamicItem('education')"><i class="fa-solid fa-plus"></i> Ajouter une étude</button>
+                </div>
+
+                <!-- Step 4: Formations -->
+                <div id="step-4" class="step-section">
+                    <h3 class="step-title">4. Formations</h3>
+                    <div id="formations-list" class="dynamic-list"></div>
+                    <button class="btn-add" onclick="addDynamicItem('formations')"><i class="fa-solid fa-plus"></i> Ajouter une formation</button>
+                </div>
+
+                <!-- Step 5: Expériences -->
+                <div id="step-5" class="step-section">
+                    <h3 class="step-title">5. Expériences Professionnelles</h3>
+                    <div id="experiences-list" class="dynamic-list"></div>
+                    <button class="btn-add" onclick="addDynamicItem('experiences')"><i class="fa-solid fa-plus"></i> Ajouter une expérience</button>
+                </div>
+                
+                <!-- Step 6: Compétences -->
+                <div id="step-6" class="step-section">
+                    <h3 class="step-title">6. Compétences</h3>
+                    <div id="skills-list" class="dynamic-list"></div>
+                    <button class="btn-add" onclick="addDynamicItem('skills')"><i class="fa-solid fa-plus"></i> Ajouter une compétence</button>
+                </div>
+
+                <!-- Step 7: Langues -->
+                <div id="step-7" class="step-section">
+                    <h3 class="step-title">7. Langues</h3>
+                    <div id="languages-list" class="dynamic-list"></div>
+                    <button class="btn-add" onclick="addDynamicItem('languages')"><i class="fa-solid fa-plus"></i> Ajouter une langue</button>
+                </div>
+
+                <!-- Step 8: Intérêts -->
+                <div id="step-8" class="step-section">
+                    <h3 class="step-title">8. Centres d'intérêt</h3>
+                    <div id="interests-list" class="dynamic-list"></div>
+                    <button class="btn-add" onclick="addDynamicItem('interests')"><i class="fa-solid fa-plus"></i> Ajouter un intérêt</button>
+                </div>
+
+                <!-- Step 9: Références -->
+                <div id="step-9" class="step-section">
+                    <h3 class="step-title">9. Références</h3>
+                    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">Optionnel. Vous pouvez ajouter "Sur demande" ou lister des contacts.</p>
+                    <div class="form-group">
+                        <textarea class="form-control" data-section="personal" data-field="references" oninput="updateData(event)" placeholder="Références disponibles sur demande..."></textarea>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -220,7 +322,64 @@
                 <div id="cv-scale-wrapper" style="transform: scale(0.8); transform-origin: top center; transition: transform 0.2s;">
                     <!-- Actual A4 container to be converted to PDF -->
                     <div id="cv-document" class="cv-page-container cv-template-modern">
-                        <!-- Content injected by JS -->
+                        <!-- Default Modern Template rendered statically for 100% reliability -->
+                        <div class="cv-header">
+                            <div class="cv-header-name" style="flex: 1;">
+                                <h1>Moussa <span class="text-primary">Diop</span></h1>
+                                <h2>Assistant Administratif et Commercial</h2>
+                            </div>
+                            <div class="cv-header-contact">
+                                <div><i class="fa-solid fa-envelope"></i> moussa.diop@example.com</div>
+                                <div><i class="fa-solid fa-phone"></i> +221 77 123 45 67</div>
+                                <div><i class="fa-solid fa-location-dot"></i> Dakar, Sénégal</div>
+                                <div><i class="fa-brands fa-linkedin"></i> linkedin.com/in/moussadiop</div>
+                            </div>
+                        </div>
+                        <div class="cv-body">
+                            <div class="cv-main">
+                                <div class="cv-section">
+                                    <h3 class="cv-section-title">Profil</h3>
+                                    <p class="cv-summary">Professionnel dynamique avec 3 ans d'expérience dans la gestion administrative, l'accueil et le service client. Reconnu pour mon organisation, ma rigueur et ma capacité à m'adapter rapidement à de nouveaux environnements.</p>
+                                </div>
+                                <div class="cv-section">
+                                    <h3 class="cv-section-title">Études</h3>
+                                    <div class="cv-item">
+                                        <div class="cv-item-header">
+                                            <div class="cv-item-title">Études Supérieures - Licence en Gestion (FASEG) - <span class="cv-item-company">Université Cheikh Anta Diop (UCAD)</span></div>
+                                            <div class="cv-item-date">3 ans</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="cv-section">
+                                    <h3 class="cv-section-title">Expérience Professionnelle</h3>
+                                    <div class="cv-item">
+                                        <div class="cv-item-header">
+                                            <div class="cv-item-title">Assistant Commercial - <span class="cv-item-company">Sonatel</span></div>
+                                            <div class="cv-item-date">Août 2022 - Présent</div>
+                                        </div>
+                                        <p class="cv-item-desc">Accueil des clients, traitement des réclamations et promotion des offres.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cv-sidebar">
+                                <div class="cv-section">
+                                    <h3 class="cv-section-title">Compétences</h3>
+                                    <div class="cv-skills-list">
+                                        <span class="cv-skill-tag">Pack Office</span>
+                                        <span class="cv-skill-tag">Relation Client</span>
+                                        <span class="cv-skill-tag">Gestion administrative</span>
+                                    </div>
+                                </div>
+                                <div class="cv-section">
+                                    <h3 class="cv-section-title">Langues</h3>
+                                    <ul class="cv-list">
+                                        <li><strong>Français</strong> - Courant</li>
+                                        <li><strong>Anglais</strong> - Intermédiaire</li>
+                                        <li><strong>Wolof</strong> - Langue Maternelle</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -252,6 +411,6 @@
         </div>
     </div>
 
-    <script src="cvpro-app.js"></script>
+    <script src="cvpro-app.js?v=20260722_99"></script>
 </body>
 </html>
