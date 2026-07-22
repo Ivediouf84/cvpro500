@@ -645,9 +645,10 @@ function renderCV() {
                     <h1>${p.firstName || 'Prénom'} ${p.lastName || 'Nom'}</h1>
                     <h2>${p.jobTitle || 'Titre Professionnel'}</h2>
                     <div class="cv-contact-info">
-                        ${p.email ? `<span>${p.email}</span>` : ''}
-                        ${p.phone ? `<span>${p.phone}</span>` : ''}
-                        ${p.city ? `<span>${p.city}</span>` : ''}
+                        ${p.email ? `<span><i class="fa-solid fa-envelope"></i> ${p.email}</span>` : ''}
+                        ${p.phone ? `<span><i class="fa-solid fa-phone"></i> ${p.phone}</span>` : ''}
+                        ${p.city ? `<span><i class="fa-solid fa-location-dot"></i> ${p.city}</span>` : ''}
+                        ${p.linkedin ? `<span><i class="fa-brands fa-linkedin"></i> ${p.linkedin}</span>` : ''}
                     </div>
                 </div>
             </div>
@@ -677,10 +678,10 @@ function renderCV() {
                     ${cvData.formations.map(f => `
                         <div class="cv-item">
                             <div class="cv-item-header">
-                                <div class="cv-title">${f.title} - ${f.institution}</div>
-                                <div class="cv-date">${f.startDate} ${f.endDate ? '- ' + f.endDate : ''}</div>
+                                <div class="cv-title">${f.title || 'Formation'} - ${f.institution || 'Institution'}</div>
+                                <div class="cv-date">${f.startDate || ''} ${f.endDate ? '- ' + f.endDate : ''}</div>
                             </div>
-                            <p>${f.description}</p>
+                            <p>${f.description || ''}</p>
                         </div>
                     `).join('')}
                 </div>` : ''}
@@ -691,10 +692,10 @@ function renderCV() {
                     ${cvData.experiences.map(e => `
                         <div class="cv-item">
                             <div class="cv-item-header">
-                                <div class="cv-title">${e.title} - ${e.company}</div>
-                                <div class="cv-date">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</div>
+                                <div class="cv-title">${e.title || 'Poste'} - ${e.company || 'Entreprise'}</div>
+                                <div class="cv-date">${e.startDate || ''} ${e.endDate ? '- ' + e.endDate : ''}</div>
                             </div>
-                            <p>${e.description}</p>
+                            <p>${e.description || ''}</p>
                         </div>
                     `).join('')}
                 </div>` : ''}
@@ -717,6 +718,95 @@ function renderCV() {
                 </div>
             </div>
         `;
+    } else if (template === 'elegant') {
+        html = `
+            <div class="cv-elegant-header">
+                <div class="cv-elegant-header-content">
+                    ${p.photo ? `<img src="${p.photo}" class="cv-profile-pic">` : ''}
+                    <div>
+                        <h1>${p.firstName || 'Prénom'} ${p.lastName || 'Nom'}</h1>
+                        <h2>${p.jobTitle || 'Titre Professionnel'}</h2>
+                    </div>
+                </div>
+                <div class="cv-contact-info">
+                    ${p.email ? `<span><i class="fa-solid fa-envelope"></i> ${p.email}</span>` : ''}
+                    ${p.phone ? `<span><i class="fa-solid fa-phone"></i> ${p.phone}</span>` : ''}
+                    ${p.city ? `<span><i class="fa-solid fa-location-dot"></i> ${p.city}</span>` : ''}
+                    ${p.linkedin ? `<span><i class="fa-brands fa-linkedin"></i> ${p.linkedin}</span>` : ''}
+                </div>
+            </div>
+            
+            <div class="cv-elegant-body">
+                <div class="cv-sidebar">
+                    ${cvData.skills?.length > 0 ? `
+                    <div class="cv-section">
+                        <h3>Compétences</h3>
+                        <div class="cv-skills-list">
+                            ${cvData.skills.map(s => s.name ? `<span class="cv-skill-tag">${s.name}</span>` : '').join('')}
+                        </div>
+                    </div>` : ''}
+                    
+                    ${cvData.languages?.length > 0 ? `
+                    <div class="cv-section" style="margin-top: 20px;">
+                        <h3>Langues</h3>
+                        <ul>
+                            ${cvData.languages.map(l => l.name ? `<li><strong>${l.name}</strong> ${l.level ? '- ' + l.level : ''}</li>` : '').join('')}
+                        </ul>
+                    </div>` : ''}
+
+                    ${cvData.interests?.length > 0 ? `
+                    <div class="cv-section" style="margin-top: 20px;">
+                        <h3>Centres d'intérêt</h3>
+                        <ul>
+                            ${cvData.interests.map(i => i.name ? `<li>${i.name}</li>` : '').join('')}
+                        </ul>
+                    </div>` : ''}
+                </div>
+
+                <div class="cv-main">
+                    ${cvData.profile?.summary ? `
+                    <div class="cv-section">
+                        <h3>Profil</h3>
+                        <p>${cvData.profile.summary}</p>
+                    </div>` : ''}
+                    
+                    ${cvData.education?.length > 0 ? `
+                    <div class="cv-section">
+                        <h3>Études</h3>
+                        ${cvData.education.map(e => `
+                            <div class="cv-item">
+                                <h4>${e.studyType ? e.studyType + ' - ' : ''}${e.degree || 'Diplôme'} <span>(${e.school || 'Établissement'})</span></h4>
+                                <div class="cv-date">${e.year || ''}</div>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+
+                    ${cvData.formations?.length > 0 ? `
+                    <div class="cv-section">
+                        <h3>Formations</h3>
+                        ${cvData.formations.map(f => `
+                            <div class="cv-item">
+                                <h4>${f.title || 'Formation'} <span>(${f.institution || 'Institution'})</span></h4>
+                                <div class="cv-date">${f.startDate || ''} ${f.endDate ? '- ' + f.endDate : ''}</div>
+                                <p>${f.description || ''}</p>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+
+                    ${cvData.experiences?.length > 0 ? `
+                    <div class="cv-section">
+                        <h3>Expériences Professionnelles</h3>
+                        ${cvData.experiences.map(e => `
+                            <div class="cv-item">
+                                <h4>${e.title || 'Poste'} <span>(${e.company || 'Entreprise'})</span></h4>
+                                <div class="cv-date">${e.startDate || ''} ${e.endDate ? '- ' + e.endDate : ''}</div>
+                                <p>${e.description || ''}</p>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+                </div>
+            </div>
+        `;
     } else if (template === 'minimalist') {
         html = `
             <div class="cv-minimalist-body">
@@ -726,10 +816,10 @@ function renderCV() {
                         <h1>${p.firstName || 'Prénom'} ${p.lastName || 'Nom'}</h1>
                         <h2>${p.jobTitle || 'Titre Professionnel'}</h2>
                         <div class="cv-contact-info">
-                            ${p.email ? `<span>${p.email}</span>` : ''}
-                            ${p.phone ? `<span>${p.phone}</span>` : ''}
-                            ${p.city ? `<span>${p.city}</span>` : ''}
-                            ${p.linkedin ? `<span>${p.linkedin}</span>` : ''}
+                            ${p.email ? `<span><i class="fa-solid fa-envelope"></i> ${p.email}</span>` : ''}
+                            ${p.phone ? `<span><i class="fa-solid fa-phone"></i> ${p.phone}</span>` : ''}
+                            ${p.city ? `<span><i class="fa-solid fa-location-dot"></i> ${p.city}</span>` : ''}
+                            ${p.linkedin ? `<span><i class="fa-brands fa-linkedin"></i> ${p.linkedin}</span>` : ''}
                         </div>
                     </div>
                 </div>
@@ -762,10 +852,10 @@ function renderCV() {
                     <div class="cv-section-right">
                         ${cvData.formations.map(f => `
                             <div class="cv-item">
-                                <div class="cv-date">${f.startDate} ${f.endDate ? '- ' + f.endDate : ''}</div>
+                                <div class="cv-date">${f.startDate || ''} ${f.endDate ? '- ' + f.endDate : ''}</div>
                                 <div class="cv-content">
-                                    <h4>${f.title}</h4>
-                                    <div class="cv-company">${f.institution}</div>
+                                    <h4>${f.title || 'Formation'}</h4>
+                                    <div class="cv-company">${f.institution || 'Institution'}</div>
                                     <p>${f.description || ''}</p>
                                 </div>
                             </div>
@@ -779,11 +869,11 @@ function renderCV() {
                     <div class="cv-section-right">
                         ${cvData.experiences.map(e => `
                             <div class="cv-item">
-                                <div class="cv-date">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</div>
+                                <div class="cv-date">${e.startDate || ''} ${e.endDate ? '- ' + e.endDate : ''}</div>
                                 <div class="cv-content">
-                                    <h4>${e.title}</h4>
-                                    <div class="cv-company">${e.company}</div>
-                                    <p>${e.description}</p>
+                                    <h4>${e.title || 'Poste'}</h4>
+                                    <div class="cv-company">${e.company || 'Entreprise'}</div>
+                                    <p>${e.description || ''}</p>
                                 </div>
                             </div>
                         `).join('')}
@@ -796,6 +886,26 @@ function renderCV() {
                     <div class="cv-section-right">
                         <div class="cv-skills-list">
                             ${cvData.skills.map(s => s.name ? `<span>${s.name}</span>` : '').join('')}
+                        </div>
+                    </div>
+                </div>` : ''}
+
+                ${cvData.languages?.length > 0 ? `
+                <div class="cv-section">
+                    <div class="cv-section-left">Langues</div>
+                    <div class="cv-section-right">
+                        <div class="cv-skills-list">
+                            ${cvData.languages.map(l => l.name ? `<span>${l.name} ${l.level ? '(' + l.level + ')' : ''}</span>` : '').join('')}
+                        </div>
+                    </div>
+                </div>` : ''}
+
+                ${cvData.interests?.length > 0 ? `
+                <div class="cv-section">
+                    <div class="cv-section-left">Intérêts</div>
+                    <div class="cv-section-right">
+                        <div class="cv-skills-list">
+                            ${cvData.interests.map(i => i.name ? `<span>${i.name}</span>` : '').join('')}
                         </div>
                     </div>
                 </div>` : ''}
