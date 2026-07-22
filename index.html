@@ -108,14 +108,10 @@
     <script>
         window.isLoggedIn = false;
         window.handleHeroAction = (action) => {
-            if (!window.isLoggedIn) {
-                window.location.href = 'auth.html?mode=signup';
+            if (action === 'scanner') {
+                openScannerModal();
             } else {
-                if (action === 'scanner') {
-                    openScannerModal();
-                } else {
-                    window.location.href = action;
-                }
+                window.location.href = action;
             }
         };
 
