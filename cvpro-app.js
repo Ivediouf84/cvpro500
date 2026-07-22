@@ -60,12 +60,12 @@ let cvData = {
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-// Read key from localStorage or prompt if missing (for dev)
 const SUPABASE_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
 let supabaseClient = null;
 let currentUserId = null;
 let cloudDocumentId = null;
 let saveTimeout = null;
+let currentZoom = 0.8;
 
 // Helper to sanitize and guarantee all cvData fields exist
 function sanitizeCvData(raw) {
@@ -147,10 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sanity check
     cvData = sanitizeCvData(cvData);
     
+    // Initial UI Render
     initTabs();
     renderForms();
     renderCV();
     setupTemplateSelector();
+    setupPaymentListeners();
 
     // Try to initialize Supabase
     if (window.supabase) {
@@ -182,7 +184,6 @@ async function initCloud() {
         const { data: authData, error: authError } = await supabaseClient.auth.getSession();
         
         if (!authData || !authData.session) {
-            // Utilisateur non connecté : afficher l'option connexion dans le header
             const btnLogin = document.getElementById('btn-login');
             if (btnLogin) btnLogin.style.display = 'inline-flex';
             return;
@@ -190,7 +191,6 @@ async function initCloud() {
         
         currentUserId = authData.session.user.id;
         
-        // Mettre à jour l'interface avec l'email
         const userMenu = document.getElementById('builder-user-menu');
         const userEmail = document.getElementById('builder-user-email');
         const btnLogin = document.getElementById('btn-login');
@@ -201,13 +201,11 @@ async function initCloud() {
             if (btnLogin) btnLogin.style.display = 'none';
         }
         
-        // Ajouter la fonction de déconnexion globale
         window.handleLogout = async () => {
             await supabaseClient.auth.signOut();
             window.location.href = "index.html";
         };
 
-        // 2. Fetch existing CV (check user_cvs table first, fallback to cv_documents)
         let cvDoc = null;
         const { data: userCvData } = await supabaseClient
             .from('user_cvs')
@@ -236,7 +234,6 @@ async function initCloud() {
 }
 
 function triggerCloudSave() {
-    // ALWAYS save locally first
     localStorage.setItem('cvpro_data', JSON.stringify(cvData));
 
     if (!supabaseClient || !currentUserId) return;
@@ -258,30 +255,37 @@ function triggerCloudSave() {
                 .single();
                 
             if (data && !cloudDocumentId) {
-                cloudDocumentId = data.id; // Save ID for future upserts
+                cloudDocumentId = data.id;
             }
         } catch (err) {
             console.error("Auto-save Error:", err);
-            alert("Erreur de connexion à la base de données : " + (err.message || err.error_description || JSON.stringify(err)));
         }
-    }, 1500); // Save 1.5 seconds after user stops typing
+    }, 1500);
 }
 
 function initTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+            const stepNumber = tab.dataset.step;
+            
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             
             document.querySelectorAll('.step-section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(`step-${tab.dataset.step}`).classList.add('active');
+            const targetStep = document.getElementById(`step-${stepNumber}`);
+            if (targetStep) {
+                targetStep.classList.add('active');
+            }
         });
     });
 }
 
 function renderForms() {
     const container = document.getElementById('form-container');
+    if (!container) return;
+    
     container.innerHTML = `
         <!-- Step 1: Infos -->
         <div id="step-1" class="step-section active">
@@ -289,7 +293,7 @@ function renderForms() {
             <div class="form-group">
                 <label>Photo de profil</label>
                 <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px dashed #cbd5e1;">
-                    <img id="photo-preview" src="${cvData.personal.photo || ''}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); display: ${cvData.personal.photo ? 'block' : 'none'};">
+                    <img id="photo-preview" src="${cvData.personal?.photo || ''}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); display: ${cvData.personal?.photo ? 'block' : 'none'};">
                     <div style="flex:1;">
                         <label for="cv-photo-upload" style="display: inline-block; background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; box-sizing: border-box;">
                             <i class="fa-solid fa-camera"></i> Choisir une photo
@@ -301,35 +305,35 @@ function renderForms() {
             <div class="form-row">
                 <div class="form-group">
                     <label>Prénom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Aminata</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="firstName" value="${cvData.personal.firstName}" oninput="updateData(event)" placeholder="Votre prénom">
+                    <input type="text" class="form-control" data-section="personal" data-field="firstName" value="${cvData.personal?.firstName || ''}" oninput="updateData(event)" placeholder="Votre prénom">
                 </div>
                 <div class="form-group">
                     <label>Nom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Sow</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="lastName" value="${cvData.personal.lastName}" oninput="updateData(event)" placeholder="Votre nom de famille">
+                    <input type="text" class="form-control" data-section="personal" data-field="lastName" value="${cvData.personal?.lastName || ''}" oninput="updateData(event)" placeholder="Votre nom de famille">
                 </div>
             </div>
             <div class="form-group">
                 <label>Titre Professionnel</label><br><small style="color:#888;font-size:0.75rem;">Ex: Responsable Marketing, Développeur Web...</small>
-                <input type="text" class="form-control" data-section="personal" data-field="jobTitle" value="${cvData.personal.jobTitle}" oninput="updateData(event)" placeholder="Le poste que vous visez">
+                <input type="text" class="form-control" data-section="personal" data-field="jobTitle" value="${cvData.personal?.jobTitle || ''}" oninput="updateData(event)" placeholder="Le poste que vous visez">
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Email</label><br><small style="color:#888;font-size:0.75rem;">Ex: aminata.sow@email.com</small>
-                    <input type="email" class="form-control" data-section="personal" data-field="email" value="${cvData.personal.email}" oninput="updateData(event)" placeholder="Votre adresse email">
+                    <input type="email" class="form-control" data-section="personal" data-field="email" value="${cvData.personal?.email || ''}" oninput="updateData(event)" placeholder="Votre adresse email">
                 </div>
                 <div class="form-group">
                     <label>Téléphone</label><br><small style="color:#888;font-size:0.75rem;">Ex: +221 77 000 00 00</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="phone" value="${cvData.personal.phone}" oninput="updateData(event)" placeholder="Votre numéro de téléphone">
+                    <input type="text" class="form-control" data-section="personal" data-field="phone" value="${cvData.personal?.phone || ''}" oninput="updateData(event)" placeholder="Votre numéro de téléphone">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Ville / Adresse</label><br><small style="color:#888;font-size:0.75rem;">Ex: Dakar, Sénégal</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="city" value="${cvData.personal.city}" oninput="updateData(event)" placeholder="Votre lieu de résidence">
+                    <input type="text" class="form-control" data-section="personal" data-field="city" value="${cvData.personal?.city || ''}" oninput="updateData(event)" placeholder="Votre lieu de résidence">
                 </div>
                 <div class="form-group">
                     <label>LinkedIn</label><br><small style="color:#888;font-size:0.75rem;">Ex: linkedin.com/in/aminatasow (Optionnel)</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="linkedin" value="${cvData.personal.linkedin}" oninput="updateData(event)" placeholder="Lien vers votre profil">
+                    <input type="text" class="form-control" data-section="personal" data-field="linkedin" value="${cvData.personal?.linkedin || ''}" oninput="updateData(event)" placeholder="Lien vers votre profil">
                 </div>
             </div>
         </div>
@@ -339,7 +343,7 @@ function renderForms() {
             <h3 class="step-title">2. Profil Professionnel <button class="btn btn-ghost" style="font-size:0.7rem; color:var(--secondary); border:1px solid var(--secondary); padding:0.2rem 0.5rem;" onclick="alert('Génération par IA bientôt disponible')"><i class="fa-solid fa-wand-magic-sparkles"></i> Générer IA</button></h3>
             <div class="form-group">
                 <label>Description courte de votre parcours</label><br><small style="color:#888;font-size:0.75rem;">Résumez en 2-3 phrases vos années d'expérience, vos atouts majeurs et ce que vous recherchez.</small>
-                <textarea class="form-control" data-section="profile" data-field="summary" oninput="updateData(event)" placeholder="Ex: Professionnel motivé avec 5 ans d'expérience dans la gestion de projets. Je suis à la recherche de nouveaux défis...">${cvData.profile.summary}</textarea>
+                <textarea class="form-control" data-section="profile" data-field="summary" oninput="updateData(event)" placeholder="Ex: Professionnel motivé avec 5 ans d'expérience dans la gestion de projets. Je suis à la recherche de nouveaux défis...">${cvData.profile?.summary || ''}</textarea>
             </div>
         </div>
 
@@ -400,11 +404,11 @@ function renderForms() {
 
 function renderDynamicLists() {
     renderList('experiences', (item) => `
-        <div class="form-group"><input type="text" class="form-control" placeholder="Poste (ex: Développeur Web)" value="${item.title}" oninput="updateListItem(event, 'experiences', ${item.id}, 'title')"></div>
-        <div class="form-group"><input type="text" class="form-control" placeholder="Entreprise" value="${item.company}" oninput="updateListItem(event, 'experiences', ${item.id}, 'company')"></div>
+        <div class="form-group"><input type="text" class="form-control" placeholder="Poste (ex: Développeur Web)" value="${item.title || ''}" oninput="updateListItem(event, 'experiences', ${item.id}, 'title')"></div>
+        <div class="form-group"><input type="text" class="form-control" placeholder="Entreprise" value="${item.company || ''}" oninput="updateListItem(event, 'experiences', ${item.id}, 'company')"></div>
         <div class="form-row">
-            <div class="form-group"><input type="text" class="form-control" placeholder="De (ex: 2021)" value="${item.startDate}" oninput="updateListItem(event, 'experiences', ${item.id}, 'startDate')"></div>
-            <div class="form-group"><input type="text" class="form-control" placeholder="À (ex: Présent)" value="${item.endDate}" oninput="updateListItem(event, 'experiences', ${item.id}, 'endDate')"></div>
+            <div class="form-group"><input type="text" class="form-control" placeholder="De (ex: 2021)" value="${item.startDate || ''}" oninput="updateListItem(event, 'experiences', ${item.id}, 'startDate')"></div>
+            <div class="form-group"><input type="text" class="form-control" placeholder="À (ex: Présent)" value="${item.endDate || ''}" oninput="updateListItem(event, 'experiences', ${item.id}, 'endDate')"></div>
         </div>
         <div class="form-group"><textarea class="form-control" placeholder="Description des tâches" oninput="updateListItem(event, 'experiences', ${item.id}, 'description')">${item.description || ''}</textarea></div>
     `);
@@ -427,24 +431,24 @@ function renderDynamicLists() {
     `);
     
     renderList('skills', (item) => `
-        <div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Compétence (ex: React.js)" value="${item.name}" oninput="updateListItem(event, 'skills', ${item.id}, 'name')"></div>
+        <div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Compétence (ex: React.js)" value="${item.name || ''}" oninput="updateListItem(event, 'skills', ${item.id}, 'name')"></div>
     `);
     
     renderList('languages', (item) => `
         <div class="form-row" style="margin-bottom:0;">
-            <div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Langue" value="${item.name}" oninput="updateListItem(event, 'languages', ${item.id}, 'name')"></div>
+            <div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Langue" value="${item.name || ''}" oninput="updateListItem(event, 'languages', ${item.id}, 'name')"></div>
             <div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Niveau" value="${item.level || ''}" oninput="updateListItem(event, 'languages', ${item.id}, 'level')"></div>
         </div>
     `);
     
     renderList('interests', (item) => `
-        <div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Centre d'intérêt" value="${item.name}" oninput="updateListItem(event, 'interests', ${item.id}, 'name')"></div>
+        <div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Centre d'intérêt" value="${item.name || ''}" oninput="updateListItem(event, 'interests', ${item.id}, 'name')"></div>
     `);
 }
 
 function renderList(section, templateFn) {
     const container = document.getElementById(`${section}-list`);
-    if (!container) return;
+    if (!container || !Array.isArray(cvData[section])) return;
     
     container.innerHTML = '';
     cvData[section].forEach(item => {
@@ -458,16 +462,17 @@ function renderList(section, templateFn) {
     });
 }
 
-// Data updating
 function updateData(e) {
     const sec = e.target.dataset.section;
     const field = e.target.dataset.field;
+    if (!cvData[sec]) cvData[sec] = {};
     cvData[sec][field] = e.target.value;
     renderCV();
     triggerCloudSave();
 }
 
 function updateListItem(e, section, id, field) {
+    if (!Array.isArray(cvData[section])) return;
     const item = cvData[section].find(i => i.id === id);
     if (item) {
         item[field] = e.target.value;
@@ -477,14 +482,16 @@ function updateListItem(e, section, id, field) {
 }
 
 function addDynamicItem(section) {
-    const newId = cvData[section].length > 0 ? Math.max(...cvData[section].map(i => i.id)) + 1 : 1;
-    cvData[section].push({ id: newId, name: '', title: '', degree: '' }); // defaults
+    if (!Array.isArray(cvData[section])) cvData[section] = [];
+    const newId = cvData[section].length > 0 ? Math.max(...cvData[section].map(i => i.id || 0)) + 1 : 1;
+    cvData[section].push({ id: newId, name: '', title: '', degree: '' });
     renderDynamicLists();
     renderCV();
     triggerCloudSave();
 }
 
 function removeDynamicItem(section, id) {
+    if (!Array.isArray(cvData[section])) return;
     cvData[section] = cvData[section].filter(i => i.id !== id);
     renderDynamicLists();
     renderCV();
@@ -496,6 +503,7 @@ function handlePhotoUpload(e) {
     if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
+            if (!cvData.personal) cvData.personal = {};
             cvData.personal.photo = event.target.result;
             const preview = document.getElementById('photo-preview');
             if(preview) {
@@ -512,10 +520,11 @@ function handlePhotoUpload(e) {
 // Preview Engine
 function renderCV() {
     const doc = document.getElementById('cv-document');
-    const p = cvData.personal;
+    if (!doc) return;
+    const p = cvData.personal || {};
     
-    // Check which template is active
-    const template = document.getElementById('template-select').value;
+    const templateEl = document.getElementById('template-select');
+    const template = templateEl ? templateEl.value : 'modern';
     doc.className = `cv-page-container cv-template-${template}`;
     
     let html = '';
@@ -538,13 +547,13 @@ function renderCV() {
             
             <div class="cv-body">
                 <div class="cv-main">
-                    ${cvData.profile.summary ? `
+                    ${cvData.profile?.summary ? `
                     <div class="cv-section">
                         <h3 class="cv-section-title">Profil</h3>
                         <p class="cv-summary">${cvData.profile.summary}</p>
                     </div>` : ''}
                     
-                    ${cvData.education.length > 0 ? `
+                    ${cvData.education?.length > 0 ? `
                     <div class="cv-section">
                         <h3 class="cv-section-title">Études</h3>
                         ${cvData.education.map(e => `
@@ -557,7 +566,7 @@ function renderCV() {
                         `).join('')}
                     </div>` : ''}
 
-                    ${cvData.formations.length > 0 ? `
+                    ${cvData.formations?.length > 0 ? `
                     <div class="cv-section">
                         <h3 class="cv-section-title">Formations</h3>
                         ${cvData.formations.map(f => `
@@ -571,7 +580,7 @@ function renderCV() {
                         `).join('')}
                     </div>` : ''}
 
-                    ${cvData.experiences.length > 0 ? `
+                    ${cvData.experiences?.length > 0 ? `
                     <div class="cv-section">
                         <h3 class="cv-section-title">Expérience Professionnelle</h3>
                         ${cvData.experiences.map(e => `
@@ -587,7 +596,7 @@ function renderCV() {
                 </div>
                 
                 <div class="cv-sidebar">
-                    ${cvData.skills.length > 0 ? `
+                    ${cvData.skills?.length > 0 ? `
                     <div class="cv-section">
                         <h3 class="cv-section-title">Compétences</h3>
                         <div class="cv-skills-list">
@@ -595,7 +604,7 @@ function renderCV() {
                         </div>
                     </div>` : ''}
                     
-                    ${cvData.languages.length > 0 ? `
+                    ${cvData.languages?.length > 0 ? `
                     <div class="cv-section">
                         <h3 class="cv-section-title">Langues</h3>
                         <ul class="cv-list">
@@ -603,7 +612,7 @@ function renderCV() {
                         </ul>
                     </div>` : ''}
                     
-                    ${cvData.interests.length > 0 ? `
+                    ${cvData.interests?.length > 0 ? `
                     <div class="cv-section">
                         <h3 class="cv-section-title">Intérêts</h3>
                         <ul class="cv-list">
@@ -628,13 +637,13 @@ function renderCV() {
                 </div>
             </div>
             <div class="cv-classic-body">
-                ${cvData.profile.summary ? `
+                ${cvData.profile?.summary ? `
                 <div class="cv-section">
                     <h3>Profil</h3>
                     <p>${cvData.profile.summary}</p>
                 </div>` : ''}
                 
-                ${cvData.education.length > 0 ? `
+                ${cvData.education?.length > 0 ? `
                 <div class="cv-section">
                     <h3>Études</h3>
                     ${cvData.education.map(e => `
@@ -647,7 +656,7 @@ function renderCV() {
                     `).join('')}
                 </div>` : ''}
 
-                ${cvData.formations.length > 0 ? `
+                ${cvData.formations?.length > 0 ? `
                 <div class="cv-section">
                     <h3>Formations</h3>
                     ${cvData.formations.map(f => `
@@ -661,7 +670,7 @@ function renderCV() {
                     `).join('')}
                 </div>` : ''}
 
-                ${cvData.experiences.length > 0 ? `
+                ${cvData.experiences?.length > 0 ? `
                 <div class="cv-section">
                     <h3>Expériences</h3>
                     ${cvData.experiences.map(e => `
@@ -676,103 +685,19 @@ function renderCV() {
                 </div>` : ''}
                 
                 <div class="cv-classic-grid">
-                    ${cvData.skills.length > 0 ? `
+                    ${cvData.skills?.length > 0 ? `
                     <div class="cv-section">
                         <h3>Compétences</h3>
                         <ul>
                             ${cvData.skills.map(s => s.name ? `<li>${s.name}</li>` : '').join('')}
                         </ul>
                     </div>` : ''}
-                    ${cvData.languages.length > 0 ? `
+                    ${cvData.languages?.length > 0 ? `
                     <div class="cv-section">
                         <h3>Langues</h3>
                         <ul>
                             ${cvData.languages.map(l => l.name ? `<li>${l.name} ${l.level ? ' - ' + l.level : ''}</li>` : '').join('')}
                         </ul>
-                    </div>` : ''}
-                </div>
-            </div>
-        `;
-    } else if (template === 'elegant') {
-        html = `
-            <div class="cv-elegant-header">
-                <div class="cv-elegant-header-content">
-                    ${p.photo ? `<img src="${p.photo}" class="cv-profile-pic">` : ''}
-                    <div class="cv-header-text">
-                        <h1>${p.firstName || 'Prénom'} ${p.lastName || 'Nom'}</h1>
-                        <h2>${p.jobTitle || 'Titre Professionnel'}</h2>
-                    </div>
-                </div>
-                <div class="cv-contact-info">
-                    ${p.email ? `<div><i class="fa-solid fa-envelope"></i> ${p.email}</div>` : ''}
-                    ${p.phone ? `<div><i class="fa-solid fa-phone"></i> ${p.phone}</div>` : ''}
-                    ${p.city ? `<div><i class="fa-solid fa-location-dot"></i> ${p.city}</div>` : ''}
-                    ${p.linkedin ? `<div><i class="fa-brands fa-linkedin"></i> ${p.linkedin}</div>` : ''}
-                </div>
-            </div>
-            <div class="cv-elegant-body">
-                <div class="cv-sidebar">
-                    ${cvData.skills.length > 0 ? `
-                    <div class="cv-section">
-                        <h3>Compétences</h3>
-                        <div class="cv-skills-list">
-                            ${cvData.skills.map(s => s.name ? `<span class="cv-skill-tag">${s.name}</span>` : '').join('')}
-                        </div>
-                    </div>` : ''}
-                    ${cvData.languages.length > 0 ? `
-                    <div class="cv-section">
-                        <h3>Langues</h3>
-                        <ul class="cv-list">
-                            ${cvData.languages.map(l => l.name ? `<li><strong>${l.name}</strong><br>${l.level || ''}</li>` : '').join('')}
-                        </ul>
-                    </div>` : ''}
-                    ${cvData.interests.length > 0 ? `
-                    <div class="cv-section">
-                        <h3>Centres d'intérêt</h3>
-                        <ul class="cv-list">
-                            ${cvData.interests.map(i => i.name ? `<li>${i.name}</li>` : '').join('')}
-                        </ul>
-                    </div>` : ''}
-                </div>
-                <div class="cv-main">
-                    ${cvData.profile.summary ? `
-                    <div class="cv-section">
-                        <h3>Profil</h3>
-                        <p>${cvData.profile.summary}</p>
-                    </div>` : ''}
-                    ${cvData.education.length > 0 ? `
-                    <div class="cv-section">
-                        <h3>Études</h3>
-                        ${cvData.education.map(e => `
-                            <div class="cv-item">
-                                <h4>${e.studyType ? e.studyType + ' - ' : ''}${e.degree || 'Diplôme'} - <span>${e.school || 'Établissement'}</span></h4>
-                                <div class="cv-date">${e.year || ''}</div>
-                            </div>
-                        `).join('')}
-                    </div>` : ''}
-
-                    ${cvData.formations.length > 0 ? `
-                    <div class="cv-section">
-                        <h3>Formations</h3>
-                        ${cvData.formations.map(f => `
-                            <div class="cv-item">
-                                <h4>${f.title} - <span>${f.institution}</span></h4>
-                                <div class="cv-date">${f.startDate} ${f.endDate ? '- ' + f.endDate : ''}</div>
-                                <p>${f.description || ''}</p>
-                            </div>
-                        `).join('')}
-                    </div>` : ''}
-
-                    ${cvData.experiences.length > 0 ? `
-                    <div class="cv-section">
-                        <h3>Expériences</h3>
-                        ${cvData.experiences.map(e => `
-                            <div class="cv-item">
-                                <h4>${e.title} - <span>${e.company}</span></h4>
-                                <div class="cv-date">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</div>
-                                <p>${e.description}</p>
-                            </div>
-                        `).join('')}
                     </div>` : ''}
                 </div>
             </div>
@@ -794,13 +719,13 @@ function renderCV() {
                     </div>
                 </div>
                 
-                ${cvData.profile.summary ? `
+                ${cvData.profile?.summary ? `
                 <div class="cv-section">
                     <div class="cv-section-left">Profil</div>
                     <div class="cv-section-right"><p>${cvData.profile.summary}</p></div>
                 </div>` : ''}
                 
-                ${cvData.education.length > 0 ? `
+                ${cvData.education?.length > 0 ? `
                 <div class="cv-section">
                     <div class="cv-section-left">Études</div>
                     <div class="cv-section-right">
@@ -816,7 +741,7 @@ function renderCV() {
                     </div>
                 </div>` : ''}
 
-                ${cvData.formations.length > 0 ? `
+                ${cvData.formations?.length > 0 ? `
                 <div class="cv-section">
                     <div class="cv-section-left">Formations</div>
                     <div class="cv-section-right">
@@ -833,7 +758,7 @@ function renderCV() {
                     </div>
                 </div>` : ''}
 
-                ${cvData.experiences.length > 0 ? `
+                ${cvData.experiences?.length > 0 ? `
                 <div class="cv-section">
                     <div class="cv-section-left">Expériences</div>
                     <div class="cv-section-right">
@@ -850,7 +775,7 @@ function renderCV() {
                     </div>
                 </div>` : ''}
                 
-                ${cvData.skills.length > 0 ? `
+                ${cvData.skills?.length > 0 ? `
                 <div class="cv-section">
                     <div class="cv-section-left">Compétences</div>
                     <div class="cv-section-right">
@@ -868,17 +793,19 @@ function renderCV() {
 
 // Template Switching
 function setupTemplateSelector() {
-    document.getElementById('template-select').addEventListener('change', (e) => {
-        renderCV();
-    });
+    const select = document.getElementById('template-select');
+    if (select) {
+        select.addEventListener('change', () => {
+            renderCV();
+        });
+    }
     
     const colorPicker = document.getElementById('theme-color');
     if (colorPicker) {
-        // Initialize current color
-        document.getElementById('cv-document').style.setProperty('--primary', colorPicker.value);
-        
+        const cvDoc = document.getElementById('cv-document');
+        if (cvDoc) cvDoc.style.setProperty('--primary', colorPicker.value);
         colorPicker.addEventListener('input', (e) => {
-            document.getElementById('cv-document').style.setProperty('--primary', e.target.value);
+            if (cvDoc) cvDoc.style.setProperty('--primary', e.target.value);
         });
     }
 }
@@ -887,27 +814,37 @@ function setupTemplateSelector() {
 function zoomIn() {
     if (currentZoom < 1.5) {
         currentZoom += 0.1;
-        document.getElementById('cv-scale-wrapper').style.transform = `scale(${currentZoom})`;
+        const el = document.getElementById('cv-scale-wrapper');
+        if (el) el.style.transform = `scale(${currentZoom})`;
     }
 }
 function zoomOut() {
     if (currentZoom > 0.4) {
         currentZoom -= 0.1;
-        document.getElementById('cv-scale-wrapper').style.transform = `scale(${currentZoom})`;
+        const el = document.getElementById('cv-scale-wrapper');
+        if (el) el.style.transform = `scale(${currentZoom})`;
     }
 }
 
-// Payment & PDF Generation
-document.getElementById('btn-open-payment').addEventListener('click', () => {
-    document.getElementById('payment-modal').classList.add('active');
-});
+// Setup Payment Modal Listeners
+function setupPaymentListeners() {
+    const btnOpen = document.getElementById('btn-open-payment');
+    if (btnOpen) {
+        btnOpen.onclick = () => {
+            const modal = document.getElementById('payment-modal');
+            if (modal) modal.classList.add('active');
+        };
+    }
+}
 
 function closePaymentModal() {
-    document.getElementById('payment-modal').classList.remove('active');
+    const modal = document.getElementById('payment-modal');
+    if (modal) modal.classList.remove('active');
 }
 
 async function processPayment() {
     const btn = document.getElementById('btn-confirm-payment');
+    if (!btn) return;
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirection SenePay...';
     btn.disabled = true;
@@ -920,7 +857,6 @@ async function processPayment() {
             throw new Error("Clé Supabase manquante. Veuillez rafraîchir la page.");
         }
 
-        // Appeler la fonction backend sécurisée
         const response = await fetch(`${SUPABASE_URL}/functions/v1/init-senepay`, {
             method: 'POST',
             headers: {
@@ -942,7 +878,6 @@ async function processPayment() {
         }
 
         if (response.ok && data.checkoutUrl) {
-            // Rediriger le client vers la page de paiement SenePay
             window.location.href = data.checkoutUrl;
         } else {
             throw new Error("Backend Error (Status " + response.status + "): " + rawText);
@@ -963,21 +898,19 @@ function selectPayment(el) {
 
 function generatePDF() {
     const element = document.getElementById('cv-document');
+    if (!element) return;
     
-    // Configuration for html2pdf
     const opt = {
         margin:       0,
-        filename:     `CV_${cvData.personal.firstName || 'PRO'}_${cvData.personal.lastName || '500'}.pdf`.replace(/ /g, '_'),
+        filename:     `CV_${cvData.personal?.firstName || 'PRO'}_${cvData.personal?.lastName || '500'}.pdf`.replace(/ /g, '_'),
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true, logging: false },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
-    // Generate and save
     html2pdf().set(opt).from(element).save();
 }
 
-// Allow clicking on empty spaces to add text
 document.getElementById('cv-document')?.addEventListener('click', (e) => {
     if (e.target.id === 'cv-document') {
         const p = document.createElement('p');
