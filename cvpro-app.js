@@ -29,7 +29,7 @@ let cvData = {
         photo: null
     },
     profile: {
-        summary: 'Professionnel dynamique et expérimenté avec plus de 6 ans de réussite dans le développement commercial, la gestion d\'équipe et le marketing digital au Sénégal. Reconnu pour ma rigueur, mes capacités de négociation et mon sens de l\'innovation, je recherche une opportunité stimulante pour piloter des projets ambitieux.'
+        summary: 'Professionnel passionné et stratégique comptant plus de 6 années d\'expérience réussie dans la gestion de projets commerciaux, le développement des ventes et le marketing digital au Sénégal. Spécialisé dans la négociation B2B, l\'animation d\'équipes de vente et le déploiement de campagnes digitales à fort impact, je combine une solide vision marché avec une rigueur opérationnelle reconnue. Doté d\'un excellent sens relationnel et orienté résultats, je saurai piloter vos initiatives commerciales avec agilité et accroître durablement votre chiffre d\'affaires.'
     },
     education: [
         { id: 1, studyType: 'Études Primaires', school: 'École Primaire Point E 1', degree: 'CFEE', year: '6 ans' },
@@ -60,16 +60,20 @@ let cvData = {
     languages: [
         { id: 1, name: 'Wolof', level: 'Langue Maternelle / Parler courant' },
         { id: 2, name: 'Sérère', level: 'Bien parlé' },
-        { id: 3, name: 'Français', level: 'Courant - Lu, écrit, parlé' },
-        { id: 4, name: 'Anglais', level: 'Avancé - Lu et écrit' },
-        { id: 5, name: 'Espagnol', level: 'Intermédiaire - Lu et parlé' }
+        { id: 3, name: 'Pulaar (Peul)', level: 'Conversation de base' },
+        { id: 4, name: 'Français', level: 'Courant - Lu, écrit, parlé' },
+        { id: 5, name: 'Anglais', level: 'Avancé - Lu et écrit' },
+        { id: 6, name: 'Espagnol', level: 'Intermédiaire - Lu et parlé' },
+        { id: 7, name: 'Arabe', level: 'Lu & notions d\'expression' }
     ],
     interests: [
         { id: 1, name: 'Football (Capitaine d\'équipe locale)' },
         { id: 2, name: 'Bénévolat et actions communautaires' },
         { id: 3, name: 'Lecture et veille technologique' },
         { id: 4, name: 'Voyages & découverte culturelle' },
-        { id: 5, name: 'Musique & arts sénégalais' }
+        { id: 5, name: 'Musique & arts sénégalais' },
+        { id: 6, name: 'Photographie urbaine & multimédia' },
+        { id: 7, name: 'Jardinage & écologie locale' }
     ],
     references: []
 };
@@ -363,7 +367,7 @@ function renderForms() {
 
             <!-- Step 5: Expériences -->
             <div id="step-5" class="step-section" style="display: none;">
-                <h3 class="step-title">5. Expériences Professionnelles</h3>
+                <h3 class="step-title">5. Expériences</h3>
                 <div id="experiences-list" class="dynamic-list"></div>
                 <button class="btn-add" onclick="addDynamicItem('experiences')"><i class="fa-solid fa-plus"></i> Ajouter une expérience</button>
             </div>
@@ -599,7 +603,7 @@ function renderCV() {
 
                     ${cvData.experiences?.length > 0 ? `
                     <div class="cv-section">
-                        <h3 class="cv-section-title">Expérience Professionnelle</h3>
+                        <h3 class="cv-section-title">Expériences</h3>
                         ${cvData.experiences.map(e => `
                             <div class="cv-item">
                                 <div class="cv-item-header">
@@ -797,7 +801,7 @@ function renderCV() {
 
                     ${cvData.experiences?.length > 0 ? `
                     <div class="cv-section">
-                        <h3>Expériences Professionnelles</h3>
+                        <h3>Expériences</h3>
                         ${cvData.experiences.map(e => `
                             <div class="cv-item">
                                 <h4>${e.title || 'Poste'} <span>(${e.company || 'Entreprise'})</span></h4>
