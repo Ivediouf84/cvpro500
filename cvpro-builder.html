@@ -174,9 +174,69 @@
                 <button class="tab-btn" data-step="9">9. Références</button>
             </div>
 
-            <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
-                <div style="background-color: #eef2ff; border-left: 4px solid var(--primary); padding: 1rem; border-radius: 4px; font-size: 0.9rem; color: #333;">
-                    <strong><i class="fa-solid fa-circle-info" style="color: var(--primary); margin-right: 5px;"></i> Comment créer mon CV :</strong> Le formulaire est pré-rempli avec un modèle. <b>Effacez ces informations au fur et à mesure</b> et mettez vos propres informations pour voir votre CV se construire (à droite sur ordinateur, ou <b>en bas de la page</b> sur téléphone) !
+            <div style="padding: 1.25rem 1.5rem 0 1.5rem;">
+                <style>
+                    .guide-banner-card {
+                        position: relative;
+                        background: linear-gradient(135deg, rgba(14, 20, 36, 0.95), rgba(30, 41, 59, 0.98));
+                        border-radius: 12px;
+                        padding: 1.1rem 1.25rem;
+                        border: 1px solid rgba(99, 102, 241, 0.35);
+                        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.18), 0 0 15px rgba(168, 85, 247, 0.12);
+                        overflow: hidden;
+                        transition: all 0.3s ease;
+                    }
+                    .guide-banner-card::before {
+                        content: '';
+                        position: absolute;
+                        top: 0; left: 0; right: 0; height: 3px;
+                        background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899, #6366f1);
+                        background-size: 300% 100%;
+                        animation: borderGlow 4s linear infinite;
+                    }
+                    @keyframes borderGlow {
+                        0% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                        100% { background-position: 0% 50%; }
+                    }
+                    .guide-title {
+                        font-size: 0.95rem;
+                        font-weight: 800;
+                        background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        margin-bottom: 6px;
+                    }
+                    .guide-title i {
+                        -webkit-text-fill-color: initial;
+                        color: #c084fc;
+                        animation: pulseIcon 2s infinite ease-in-out;
+                    }
+                    @keyframes pulseIcon {
+                        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #c084fc); }
+                        50% { transform: scale(1.18); filter: drop-shadow(0 0 8px #f472b6); }
+                    }
+                    .guide-text {
+                        font-size: 0.85rem;
+                        color: #cbd5e1;
+                        line-height: 1.5;
+                        margin: 0;
+                    }
+                    .guide-text b {
+                        color: #fbbf24;
+                        font-weight: 700;
+                    }
+                </style>
+                <div class="guide-banner-card">
+                    <div class="guide-title">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Comment créer mon CV :
+                    </div>
+                    <p class="guide-text">
+                        Le formulaire est pré-rempli avec un modèle exemple. <b>Effacez ces informations au fur et à mesure</b> et saisissez vos propres données pour voir votre CV se construire en temps réel (à droite sur ordinateur, ou <b>en bas de l'écran</b> sur téléphone) !
+                    </p>
                 </div>
             </div>
             
