@@ -67,15 +67,64 @@ let currentUserId = null;
 let cloudDocumentId = null;
 let saveTimeout = null;
 
+// Helper to sanitize and guarantee all cvData fields exist
+function sanitizeCvData(raw) {
+    const defaultData = {
+        personal: {
+            firstName: 'Moussa',
+            lastName: 'Diop',
+            jobTitle: 'Assistant Administratif et Commercial',
+            email: 'moussa.diop@example.com',
+            phone: '+221 77 123 45 67',
+            city: 'Dakar, Sénégal',
+            linkedin: 'linkedin.com/in/moussadiop',
+            photo: null
+        },
+        profile: {
+            summary: 'Professionnel dynamique avec 3 ans d\'expérience dans la gestion administrative...'
+        },
+        education: [],
+        formations: [],
+        experiences: [],
+        skills: [],
+        languages: [],
+        interests: [],
+        references: []
+    };
+
+    if (!raw || typeof raw !== 'object') return cvData;
+
+    return {
+        personal: {
+            firstName: raw.personal?.firstName ?? cvData.personal?.firstName ?? '',
+            lastName: raw.personal?.lastName ?? cvData.personal?.lastName ?? '',
+            jobTitle: raw.personal?.jobTitle ?? cvData.personal?.jobTitle ?? '',
+            email: raw.personal?.email ?? cvData.personal?.email ?? '',
+            phone: raw.personal?.phone ?? cvData.personal?.phone ?? '',
+            city: raw.personal?.city ?? cvData.personal?.city ?? '',
+            linkedin: raw.personal?.linkedin ?? cvData.personal?.linkedin ?? '',
+            photo: raw.personal?.photo || null
+        },
+        profile: {
+            summary: raw.profile?.summary ?? cvData.profile?.summary ?? ''
+        },
+        education: Array.isArray(raw.education) ? raw.education : (Array.isArray(cvData.education) ? cvData.education : []),
+        formations: Array.isArray(raw.formations) ? raw.formations : (Array.isArray(cvData.formations) ? cvData.formations : []),
+        experiences: Array.isArray(raw.experiences) ? raw.experiences : (Array.isArray(cvData.experiences) ? cvData.experiences : []),
+        skills: Array.isArray(raw.skills) ? raw.skills : (Array.isArray(cvData.skills) ? cvData.skills : []),
+        languages: Array.isArray(raw.languages) ? raw.languages : (Array.isArray(cvData.languages) ? cvData.languages : []),
+        interests: Array.isArray(raw.interests) ? raw.interests : (Array.isArray(cvData.interests) ? cvData.interests : []),
+        references: Array.isArray(raw.references) ? raw.references : (Array.isArray(cvData.references) ? cvData.references : [])
+    };
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     // Check for SenePay payment success redirect
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
         alert("Paiement réussi avec SenePay ! Votre CV va être généré et téléchargé automatiquement.");
-        // Nettoyer l'URL
         window.history.replaceState({}, document.title, window.location.pathname);
-        // Générer le PDF
         setTimeout(() => {
             if (typeof generatePDF === 'function') generatePDF();
         }, 1500);
@@ -84,54 +133,38 @@ document.addEventListener('DOMContentLoaded', () => {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    // Try to initialize Supabase
-    if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        initCloud().then(() => {
-            renderForms();
-            renderCV();
-        });
-    }
-    
     // 1. Charger les données temporaires locales (fallback)
     const localData = localStorage.getItem('cvpro_data');
-    if (localData && !currentUserId) {
+    if (localData) {
         try {
             const parsedLocal = JSON.parse(localData);
-            // Ensure object structure is not poisoned
-            cvData = {
-                ...cvData,
-                ...parsedLocal,
-                personal: { ...cvData.personal, ...(parsedLocal.personal || {}) },
-                profile: { ...cvData.profile, ...(parsedLocal.profile || {}) },
-                experiences: Array.isArray(parsedLocal.experiences) ? parsedLocal.experiences : cvData.experiences,
-                education: Array.isArray(parsedLocal.education) ? parsedLocal.education : cvData.education,
-                skills: Array.isArray(parsedLocal.skills) ? parsedLocal.skills : cvData.skills,
-                languages: Array.isArray(parsedLocal.languages) ? parsedLocal.languages : cvData.languages,
-                formations: Array.isArray(parsedLocal.formations) ? parsedLocal.formations : cvData.formations,
-                interests: Array.isArray(parsedLocal.interests) ? parsedLocal.interests : cvData.interests
-            };
+            cvData = sanitizeCvData(parsedLocal);
         } catch (e) {
             console.error("Error parsing local CV data", e);
         }
     }
 
-    // 2. Check if we have AI-imported CV data
-
-    
-    // 4. Sanity check / Repair any poisoned data before rendering
-    cvData.personal = cvData.personal || {};
-    cvData.profile = cvData.profile || {};
-    cvData.experiences = Array.isArray(cvData.experiences) ? cvData.experiences : [];
-    cvData.education = Array.isArray(cvData.education) ? cvData.education : [];
-    cvData.skills = Array.isArray(cvData.skills) ? cvData.skills : [];
-    cvData.languages = Array.isArray(cvData.languages) ? cvData.languages : [];
-    cvData.interests = Array.isArray(cvData.interests) ? cvData.interests : [];
+    // Sanity check
+    cvData = sanitizeCvData(cvData);
     
     initTabs();
     renderForms();
     renderCV();
     setupTemplateSelector();
+
+    // Try to initialize Supabase
+    if (window.supabase) {
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            initCloud().then(() => {
+                cvData = sanitizeCvData(cvData);
+                renderForms();
+                renderCV();
+            });
+        } catch(e) {
+            console.warn("Supabase init error:", e);
+        }
+    }
 
     // Zoom on double click (especially for mobile)
     const cvDoc = document.getElementById('cv-document');
@@ -148,9 +181,10 @@ async function initCloud() {
     try {
         const { data: authData, error: authError } = await supabaseClient.auth.getSession();
         
-        if (!authData.session) {
-            // Utilisateur non connecté : on redirige vers auth.html
-            window.location.href = "auth.html";
+        if (!authData || !authData.session) {
+            // Utilisateur non connecté : afficher l'option connexion dans le header
+            const btnLogin = document.getElementById('btn-login');
+            if (btnLogin) btnLogin.style.display = 'inline-flex';
             return;
         }
         
@@ -173,23 +207,31 @@ async function initCloud() {
             window.location.href = "index.html";
         };
 
-        // 2. Fetch existing CV
-        const { data: cvDoc, error: fetchError } = await supabaseClient
-            .from('cv_documents')
+        // 2. Fetch existing CV (check user_cvs table first, fallback to cv_documents)
+        let cvDoc = null;
+        const { data: userCvData } = await supabaseClient
+            .from('user_cvs')
             .select('*')
             .eq('user_id', currentUserId)
-            .single();
+            .maybeSingle();
+
+        if (userCvData) {
+            cvDoc = userCvData;
+        } else {
+            const { data: legacyDoc } = await supabaseClient
+                .from('cv_documents')
+                .select('*')
+                .eq('user_id', currentUserId)
+                .maybeSingle();
+            if (legacyDoc) cvDoc = legacyDoc;
+        }
 
         if (cvDoc && cvDoc.cv_data) {
             cloudDocumentId = cvDoc.id;
-            cvData = cvDoc.cv_data; // Replace local default with cloud data
+            cvData = sanitizeCvData(cvDoc.cv_data);
         }
     } catch (err) {
         console.error("Cloud Init Error:", err);
-        // Si l'erreur vient du single() parce qu'il n'y a pas encore de document, on ignore
-        if (err.code !== 'PGRST116') {
-            console.warn("Note: No existing document found or minor error.");
-        }
     }
 }
 
