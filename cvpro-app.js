@@ -16,58 +16,60 @@ function safeSet(key, val) {
     } catch(e) {}
 }
 
-// Initial State
+/// Initial State (Default Example: Ibou Diouf)
 let cvData = {
     personal: {
-        firstName: 'Moussa',
-        lastName: 'Diop',
-        jobTitle: 'Assistant Administratif et Commercial',
-        email: 'moussa.diop@example.com',
-        phone: '+221 77 123 45 67',
+        firstName: 'Ibou',
+        lastName: 'Diouf',
+        jobTitle: 'Chef de Projet Commercial & Marketing Digital',
+        email: 'ibou.diouf@example.com',
+        phone: '+221 77 654 32 10',
         city: 'Dakar, Sénégal',
-        linkedin: 'linkedin.com/in/moussadiop',
+        linkedin: 'linkedin.com/in/iboudiouf',
         photo: null
     },
     profile: {
-        summary: 'Professionnel dynamique avec 3 ans d\'expérience dans la gestion administrative, l\'accueil et le service client. Reconnu pour mon organisation, ma rigueur et ma capacité à m\'adapter rapidement à de nouveaux environnements.'
+        summary: 'Professionnel dynamique et expérimenté avec plus de 6 ans de réussite dans le développement commercial, la gestion d\'équipe et le marketing digital au Sénégal. Reconnu pour ma rigueur, mes capacités de négociation et mon sens de l\'innovation, je recherche une opportunité stimulante pour piloter des projets ambitieux.'
     },
     education: [
         { id: 1, studyType: 'Études Primaires', school: 'École Primaire Point E 1', degree: 'CFEE', year: '6 ans' },
         { id: 2, studyType: 'Études Secondaires', school: 'CEM David Diop', degree: 'BFEM', year: '4 ans' },
-        { id: 3, studyType: 'Lycée', school: 'Lycée Blaise Diagne', degree: 'Baccalauréat Série L2', year: '3 ans' },
-        { id: 4, studyType: 'Études Supérieures', school: 'Université Cheikh Anta Diop (UCAD)', degree: 'Licence en Gestion (FASEG)', year: '3 ans' }
+        { id: 3, studyType: 'Lycée', school: 'Lycée Lamine Guèye', degree: 'Baccalauréat Série L2', year: '3 ans' },
+        { id: 4, studyType: 'Université / Supérieure', school: 'Université Cheikh Anta Diop (UCAD)', degree: 'Licence en Gestion & Marketing (FASEG)', year: '3 ans' }
     ],
     formations: [
-        { id: 1, title: 'Formation en Secrétariat Bureautique', institution: 'Chambre de Commerce de Dakar', startDate: 'Janv 2022', endDate: 'Juin 2022', description: 'Apprentissage de la gestion du courrier, du classement et des outils de bureau.' },
-        { id: 2, title: 'Certificat en Marketing Digital', institution: 'ONFP Sénégal', startDate: 'Sept 2021', endDate: 'Nov 2021', description: 'Techniques de communication et vente sur les réseaux sociaux.' },
-        { id: 3, title: 'Formation en Entrepreneuriat', institution: 'ADEPME', startDate: 'Avril 2021', endDate: 'Juin 2021', description: 'Création de PME, élaboration de business plan et stratégie de vente.' },
-        { id: 4, title: 'Séminaire en Techniques de Vente', institution: 'Cabinet Cible RH', startDate: 'Fév 2021', endDate: 'Mars 2021', description: 'Formation pratique sur la prospection, la négociation et la fidélisation client.' }
+        { id: 1, title: 'Certificat en Marketing Digital & E-Commerce', institution: 'ONFP Sénégal (Dakar)', startDate: 'Sept 2022', endDate: 'Déc 2022', description: 'Maîtrise des stratégies sur les réseaux sociaux, création de campagnes Meta & Google Ads, et techniques de conversion en ligne.' },
+        { id: 2, title: 'Secrétariat Bureautique & Gestion de Projet', institution: 'Chambre de Commerce de Dakar', startDate: 'Janv 2021', endDate: 'Juin 2021', description: 'Gestion administrative, classement informatisé, rédaction de rapports professionnels et maîtrise avancée d\'Excel.' },
+        { id: 3, title: 'Séminaire en Techniques de Négociation & Vente B2B', institution: 'Cabinet Cible RH Dakar', startDate: 'Mars 2020', endDate: 'Mai 2020', description: 'Techniques de prospection commerciale, négociation de contrats grands comptes et stratégies de fidélisation client.' }
     ],
     experiences: [
-        { id: 1, title: 'Assistant Commercial', company: 'Sonatel', startDate: 'Août 2022', endDate: 'Présent', description: 'Accueil des clients, traitement des réclamations et promotion des offres.' },
-        { id: 2, title: 'Stagiaire en Administration', company: 'SENELEC', startDate: 'Sept 2021', endDate: 'Déc 2021', description: 'Classement des dossiers, saisie de données et appui aux ressources humaines.' }
+        { id: 1, title: 'Responsable Commercial & Marketing', company: 'Sonatel / Orange Sénégal', startDate: 'Janv 2023', endDate: 'Présent', description: 'Supervision d\'une équipe de 5 commerciaux, élaboration des stratégies de vente B2B et gestion d\'un portefeuille grands comptes.' },
+        { id: 2, title: 'Chef de Projet Ventes Junior', company: 'Wave Digital Finance Sénégal', startDate: 'Juin 2021', endDate: 'Déc 2022', description: 'Déploiement du réseau de distribution, formation des agents partenaires et animation des campagnes d\'acquisition d\'utilisateurs.' },
+        { id: 3, title: 'Assistant Marketing & Communication', company: 'Auchan Sénégal', startDate: 'Janv 2020', endDate: 'Mai 2021', description: 'Mise en place des promotions en magasin, gestion des réseaux sociaux officiels et analyse hebdomadaire des ventes par secteur.' },
+        { id: 4, title: 'Agent de Relation Client & Support', company: 'SENELEC Dakar', startDate: 'Juin 2018', endDate: 'Déc 2019', description: 'Accueil physique et téléphonique des abonnés, gestion des réclamations, saisie de données et appui au service clientèle.' },
+        { id: 5, title: 'Stagiaire Commercial', company: 'Groupe Kirène Sénégal', startDate: 'Janv 2018', endDate: 'Mai 2018', description: 'Prospection téléphonique, suivi des livraisons chez les distributeurs et rédaction de comptes-rendus de vente.' }
     ],
     skills: [
-        { id: 1, name: 'Maîtrise du Pack Office (Word, Excel)' },
-        { id: 2, name: 'Gestion de la relation client' },
-        { id: 3, name: 'Accueil physique et téléphonique' },
-        { id: 4, name: 'Techniques de vente et négociation' },
-        { id: 5, name: 'Rédaction de courriers administratifs' },
-        { id: 6, name: 'Gestion des réseaux sociaux' }
+        { id: 1, name: 'Maîtrise du Pack Office (Word, Excel, PowerPoint)' },
+        { id: 2, name: 'Stratégie Commerciale & Négociation B2B' },
+        { id: 3, name: 'Marketing Digital & Gestion Réseaux Sociaux' },
+        { id: 4, name: 'Management d\'Équipe & Leadership' },
+        { id: 5, name: 'Gestion de la Relation Client (CRM)' },
+        { id: 6, name: 'Rédaction Administrative & Reporting' }
     ],
     languages: [
-        { id: 1, name: 'Français', level: 'Courant' },
-        { id: 2, name: 'Anglais', level: 'Intermédiaire' },
-        { id: 3, name: 'Arabe', level: 'Lu et écrit' },
-        { id: 4, name: 'Wolof', level: 'Langue Maternelle' },
-        { id: 5, name: 'Sérère', level: 'Bien parlé' },
-        { id: 6, name: 'Pulaar', level: 'Notions de base' }
+        { id: 1, name: 'Wolof', level: 'Langue Maternelle / Parler courant' },
+        { id: 2, name: 'Sérère', level: 'Bien parlé' },
+        { id: 3, name: 'Français', level: 'Courant - Lu, écrit, parlé' },
+        { id: 4, name: 'Anglais', level: 'Avancé - Lu et écrit' },
+        { id: 5, name: 'Espagnol', level: 'Intermédiaire - Lu et parlé' }
     ],
     interests: [
-        { id: 1, name: 'Bénévolat et associatif' },
-        { id: 2, name: 'Sport (Football, Basket)' },
-        { id: 3, name: 'Nouvelles technologies' },
-        { id: 4, name: 'Voyages et découverte' }
+        { id: 1, name: 'Football (Capitaine d\'équipe locale)' },
+        { id: 2, name: 'Bénévolat et actions communautaires' },
+        { id: 3, name: 'Lecture et veille technologique' },
+        { id: 4, name: 'Voyages & découverte culturelle' },
+        { id: 5, name: 'Musique & arts sénégalais' }
     ],
     references: []
 };
@@ -413,6 +415,18 @@ function renderForms() {
             </div>
         `;
     }
+
+    // Sync static inputs with cvData
+    const p = cvData.personal || {};
+    const prof = cvData.profile || {};
+    document.querySelectorAll('[data-section="personal"]').forEach(input => {
+        const field = input.dataset.field;
+        if (field && p[field] !== undefined) input.value = p[field];
+    });
+    document.querySelectorAll('[data-section="profile"]').forEach(input => {
+        const field = input.dataset.field;
+        if (field && prof[field] !== undefined) input.value = prof[field];
+    });
 
     renderDynamicLists();
 }
