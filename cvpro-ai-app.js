@@ -335,32 +335,24 @@ async function processPayment() {
     btn.disabled = true;
 
     try {
-        let senepayKey = localStorage.getItem('senepay_api_key');
-        let senepaySecret = localStorage.getItem('senepay_api_secret');
+        const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+        const supabaseKey = localStorage.getItem('supabase_anon_key');
         
-        if (!senepayKey || !senepaySecret) {
-            senepayKey = prompt("DEVELOPPEUR (Test) : Collez votre clé SenePay (X-Api-Key) publique :");
-            senepaySecret = prompt("DEVELOPPEUR (Test) : Collez votre clé SenePay (X-Api-Secret) secrète :");
-            if (senepayKey && senepaySecret) {
-                localStorage.setItem('senepay_api_key', senepayKey);
-                localStorage.setItem('senepay_api_secret', senepaySecret);
-            } else {
-                throw new Error("Clés SenePay manquantes pour le test.");
-            }
+        if (!supabaseKey) {
+            throw new Error("Clé Supabase manquante. Veuillez rafraîchir la page.");
         }
 
-        const response = await fetch('https://api.sene-pay.com/api/v1/checkout/sessions', {
+        // Appeler la fonction backend sécurisée
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/init-senepay`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Api-Key': senepayKey,
-                'X-Api-Secret': senepaySecret
+                'Authorization': `Bearer ${supabaseKey}`
             },
             body: JSON.stringify({
                 amount: 1000,
-                currency: "XOF",
-                orderReference: "CVPRO-AI-" + Date.now(),
-                description: "Téléchargement de CV Premium IA (CV PRO)",
+                orderPrefix: "CVPRO-AI-",
+                description: "CV PRO par Intelligence Artificielle",
                 returnUrl: window.location.href.split('?')[0] + "?payment=success",
                 cancelUrl: window.location.href.split('?')[0] + "?payment=cancel"
             })
@@ -371,10 +363,6 @@ async function processPayment() {
         if (response.ok && data.checkoutUrl) {
             window.location.href = data.checkoutUrl;
         } else {
-            if (response.status === 401 || response.status === 403) {
-                localStorage.removeItem('senepay_api_key');
-                localStorage.removeItem('senepay_api_secret');
-            }
             throw new Error(data.message || data.error || JSON.stringify(data));
         }
 
