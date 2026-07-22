@@ -85,52 +85,36 @@ let currentZoom = 0.8;
 
 // Helper to sanitize and guarantee all cvData fields exist
 function sanitizeCvData(raw) {
-    const defaultData = {
-        personal: {
-            firstName: 'Moussa',
-            lastName: 'Diop',
-            jobTitle: 'Assistant Administratif et Commercial',
-            email: 'moussa.diop@example.com',
-            phone: '+221 77 123 45 67',
-            city: 'Dakar, Sénégal',
-            linkedin: 'linkedin.com/in/moussadiop',
-            photo: null
-        },
-        profile: {
-            summary: 'Professionnel dynamique avec 3 ans d\'expérience dans la gestion administrative...'
-        },
-        education: [],
-        formations: [],
-        experiences: [],
-        skills: [],
-        languages: [],
-        interests: [],
-        references: []
-    };
-
     if (!raw || typeof raw !== 'object') return cvData;
 
+    // Check if raw contains valid data or old Moussa Diop data
+    const rawFirst = raw.personal?.firstName;
+    const rawLast = raw.personal?.lastName;
+    
+    // If raw contains old 'Moussa' test data, override with Ibou Diouf demo
+    const isOldMoussa = rawFirst === 'Moussa' || rawLast === 'Diop';
+    
     return {
         personal: {
-            firstName: raw.personal?.firstName ?? cvData.personal?.firstName ?? '',
-            lastName: raw.personal?.lastName ?? cvData.personal?.lastName ?? '',
-            jobTitle: raw.personal?.jobTitle ?? cvData.personal?.jobTitle ?? '',
-            email: raw.personal?.email ?? cvData.personal?.email ?? '',
-            phone: raw.personal?.phone ?? cvData.personal?.phone ?? '',
-            city: raw.personal?.city ?? cvData.personal?.city ?? '',
-            linkedin: raw.personal?.linkedin ?? cvData.personal?.linkedin ?? '',
+            firstName: (!isOldMoussa && rawFirst) ? rawFirst : cvData.personal.firstName,
+            lastName: (!isOldMoussa && rawLast) ? rawLast : cvData.personal.lastName,
+            jobTitle: (!isOldMoussa && raw.personal?.jobTitle) ? raw.personal.jobTitle : cvData.personal.jobTitle,
+            email: (!isOldMoussa && raw.personal?.email) ? raw.personal.email : cvData.personal.email,
+            phone: (!isOldMoussa && raw.personal?.phone) ? raw.personal.phone : cvData.personal.phone,
+            city: (!isOldMoussa && raw.personal?.city) ? raw.personal.city : cvData.personal.city,
+            linkedin: (!isOldMoussa && raw.personal?.linkedin) ? raw.personal.linkedin : cvData.personal.linkedin,
             photo: raw.personal?.photo || null
         },
         profile: {
-            summary: raw.profile?.summary ?? cvData.profile?.summary ?? ''
+            summary: (!isOldMoussa && raw.profile?.summary) ? raw.profile.summary : cvData.profile.summary
         },
-        education: Array.isArray(raw.education) ? raw.education : (Array.isArray(cvData.education) ? cvData.education : []),
-        formations: Array.isArray(raw.formations) ? raw.formations : (Array.isArray(cvData.formations) ? cvData.formations : []),
-        experiences: Array.isArray(raw.experiences) ? raw.experiences : (Array.isArray(cvData.experiences) ? cvData.experiences : []),
-        skills: Array.isArray(raw.skills) ? raw.skills : (Array.isArray(cvData.skills) ? cvData.skills : []),
-        languages: Array.isArray(raw.languages) ? raw.languages : (Array.isArray(cvData.languages) ? cvData.languages : []),
-        interests: Array.isArray(raw.interests) ? raw.interests : (Array.isArray(cvData.interests) ? cvData.interests : []),
-        references: Array.isArray(raw.references) ? raw.references : (Array.isArray(cvData.references) ? cvData.references : [])
+        education: (Array.isArray(raw.education) && raw.education.length > 0 && !isOldMoussa) ? raw.education : cvData.education,
+        formations: (Array.isArray(raw.formations) && raw.formations.length > 0 && !isOldMoussa) ? raw.formations : cvData.formations,
+        experiences: (Array.isArray(raw.experiences) && raw.experiences.length > 0 && !isOldMoussa) ? raw.experiences : cvData.experiences,
+        skills: (Array.isArray(raw.skills) && raw.skills.length > 0 && !isOldMoussa) ? raw.skills : cvData.skills,
+        languages: (Array.isArray(raw.languages) && raw.languages.length > 0 && !isOldMoussa) ? raw.languages : cvData.languages,
+        interests: (Array.isArray(raw.interests) && raw.interests.length > 0 && !isOldMoussa) ? raw.interests : cvData.interests,
+        references: Array.isArray(raw.references) ? raw.references : []
     };
 }
 
