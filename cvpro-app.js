@@ -45,9 +45,7 @@ let cvData = {
     experiences: [
         { id: 1, title: 'Responsable Commercial & Marketing', company: 'Sonatel / Orange Sénégal', startDate: 'Janv 2023', endDate: 'Présent', description: 'Supervision d\'une équipe de 5 commerciaux, élaboration des stratégies de vente B2B et gestion d\'un portefeuille grands comptes.' },
         { id: 2, title: 'Chef de Projet Ventes Junior', company: 'Wave Digital Finance Sénégal', startDate: 'Juin 2021', endDate: 'Déc 2022', description: 'Déploiement du réseau de distribution, formation des agents partenaires et animation des campagnes d\'acquisition d\'utilisateurs.' },
-        { id: 3, title: 'Assistant Marketing & Communication', company: 'Auchan Sénégal', startDate: 'Janv 2020', endDate: 'Mai 2021', description: 'Mise en place des promotions en magasin, gestion des réseaux sociaux officiels et analyse hebdomadaire des ventes par secteur.' },
-        { id: 4, title: 'Agent de Relation Client & Support', company: 'SENELEC Dakar', startDate: 'Juin 2018', endDate: 'Déc 2019', description: 'Accueil physique et téléphonique des abonnés, gestion des réclamations, saisie de données et appui au service clientèle.' },
-        { id: 5, title: 'Stagiaire Commercial', company: 'Groupe Kirène Sénégal', startDate: 'Janv 2018', endDate: 'Mai 2018', description: 'Prospection téléphonique, suivi des livraisons chez les distributeurs et rédaction de comptes-rendus de vente.' }
+        { id: 3, title: 'Assistant Marketing & Communication', company: 'Auchan Sénégal', startDate: 'Janv 2020', endDate: 'Mai 2021', description: 'Mise en place des promotions en magasin, gestion des réseaux sociaux officiels et analyse hebdomadaire des ventes par secteur.' }
     ],
     skills: [
         { id: 1, name: 'Maîtrise du Pack Office (Word, Excel, PowerPoint)' },
