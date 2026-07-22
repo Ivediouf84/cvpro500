@@ -1023,18 +1023,57 @@ function selectPayment(el) {
 }
 
 function generatePDF() {
-    const element = document.getElementById('cv-document');
-    if (!element) return;
+    const originalElement = document.getElementById('cv-document');
+    if (!originalElement) return;
+    
+    // Create an unscaled desktop-size clone off-screen so mobile scale(0.4) never affects the PDF output
+    const clone = originalElement.cloneNode(true);
+    clone.id = 'cv-document-pdf-export-clone';
+    
+    // Reset all responsive transforms, scale, margins and force true A4 dimensions
+    clone.style.cssText = `
+        position: fixed !important;
+        left: -9999px !important;
+        top: 0 !important;
+        width: 210mm !important;
+        min-height: 297mm !important;
+        transform: none !important;
+        -webkit-transform: none !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+        z-index: -99999 !important;
+    `;
+    
+    document.body.appendChild(clone);
+    
+    const firstName = cvData.personal?.firstName || 'PRO';
+    const lastName = cvData.personal?.lastName || 'Diouf';
+    const fileName = `CV_${firstName}_${lastName}.pdf`.replace(/ /g, '_');
     
     const opt = {
         margin:       0,
-        filename:     `CV_${cvData.personal?.firstName || 'PRO'}_${cvData.personal?.lastName || '500'}.pdf`.replace(/ /g, '_'),
+        filename:     fileName,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false,
+            windowWidth: 1200 // Force desktop viewport calculation so mobile CSS scale(0.4) is completely bypassed
+        },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
-    html2pdf().set(opt).from(element).save();
+    html2pdf().set(opt).from(clone).save().then(() => {
+        if (clone && clone.parentNode) {
+            clone.parentNode.removeChild(clone);
+        }
+    }).catch(err => {
+        console.error("PDF export error:", err);
+        if (clone && clone.parentNode) {
+            clone.parentNode.removeChild(clone);
+        }
+    });
 }
 
 document.getElementById('cv-document')?.addEventListener('click', (e) => {
