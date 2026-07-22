@@ -521,9 +521,13 @@ function handlePhotoUpload(e) {
             if (!cvData.personal) cvData.personal = {};
             cvData.personal.photo = event.target.result;
             const preview = document.getElementById('photo-preview');
+            const placeholder = document.getElementById('photo-placeholder');
             if(preview) {
                 preview.src = event.target.result;
                 preview.style.display = 'block';
+            }
+            if(placeholder) {
+                placeholder.style.display = 'none';
             }
             renderCV();
             triggerCloudSave();
