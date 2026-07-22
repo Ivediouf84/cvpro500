@@ -891,13 +891,19 @@ async function processPayment() {
             })
         });
 
-        const data = await response.json();
+        const rawText = await response.text();
+        let data = {};
+        try {
+            data = JSON.parse(rawText);
+        } catch(e) {
+            throw new Error("Invalid JSON from backend. Status: " + response.status + " Body: " + rawText);
+        }
 
         if (response.ok && data.checkoutUrl) {
             // Rediriger le client vers la page de paiement SenePay
             window.location.href = data.checkoutUrl;
         } else {
-            throw new Error(data.message || data.error || JSON.stringify(data));
+            throw new Error("Backend Error (Status " + response.status + "): " + rawText);
         }
 
     } catch (err) {
