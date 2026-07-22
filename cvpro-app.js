@@ -1,6 +1,20 @@
 /**
- * CV PRO 500 - Application Logic
+ * CV PRO 500 - Application Logic (Ultra Fail-Safe Version)
  */
+
+// Safe Storage Helpers
+function safeGet(key) {
+    try {
+        return localStorage.getItem(key);
+    } catch(e) {
+        return null;
+    }
+}
+function safeSet(key, val) {
+    try {
+        localStorage.setItem(key, val);
+    } catch(e) {}
+}
 
 // Initial State
 let cvData = {
@@ -60,7 +74,7 @@ let cvData = {
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-const SUPABASE_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+const SUPABASE_KEY = safeGet('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
 let supabaseClient = null;
 let currentUserId = null;
 let cloudDocumentId = null;
@@ -118,70 +132,64 @@ function sanitizeCvData(raw) {
     };
 }
 
-// Initialize app
-document.addEventListener('DOMContentLoaded', () => {
-    // Check for SenePay payment success redirect
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('payment') === 'success') {
-        alert("Paiement réussi avec SenePay ! Votre CV va être généré et téléchargé automatiquement.");
-        window.history.replaceState({}, document.title, window.location.pathname);
-        setTimeout(() => {
-            if (typeof generatePDF === 'function') generatePDF();
-        }, 1500);
-    } else if (urlParams.get('payment') === 'cancel') {
-        alert("Le paiement SenePay a été annulé.");
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
-    // 1. Charger les données temporaires locales (fallback)
-    const localData = localStorage.getItem('cvpro_data');
-    if (localData) {
-        try {
-            const parsedLocal = JSON.parse(localData);
-            cvData = sanitizeCvData(parsedLocal);
-        } catch (e) {
-            console.error("Error parsing local CV data", e);
+// Initialize app safely
+function initApp() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('payment') === 'success') {
+            alert("Paiement réussi avec SenePay ! Votre CV va être généré et téléchargé automatiquement.");
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setTimeout(() => {
+                if (typeof generatePDF === 'function') generatePDF();
+            }, 1500);
+        } else if (urlParams.get('payment') === 'cancel') {
+            alert("Le paiement SenePay a été annulé.");
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
-    }
 
-    // Sanity check
-    cvData = sanitizeCvData(cvData);
-    
-    // Initial UI Render
-    initTabs();
-    renderForms();
-    renderCV();
-    setupTemplateSelector();
-    setupPaymentListeners();
-
-    // Try to initialize Supabase
-    if (window.supabase) {
-        try {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            initCloud().then(() => {
-                cvData = sanitizeCvData(cvData);
-                renderForms();
-                renderCV();
-            });
-        } catch(e) {
-            console.warn("Supabase init error:", e);
+        const localData = safeGet('cvpro_data');
+        if (localData) {
+            try {
+                const parsedLocal = JSON.parse(localData);
+                cvData = sanitizeCvData(parsedLocal);
+            } catch (e) {}
         }
-    }
 
-    // Zoom on double click (especially for mobile)
-    const cvDoc = document.getElementById('cv-document');
-    if (cvDoc) {
-        cvDoc.addEventListener('dblclick', function() {
-            if (window.innerWidth <= 600) {
-                this.classList.toggle('zoomed');
+        cvData = sanitizeCvData(cvData);
+        
+        initTabs();
+        renderForms();
+        renderCV();
+        setupTemplateSelector();
+        setupPaymentListeners();
+
+        if (window.supabase) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                initCloud().then(() => {
+                    cvData = sanitizeCvData(cvData);
+                    renderForms();
+                    renderCV();
+                });
+            } catch(e) {
+                console.warn("Supabase init handled:", e);
             }
-        });
+        }
+    } catch(err) {
+        console.warn("Main init handled:", err);
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 async function initCloud() {
     try {
-        const { data: authData, error: authError } = await supabaseClient.auth.getSession();
+        if (!supabaseClient) return;
+        const { data: authData } = await supabaseClient.auth.getSession();
         
         if (!authData || !authData.session) {
             const btnLogin = document.getElementById('btn-login');
@@ -202,7 +210,7 @@ async function initCloud() {
         }
         
         window.handleLogout = async () => {
-            await supabaseClient.auth.signOut();
+            try { await supabaseClient.auth.signOut(); } catch(e) {}
             window.location.href = "index.html";
         };
 
@@ -229,12 +237,12 @@ async function initCloud() {
             cvData = sanitizeCvData(cvDoc.cv_data);
         }
     } catch (err) {
-        console.error("Cloud Init Error:", err);
+        console.warn("Cloud Init Handled:", err);
     }
 }
 
 function triggerCloudSave() {
-    localStorage.setItem('cvpro_data', JSON.stringify(cvData));
+    safeSet('cvpro_data', JSON.stringify(cvData));
 
     if (!supabaseClient || !currentUserId) return;
     
@@ -248,7 +256,7 @@ function triggerCloudSave() {
             };
             if (cloudDocumentId) payload.id = cloudDocumentId;
 
-            const { data, error } = await supabaseClient
+            const { data } = await supabaseClient
                 .from('cv_documents')
                 .upsert(payload)
                 .select()
@@ -257,28 +265,31 @@ function triggerCloudSave() {
             if (data && !cloudDocumentId) {
                 cloudDocumentId = data.id;
             }
-        } catch (err) {
-            console.error("Auto-save Error:", err);
-        }
+        } catch (err) {}
     }, 1500);
 }
 
 function initTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            e.preventDefault();
-            const stepNumber = tab.dataset.step;
+        tab.onclick = function(e) {
+            if (e) e.preventDefault();
+            const stepNumber = this.dataset.step || this.getAttribute('data-step');
             
             tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
+            this.classList.add('active');
             
-            document.querySelectorAll('.step-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.step-section').forEach(sec => {
+                sec.classList.remove('active');
+                sec.style.display = 'none';
+            });
+            
             const targetStep = document.getElementById(`step-${stepNumber}`);
             if (targetStep) {
                 targetStep.classList.add('active');
+                targetStep.style.display = 'block';
             }
-        });
+        };
     });
 }
 
@@ -286,118 +297,122 @@ function renderForms() {
     const container = document.getElementById('form-container');
     if (!container) return;
     
-    container.innerHTML = `
-        <!-- Step 1: Infos -->
-        <div id="step-1" class="step-section active">
-            <h3 class="step-title">1. Informations Personnelles</h3>
-            <div class="form-group">
-                <label>Photo de profil</label>
-                <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px dashed #cbd5e1;">
-                    <img id="photo-preview" src="${cvData.personal?.photo || ''}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); display: ${cvData.personal?.photo ? 'block' : 'none'};">
-                    <div style="flex:1;">
-                        <label for="cv-photo-upload" style="display: inline-block; background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; box-sizing: border-box;">
-                            <i class="fa-solid fa-camera"></i> Choisir une photo
-                        </label>
-                        <input id="cv-photo-upload" type="file" accept="image/*" onchange="handlePhotoUpload(event)" style="display: none;">
+    // Check if form is already rendered statically
+    const step1 = document.getElementById('step-1');
+    if (!step1) {
+        container.innerHTML = `
+            <!-- Step 1: Infos -->
+            <div id="step-1" class="step-section active" style="display: block;">
+                <h3 class="step-title">1. Informations Personnelles</h3>
+                <div class="form-group">
+                    <label>Photo de profil</label>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                        <img id="photo-preview" src="${cvData.personal?.photo || ''}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); display: ${cvData.personal?.photo ? 'block' : 'none'};">
+                        <div style="flex:1;">
+                            <label for="cv-photo-upload" style="display: inline-block; background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; box-sizing: border-box;">
+                                <i class="fa-solid fa-camera"></i> Choisir une photo
+                            </label>
+                            <input id="cv-photo-upload" type="file" accept="image/*" onchange="handlePhotoUpload(event)" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prénom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Aminata</small>
+                        <input type="text" class="form-control" data-section="personal" data-field="firstName" value="${cvData.personal?.firstName || ''}" oninput="updateData(event)" placeholder="Votre prénom">
+                    </div>
+                    <div class="form-group">
+                        <label>Nom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Sow</small>
+                        <input type="text" class="form-control" data-section="personal" data-field="lastName" value="${cvData.personal?.lastName || ''}" oninput="updateData(event)" placeholder="Votre nom de famille">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Titre Professionnel</label><br><small style="color:#888;font-size:0.75rem;">Ex: Responsable Marketing, Développeur Web...</small>
+                    <input type="text" class="form-control" data-section="personal" data-field="jobTitle" value="${cvData.personal?.jobTitle || ''}" oninput="updateData(event)" placeholder="Le poste que vous visez">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label><br><small style="color:#888;font-size:0.75rem;">Ex: aminata.sow@email.com</small>
+                        <input type="email" class="form-control" data-section="personal" data-field="email" value="${cvData.personal?.email || ''}" oninput="updateData(event)" placeholder="Votre adresse email">
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label><br><small style="color:#888;font-size:0.75rem;">Ex: +221 77 000 00 00</small>
+                        <input type="text" class="form-control" data-section="personal" data-field="phone" value="${cvData.personal?.phone || ''}" oninput="updateData(event)" placeholder="Votre numéro de téléphone">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ville / Adresse</label><br><small style="color:#888;font-size:0.75rem;">Ex: Dakar, Sénégal</small>
+                        <input type="text" class="form-control" data-section="personal" data-field="city" value="${cvData.personal?.city || ''}" oninput="updateData(event)" placeholder="Votre lieu de résidence">
+                    </div>
+                    <div class="form-group">
+                        <label>LinkedIn</label><br><small style="color:#888;font-size:0.75rem;">Ex: linkedin.com/in/aminatasow (Optionnel)</small>
+                        <input type="text" class="form-control" data-section="personal" data-field="linkedin" value="${cvData.personal?.linkedin || ''}" oninput="updateData(event)" placeholder="Lien vers votre profil">
                     </div>
                 </div>
             </div>
-            <div class="form-row">
+
+            <!-- Step 2: Profil -->
+            <div id="step-2" class="step-section" style="display: none;">
+                <h3 class="step-title">2. Profil Professionnel</h3>
                 <div class="form-group">
-                    <label>Prénom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Aminata</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="firstName" value="${cvData.personal?.firstName || ''}" oninput="updateData(event)" placeholder="Votre prénom">
-                </div>
-                <div class="form-group">
-                    <label>Nom</label><br><small style="color:#888;font-size:0.75rem;">Ex: Sow</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="lastName" value="${cvData.personal?.lastName || ''}" oninput="updateData(event)" placeholder="Votre nom de famille">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Titre Professionnel</label><br><small style="color:#888;font-size:0.75rem;">Ex: Responsable Marketing, Développeur Web...</small>
-                <input type="text" class="form-control" data-section="personal" data-field="jobTitle" value="${cvData.personal?.jobTitle || ''}" oninput="updateData(event)" placeholder="Le poste que vous visez">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Email</label><br><small style="color:#888;font-size:0.75rem;">Ex: aminata.sow@email.com</small>
-                    <input type="email" class="form-control" data-section="personal" data-field="email" value="${cvData.personal?.email || ''}" oninput="updateData(event)" placeholder="Votre adresse email">
-                </div>
-                <div class="form-group">
-                    <label>Téléphone</label><br><small style="color:#888;font-size:0.75rem;">Ex: +221 77 000 00 00</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="phone" value="${cvData.personal?.phone || ''}" oninput="updateData(event)" placeholder="Votre numéro de téléphone">
+                    <label>Description courte de votre parcours</label><br><small style="color:#888;font-size:0.75rem;">Résumez en 2-3 phrases vos années d'expérience, vos atouts majeurs et ce que vous recherchez.</small>
+                    <textarea class="form-control" data-section="profile" data-field="summary" oninput="updateData(event)" placeholder="Ex: Professionnel motivé avec 5 ans d'expérience...">${cvData.profile?.summary || ''}</textarea>
                 </div>
             </div>
-            <div class="form-row">
+
+            <!-- Step 3: Études -->
+            <div id="step-3" class="step-section" style="display: none;">
+                <h3 class="step-title">3. Études</h3>
+                <div id="education-list" class="dynamic-list"></div>
+                <button class="btn-add" onclick="addDynamicItem('education')"><i class="fa-solid fa-plus"></i> Ajouter une étude</button>
+            </div>
+
+            <!-- Step 4: Formations -->
+            <div id="step-4" class="step-section" style="display: none;">
+                <h3 class="step-title">4. Formations</h3>
+                <div id="formations-list" class="dynamic-list"></div>
+                <button class="btn-add" onclick="addDynamicItem('formations')"><i class="fa-solid fa-plus"></i> Ajouter une formation</button>
+            </div>
+
+            <!-- Step 5: Expériences -->
+            <div id="step-5" class="step-section" style="display: none;">
+                <h3 class="step-title">5. Expériences Professionnelles</h3>
+                <div id="experiences-list" class="dynamic-list"></div>
+                <button class="btn-add" onclick="addDynamicItem('experiences')"><i class="fa-solid fa-plus"></i> Ajouter une expérience</button>
+            </div>
+            
+            <!-- Step 6: Compétences -->
+            <div id="step-6" class="step-section" style="display: none;">
+                <h3 class="step-title">6. Compétences</h3>
+                <div id="skills-list" class="dynamic-list"></div>
+                <button class="btn-add" onclick="addDynamicItem('skills')"><i class="fa-solid fa-plus"></i> Ajouter une compétence</button>
+            </div>
+
+            <!-- Step 7: Langues -->
+            <div id="step-7" class="step-section" style="display: none;">
+                <h3 class="step-title">7. Langues</h3>
+                <div id="languages-list" class="dynamic-list"></div>
+                <button class="btn-add" onclick="addDynamicItem('languages')"><i class="fa-solid fa-plus"></i> Ajouter une langue</button>
+            </div>
+
+            <!-- Step 8: Intérêts -->
+            <div id="step-8" class="step-section" style="display: none;">
+                <h3 class="step-title">8. Centres d'intérêt</h3>
+                <div id="interests-list" class="dynamic-list"></div>
+                <button class="btn-add" onclick="addDynamicItem('interests')"><i class="fa-solid fa-plus"></i> Ajouter un intérêt</button>
+            </div>
+
+            <!-- Step 9: Références -->
+            <div id="step-9" class="step-section" style="display: none;">
+                <h3 class="step-title">9. Références</h3>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">Optionnel. Vous pouvez ajouter "Sur demande" ou lister des contacts.</p>
                 <div class="form-group">
-                    <label>Ville / Adresse</label><br><small style="color:#888;font-size:0.75rem;">Ex: Dakar, Sénégal</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="city" value="${cvData.personal?.city || ''}" oninput="updateData(event)" placeholder="Votre lieu de résidence">
-                </div>
-                <div class="form-group">
-                    <label>LinkedIn</label><br><small style="color:#888;font-size:0.75rem;">Ex: linkedin.com/in/aminatasow (Optionnel)</small>
-                    <input type="text" class="form-control" data-section="personal" data-field="linkedin" value="${cvData.personal?.linkedin || ''}" oninput="updateData(event)" placeholder="Lien vers votre profil">
+                    <textarea class="form-control" data-section="personal" data-field="references" oninput="updateData(event)" placeholder="Références disponibles sur demande..."></textarea>
                 </div>
             </div>
-        </div>
-
-        <!-- Step 2: Profil -->
-        <div id="step-2" class="step-section">
-            <h3 class="step-title">2. Profil Professionnel <button class="btn btn-ghost" style="font-size:0.7rem; color:var(--secondary); border:1px solid var(--secondary); padding:0.2rem 0.5rem;" onclick="alert('Génération par IA bientôt disponible')"><i class="fa-solid fa-wand-magic-sparkles"></i> Générer IA</button></h3>
-            <div class="form-group">
-                <label>Description courte de votre parcours</label><br><small style="color:#888;font-size:0.75rem;">Résumez en 2-3 phrases vos années d'expérience, vos atouts majeurs et ce que vous recherchez.</small>
-                <textarea class="form-control" data-section="profile" data-field="summary" oninput="updateData(event)" placeholder="Ex: Professionnel motivé avec 5 ans d'expérience dans la gestion de projets. Je suis à la recherche de nouveaux défis...">${cvData.profile?.summary || ''}</textarea>
-            </div>
-        </div>
-
-        <!-- Step 3: Formations -->
-        <div id="step-3" class="step-section">
-            <h3 class="step-title">3. Études</h3>
-            <div id="education-list" class="dynamic-list"></div>
-            <button class="btn-add" onclick="addDynamicItem('education')"><i class="fa-solid fa-plus"></i> Ajouter une étude</button>
-        </div>
-
-        <!-- Step 4: Formations -->
-        <div id="step-4" class="step-section">
-            <h3 class="step-title">4. Formations</h3>
-            <div id="formations-list" class="dynamic-list"></div>
-            <button class="btn-add" onclick="addDynamicItem('formations')"><i class="fa-solid fa-plus"></i> Ajouter une formation</button>
-        </div>
-
-        <!-- Step 5: Experiences -->
-        <div id="step-5" class="step-section">
-            <h3 class="step-title">5. Expériences Professionnelles</h3>
-            <div id="experiences-list" class="dynamic-list"></div>
-            <button class="btn-add" onclick="addDynamicItem('experiences')"><i class="fa-solid fa-plus"></i> Ajouter une expérience</button>
-        </div>
-        
-        <!-- Step 6: Compétences -->
-        <div id="step-6" class="step-section">
-            <h3 class="step-title">6. Compétences</h3>
-            <div id="skills-list" class="dynamic-list"></div>
-            <button class="btn-add" onclick="addDynamicItem('skills')"><i class="fa-solid fa-plus"></i> Ajouter une compétence</button>
-        </div>
-
-        <!-- Step 7: Langues -->
-        <div id="step-7" class="step-section">
-            <h3 class="step-title">7. Langues</h3>
-            <div id="languages-list" class="dynamic-list"></div>
-            <button class="btn-add" onclick="addDynamicItem('languages')"><i class="fa-solid fa-plus"></i> Ajouter une langue</button>
-        </div>
-
-        <!-- Step 8: Intérêts -->
-        <div id="step-8" class="step-section">
-            <h3 class="step-title">8. Centres d'intérêt</h3>
-            <div id="interests-list" class="dynamic-list"></div>
-            <button class="btn-add" onclick="addDynamicItem('interests')"><i class="fa-solid fa-plus"></i> Ajouter un intérêt</button>
-        </div>
-
-        <!-- Step 9: Ref -->
-        <div id="step-9" class="step-section">
-            <h3 class="step-title">9. Références</h3>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">Optionnel. Vous pouvez ajouter "Sur demande" ou lister des contacts.</p>
-            <div class="form-group">
-                <textarea class="form-control" data-section="personal" data-field="references" oninput="updateData(event)" placeholder="Références disponibles sur demande..."></textarea>
-            </div>
-        </div>
-    `;
+        `;
+    }
 
     renderDynamicLists();
 }
@@ -795,18 +810,18 @@ function renderCV() {
 function setupTemplateSelector() {
     const select = document.getElementById('template-select');
     if (select) {
-        select.addEventListener('change', () => {
+        select.onchange = function() {
             renderCV();
-        });
+        };
     }
     
     const colorPicker = document.getElementById('theme-color');
     if (colorPicker) {
         const cvDoc = document.getElementById('cv-document');
         if (cvDoc) cvDoc.style.setProperty('--primary', colorPicker.value);
-        colorPicker.addEventListener('input', (e) => {
+        colorPicker.oninput = function(e) {
             if (cvDoc) cvDoc.style.setProperty('--primary', e.target.value);
-        });
+        };
     }
 }
 
@@ -830,7 +845,8 @@ function zoomOut() {
 function setupPaymentListeners() {
     const btnOpen = document.getElementById('btn-open-payment');
     if (btnOpen) {
-        btnOpen.onclick = () => {
+        btnOpen.onclick = function(e) {
+            if (e) e.preventDefault();
             const modal = document.getElementById('payment-modal');
             if (modal) modal.classList.add('active');
         };
@@ -851,11 +867,7 @@ async function processPayment() {
     
     try {
         const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-        const supabaseKey = localStorage.getItem('supabase_anon_key');
-        
-        if (!supabaseKey) {
-            throw new Error("Clé Supabase manquante. Veuillez rafraîchir la page.");
-        }
+        const supabaseKey = safeGet('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/init-senepay`, {
             method: 'POST',
