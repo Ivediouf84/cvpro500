@@ -485,42 +485,172 @@
                 <!-- Step 3: Études -->
                 <div id="step-3" class="step-section">
                     <h3 class="step-title">3. Études</h3>
-                    <div id="education-list" class="dynamic-list"></div>
+                    <div id="education-list" class="dynamic-list">
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('education', 1)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Niveau d'étude" value="Études Primaires" oninput="updateListItem(event, 'education', 1, 'studyType')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Établissement" value="École Primaire Point E 1" oninput="updateListItem(event, 'education', 1, 'school')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Diplôme" value="CFEE (Certificat de Fin d'Études Élémentaires)" oninput="updateListItem(event, 'education', 1, 'degree')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Durée / Année" value="6 ans (2002 - 2008)" oninput="updateListItem(event, 'education', 1, 'year')"></div>
+                        </div>
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('education', 2)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Niveau d'étude" value="Études Secondaires" oninput="updateListItem(event, 'education', 2, 'studyType')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Établissement" value="CEM David Diop" oninput="updateListItem(event, 'education', 2, 'school')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Diplôme" value="BFEM (Brevet de Fin d'Études Moyennes)" oninput="updateListItem(event, 'education', 2, 'degree')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Durée / Année" value="4 ans (2008 - 2012)" oninput="updateListItem(event, 'education', 2, 'year')"></div>
+                        </div>
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('education', 3)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Niveau d'étude" value="Lycée" oninput="updateListItem(event, 'education', 3, 'studyType')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Établissement" value="Lycée Lamine Guèye" oninput="updateListItem(event, 'education', 3, 'school')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Diplôme" value="Baccalauréat Série L2" oninput="updateListItem(event, 'education', 3, 'degree')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Durée / Année" value="3 ans (2012 - 2015)" oninput="updateListItem(event, 'education', 3, 'year')"></div>
+                        </div>
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('education', 4)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Niveau d'étude" value="Université / Supérieur" oninput="updateListItem(event, 'education', 4, 'studyType')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Établissement" value="Université Cheikh Anta Diop (UCAD) - FASEG" oninput="updateListItem(event, 'education', 4, 'school')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Diplôme" value="Licence en Gestion & Marketing (Licence 1, 2, 3)" oninput="updateListItem(event, 'education', 4, 'degree')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Durée / Année" value="3 ans (2015 - 2018)" oninput="updateListItem(event, 'education', 4, 'year')"></div>
+                        </div>
+                    </div>
                     <button class="btn-add" onclick="addDynamicItem('education')"><i class="fa-solid fa-plus"></i> Ajouter une étude</button>
                 </div>
 
                 <!-- Step 4: Formations -->
                 <div id="step-4" class="step-section">
-                    <h3 class="step-title">4. Formations</h3>
-                    <div id="formations-list" class="dynamic-list"></div>
+                    <h3 class="step-title">4. Formations (3 formations certifiantes)</h3>
+                    <div id="formations-list" class="dynamic-list">
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('formations', 1)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Formation" value="Certificat en Marketing Digital & E-Commerce" oninput="updateListItem(event, 'formations', 1, 'title')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Centre / Institution" value="ONFP Sénégal (Dakar)" oninput="updateListItem(event, 'formations', 1, 'institution')"></div>
+                            <div class="form-row">
+                                <div class="form-group"><input type="text" class="form-control" placeholder="De" value="Sept 2022" oninput="updateListItem(event, 'formations', 1, 'startDate')"></div>
+                                <div class="form-group"><input type="text" class="form-control" placeholder="À" value="Déc 2022" oninput="updateListItem(event, 'formations', 1, 'endDate')"></div>
+                            </div>
+                            <div class="form-group"><textarea class="form-control" placeholder="Description des apprentissages" oninput="updateListItem(event, 'formations', 1, 'description')">Maîtrise des stratégies sur les réseaux sociaux, création de campagnes Meta & Google Ads, et techniques de conversion en ligne.</textarea></div>
+                        </div>
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('formations', 2)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Formation" value="Secrétariat Bureautique & Gestion de Projet" oninput="updateListItem(event, 'formations', 2, 'title')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Centre / Institution" value="Chambre de Commerce de Dakar" oninput="updateListItem(event, 'formations', 2, 'institution')"></div>
+                            <div class="form-row">
+                                <div class="form-group"><input type="text" class="form-control" placeholder="De" value="Janv 2021" oninput="updateListItem(event, 'formations', 2, 'startDate')"></div>
+                                <div class="form-group"><input type="text" class="form-control" placeholder="À" value="Juin 2021" oninput="updateListItem(event, 'formations', 2, 'endDate')"></div>
+                            </div>
+                            <div class="form-group"><textarea class="form-control" placeholder="Description des apprentissages" oninput="updateListItem(event, 'formations', 2, 'description')">Gestion administrative, classement informatisé, rédaction de rapports professionnels et maîtrise avancée d'Excel.</textarea></div>
+                        </div>
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('formations', 3)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Formation" value="Techniques de Négociation & Vente B2B" oninput="updateListItem(event, 'formations', 3, 'title')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Centre / Institution" value="Cabinet Cible RH Dakar" oninput="updateListItem(event, 'formations', 3, 'institution')"></div>
+                            <div class="form-row">
+                                <div class="form-group"><input type="text" class="form-control" placeholder="De" value="Mars 2020" oninput="updateListItem(event, 'formations', 3, 'startDate')"></div>
+                                <div class="form-group"><input type="text" class="form-control" placeholder="À" value="Mai 2020" oninput="updateListItem(event, 'formations', 3, 'endDate')"></div>
+                            </div>
+                            <div class="form-group"><textarea class="form-control" placeholder="Description des apprentissages" oninput="updateListItem(event, 'formations', 3, 'description')">Techniques de prospection commerciale, négociation de contrats grands comptes et stratégies de fidélisation client.</textarea></div>
+                        </div>
+                    </div>
                     <button class="btn-add" onclick="addDynamicItem('formations')"><i class="fa-solid fa-plus"></i> Ajouter une formation</button>
                 </div>
 
                 <!-- Step 5: Expériences -->
                 <div id="step-5" class="step-section">
-                    <h3 class="step-title">5. Expériences Professionnelles</h3>
-                    <div id="experiences-list" class="dynamic-list"></div>
+                    <h3 class="step-title">5. Expériences Professionnelles (5 expériences)</h3>
+                    <div id="experiences-list" class="dynamic-list">
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('experiences', 1)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Poste" value="Responsable Commercial & Marketing" oninput="updateListItem(event, 'experiences', 1, 'title')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Entreprise" value="Sonatel / Orange Sénégal" oninput="updateListItem(event, 'experiences', 1, 'company')"></div>
+                            <div class="form-row">
+                                <div class="form-group"><input type="text" class="form-control" placeholder="De" value="Janv 2023" oninput="updateListItem(event, 'experiences', 1, 'startDate')"></div>
+                                <div class="form-group"><input type="text" class="form-control" placeholder="À" value="Présent" oninput="updateListItem(event, 'experiences', 1, 'endDate')"></div>
+                            </div>
+                            <div class="form-group"><textarea class="form-control" placeholder="Description des tâches" oninput="updateListItem(event, 'experiences', 1, 'description')">Supervision d'une équipe de 5 commerciaux, élaboration des stratégies de vente B2B et gestion d'un portefeuille grands comptes.</textarea></div>
+                        </div>
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('experiences', 2)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Poste" value="Chef de Projet Ventes Junior" oninput="updateListItem(event, 'experiences', 2, 'title')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Entreprise" value="Wave Digital Finance Sénégal" oninput="updateListItem(event, 'experiences', 2, 'company')"></div>
+                            <div class="form-row">
+                                <div class="form-group"><input type="text" class="form-control" placeholder="De" value="Juin 2021" oninput="updateListItem(event, 'experiences', 2, 'startDate')"></div>
+                                <div class="form-group"><input type="text" class="form-control" placeholder="À" value="Déc 2022" oninput="updateListItem(event, 'experiences', 2, 'endDate')"></div>
+                            </div>
+                            <div class="form-group"><textarea class="form-control" placeholder="Description des tâches" oninput="updateListItem(event, 'experiences', 2, 'description')">Déploiement du réseau de distribution, formation des agents partenaires et animation des campagnes d'acquisition d'utilisateurs.</textarea></div>
+                        </div>
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('experiences', 3)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Poste" value="Assistant Marketing & Communication" oninput="updateListItem(event, 'experiences', 3, 'title')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Entreprise" value="Auchan Sénégal" oninput="updateListItem(event, 'experiences', 3, 'company')"></div>
+                            <div class="form-row">
+                                <div class="form-group"><input type="text" class="form-control" placeholder="De" value="Janv 2020" oninput="updateListItem(event, 'experiences', 3, 'startDate')"></div>
+                                <div class="form-group"><input type="text" class="form-control" placeholder="À" value="Mai 2021" oninput="updateListItem(event, 'experiences', 3, 'endDate')"></div>
+                            </div>
+                            <div class="form-group"><textarea class="form-control" placeholder="Description des tâches" oninput="updateListItem(event, 'experiences', 3, 'description')">Mise en place des promotions en magasin, gestion des réseaux sociaux officiels et analyse hebdomadaire des ventes par secteur.</textarea></div>
+                        </div>
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('experiences', 4)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Poste" value="Agent de Relation Client & Support" oninput="updateListItem(event, 'experiences', 4, 'title')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Entreprise" value="SENELEC Dakar" oninput="updateListItem(event, 'experiences', 4, 'company')"></div>
+                            <div class="form-row">
+                                <div class="form-group"><input type="text" class="form-control" placeholder="De" value="Juin 2018" oninput="updateListItem(event, 'experiences', 4, 'startDate')"></div>
+                                <div class="form-group"><input type="text" class="form-control" placeholder="À" value="Déc 2019" oninput="updateListItem(event, 'experiences', 4, 'endDate')"></div>
+                            </div>
+                            <div class="form-group"><textarea class="form-control" placeholder="Description des tâches" oninput="updateListItem(event, 'experiences', 4, 'description')">Accueil physique et téléphonique des abonnés, gestion des réclamations, saisie de données et appui au service clientèle.</textarea></div>
+                        </div>
+                        <div class="dynamic-item">
+                            <button class="btn-remove" onclick="removeDynamicItem('experiences', 5)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Poste" value="Stagiaire Commercial" oninput="updateListItem(event, 'experiences', 5, 'title')"></div>
+                            <div class="form-group"><input type="text" class="form-control" placeholder="Entreprise" value="Groupe Kirène Sénégal" oninput="updateListItem(event, 'experiences', 5, 'company')"></div>
+                            <div class="form-row">
+                                <div class="form-group"><input type="text" class="form-control" placeholder="De" value="Janv 2018" oninput="updateListItem(event, 'experiences', 5, 'startDate')"></div>
+                                <div class="form-group"><input type="text" class="form-control" placeholder="À" value="Mai 2018" oninput="updateListItem(event, 'experiences', 5, 'endDate')"></div>
+                            </div>
+                            <div class="form-group"><textarea class="form-control" placeholder="Description des tâches" oninput="updateListItem(event, 'experiences', 5, 'description')">Prospection téléphonique, suivi des livraisons chez les distributeurs et rédaction de comptes-rendus de vente.</textarea></div>
+                        </div>
+                    </div>
                     <button class="btn-add" onclick="addDynamicItem('experiences')"><i class="fa-solid fa-plus"></i> Ajouter une expérience</button>
                 </div>
                 
                 <!-- Step 6: Compétences -->
                 <div id="step-6" class="step-section">
                     <h3 class="step-title">6. Compétences</h3>
-                    <div id="skills-list" class="dynamic-list"></div>
+                    <div id="skills-list" class="dynamic-list">
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('skills', 1)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Compétence" value="Maîtrise du Pack Office (Word, Excel, PowerPoint)" oninput="updateListItem(event, 'skills', 1, 'name')"></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('skills', 2)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Compétence" value="Stratégie Commerciale & Négociation B2B" oninput="updateListItem(event, 'skills', 2, 'name')"></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('skills', 3)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Compétence" value="Marketing Digital & Gestion Réseaux Sociaux" oninput="updateListItem(event, 'skills', 3, 'name')"></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('skills', 4)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Compétence" value="Management d'Équipe & Leadership" oninput="updateListItem(event, 'skills', 4, 'name')"></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('skills', 5)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Compétence" value="Gestion de la Relation Client (CRM)" oninput="updateListItem(event, 'skills', 5, 'name')"></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('skills', 6)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Compétence" value="Rédaction Administrative & Reporting" oninput="updateListItem(event, 'skills', 6, 'name')"></div></div>
+                    </div>
                     <button class="btn-add" onclick="addDynamicItem('skills')"><i class="fa-solid fa-plus"></i> Ajouter une compétence</button>
                 </div>
 
                 <!-- Step 7: Langues -->
                 <div id="step-7" class="step-section">
-                    <h3 class="step-title">7. Langues</h3>
-                    <div id="languages-list" class="dynamic-list"></div>
+                    <h3 class="step-title">7. Langues (2 locales + 3 étrangères)</h3>
+                    <div id="languages-list" class="dynamic-list">
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('languages', 1)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-row" style="margin-bottom:0;"><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Langue" value="Wolof" oninput="updateListItem(event, 'languages', 1, 'name')"></div><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Niveau" value="Langue Maternelle / Parler courant" oninput="updateListItem(event, 'languages', 1, 'level')"></div></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('languages', 2)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-row" style="margin-bottom:0;"><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Langue" value="Sérère" oninput="updateListItem(event, 'languages', 2, 'name')"></div><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Niveau" value="Bien parlé" oninput="updateListItem(event, 'languages', 2, 'level')"></div></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('languages', 3)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-row" style="margin-bottom:0;"><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Langue" value="Français" oninput="updateListItem(event, 'languages', 3, 'name')"></div><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Niveau" value="Courant - Lu, écrit, parlé" oninput="updateListItem(event, 'languages', 3, 'level')"></div></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('languages', 4)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-row" style="margin-bottom:0;"><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Langue" value="Anglais" oninput="updateListItem(event, 'languages', 4, 'name')"></div><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Niveau" value="Avancé - Lu et écrit" oninput="updateListItem(event, 'languages', 4, 'level')"></div></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('languages', 5)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-row" style="margin-bottom:0;"><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Langue" value="Espagnol" oninput="updateListItem(event, 'languages', 5, 'name')"></div><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Niveau" value="Intermédiaire - Lu et parlé" oninput="updateListItem(event, 'languages', 5, 'level')"></div></div></div>
+                    </div>
                     <button class="btn-add" onclick="addDynamicItem('languages')"><i class="fa-solid fa-plus"></i> Ajouter une langue</button>
                 </div>
 
                 <!-- Step 8: Intérêts -->
                 <div id="step-8" class="step-section">
                     <h3 class="step-title">8. Centres d'intérêt</h3>
-                    <div id="interests-list" class="dynamic-list"></div>
+                    <div id="interests-list" class="dynamic-list">
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('interests', 1)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Centre d'intérêt" value="Football (Capitaine d'équipe locale)" oninput="updateListItem(event, 'interests', 1, 'name')"></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('interests', 2)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Centre d'intérêt" value="Bénévolat et actions communautaires" oninput="updateListItem(event, 'interests', 2, 'name')"></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('interests', 3)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Centre d'intérêt" value="Lecture et veille technologique" oninput="updateListItem(event, 'interests', 3, 'name')"></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('interests', 4)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Centre d'intérêt" value="Voyages & découverte culturelle" oninput="updateListItem(event, 'interests', 4, 'name')"></div></div>
+                        <div class="dynamic-item"><button class="btn-remove" onclick="removeDynamicItem('interests', 5)" title="Supprimer"><i class="fa-solid fa-xmark"></i></button><div class="form-group" style="margin-bottom:0;"><input type="text" class="form-control" placeholder="Centre d'intérêt" value="Musique & arts sénégalais" oninput="updateListItem(event, 'interests', 5, 'name')"></div></div>
+                    </div>
                     <button class="btn-add" onclick="addDynamicItem('interests')"><i class="fa-solid fa-plus"></i> Ajouter un intérêt</button>
                 </div>
 
