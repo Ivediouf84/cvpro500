@@ -1114,6 +1114,44 @@ function triggerAiCvImport() {
     }
 }
 
+async function extractTextFromPDF(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    let fullText = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        fullText += textContent.items.map(s => s.str).join(" ") + "\n";
+    }
+    return fullText;
+}
+
+async function extractTextFromImage(file) {
+    const result = await Tesseract.recognize(file, 'fra', { 
+        logger: m => {
+            const btn = document.getElementById('btn-import-cv-ai');
+            if (btn && m.status === 'recognizing text') {
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Lecture Image (${Math.round(m.progress * 100)}%)...`;
+            }
+        }
+    });
+    return result.data.text;
+}
+
+async function extractRawText(file) {
+    if (file.type === 'application/pdf') {
+        const btn = document.getElementById('btn-import-cv-ai');
+        if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Lecture du PDF...';
+        return await extractTextFromPDF(file);
+    } else if (file.type.startsWith('image/')) {
+        const btn = document.getElementById('btn-import-cv-ai');
+        if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Initialisation OCR...';
+        return await extractTextFromImage(file);
+    } else {
+        throw new Error('Format non supporté. Veuillez utiliser un PDF ou une Image (JPG, PNG).');
+    }
+}
+
 async function handleAiCvUpload(e) {
     const file = e.target?.files?.[0];
     if (!file) return;
@@ -1121,70 +1159,63 @@ async function handleAiCvUpload(e) {
     const btn = document.getElementById('btn-import-cv-ai');
     const originalText = btn ? btn.innerHTML : '';
     if (btn) {
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyse par l\'IA...';
         btn.disabled = true;
     }
 
     try {
-        const reader = new FileReader();
-        reader.onload = async function(evt) {
-            try {
-                const base64Data = evt.target.result;
-                const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
+        // 1. Extraction locale du texte
+        const rawTextExtracted = await extractRawText(file);
+        
+        if (!rawTextExtracted || rawTextExtracted.trim().length < 20) {
+            throw new Error("Impossible d'extraire suffisamment de texte de ce fichier.");
+        }
 
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
-                    },
-                    body: JSON.stringify({
-                        imageBase64: cleanBase64,
-                        mimeType: file.type || 'image/jpeg',
-                        text: `Analyse et extrait le texte de ce fichier CV (${file.name})`
-                    })
-                });
+        // 2. Envoi à l'IA Groq
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyse par l\'IA Groq...';
+        
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            },
+            body: JSON.stringify({
+                rawText: rawTextExtracted
+            })
+        });
 
-                const rawText = await response.text();
-                let parsed = {};
-                try {
-                    let cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-                    const startIndex = cleanJson.indexOf('{');
-                    const endIndex = cleanJson.lastIndexOf('}');
-                    if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
-                        cleanJson = cleanJson.substring(startIndex, endIndex + 1);
-                    }
-                    parsed = JSON.parse(cleanJson);
-                } catch(err) {
-                    throw new Error("Erreur de format de réponse de l'IA : " + rawText.substring(0, 100));
-                }
-
-                if (response.ok && parsed) {
-                    cvData = sanitizeCvData(parsed);
-                    renderForms();
-                    renderCV();
-                    triggerCloudSave();
-                    alert("✨ Votre CV a été extrait et inséré avec succès par l'IA ! Vous pouvez maintenant relire et modifier toutes les informations dans les formulaires.");
-                } else {
-                    throw new Error(parsed.error || rawText);
-                }
-
-            } catch(err) {
-                console.error("AI Import Error:", err);
-                alert("Erreur d'analyse IA : " + err.message);
-            } finally {
-                if (btn) {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }
+        const rawText = await response.text();
+        let parsed = {};
+        try {
+            let cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const startIndex = cleanJson.indexOf('{');
+            const endIndex = cleanJson.lastIndexOf('}');
+            if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+                cleanJson = cleanJson.substring(startIndex, endIndex + 1);
             }
-        };
-        reader.readAsDataURL(file);
+            parsed = JSON.parse(cleanJson);
+        } catch(err) {
+            throw new Error("Erreur de format de réponse de l'IA : " + rawText.substring(0, 100));
+        }
+
+        if (response.ok && parsed) {
+            cvData = sanitizeCvData(parsed);
+            renderForms();
+            renderCV();
+            triggerCloudSave();
+            alert("✨ Votre CV a été extrait et structuré par Groq avec succès !");
+        } else {
+            throw new Error(parsed.error || rawText);
+        }
+
     } catch(err) {
+        console.error("AI Import Error:", err);
+        alert("Erreur d'importation : " + err.message);
+    } finally {
         if (btn) {
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
-        alert("Erreur lecture du fichier : " + err.message);
+        if (e.target) e.target.value = '';
     }
 }

@@ -41,6 +41,43 @@ function handleFileSelect(event) {
     }
 }
 
+async function extractTextFromPDF(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    let fullText = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        fullText += textContent.items.map(s => s.str).join(" ") + "\n";
+    }
+    return fullText;
+}
+
+async function extractTextFromImage(file) {
+    const result = await Tesseract.recognize(file, 'fra', { 
+        logger: m => {
+            const overlay = document.getElementById('ai-loading-overlay');
+            if (overlay && overlay.querySelector('h3') && m.status === 'recognizing text') {
+                overlay.querySelector('h3').innerText = `Lecture Image (${Math.round(m.progress * 100)}%)...`;
+            }
+        }
+    });
+    return result.data.text;
+}
+
+async function extractRawText(file) {
+    const overlay = document.getElementById('ai-loading-overlay');
+    if (file.type === 'application/pdf') {
+        if(overlay && overlay.querySelector('h3')) overlay.querySelector('h3').innerText = 'Lecture du PDF...';
+        return await extractTextFromPDF(file);
+    } else if (file.type.startsWith('image/')) {
+        if(overlay && overlay.querySelector('h3')) overlay.querySelector('h3').innerText = 'Initialisation OCR...';
+        return await extractTextFromImage(file);
+    } else {
+        throw new Error('Format non supporté. Veuillez utiliser un PDF ou une Image (JPG, PNG).');
+    }
+}
+
 async function generateDocuments(event) {
     event.preventDefault();
     
@@ -51,7 +88,7 @@ async function generateDocuments(event) {
     const file = fileInput.files[0];
     
     if (!file) {
-        alert("Veuillez insérer une photo de votre CV.");
+        alert("Veuillez insérer une photo de votre CV ou un document PDF.");
         return;
     }
     
@@ -61,55 +98,21 @@ async function generateDocuments(event) {
     }
 
     const overlay = document.getElementById('ai-loading-overlay');
+    const originalOverlayText = overlay.querySelector('h3') ? overlay.querySelector('h3').innerText : 'Génération en cours...';
     overlay.style.display = 'flex';
 
     try {
-        // 1. Convert file to base64
-        const base64Data = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (file.type.startsWith('image/')) {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1200;
-                        const MAX_HEIGHT = 1600;
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > height) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
-                        } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
-                            }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.8));
-                    };
-                    img.onerror = reject;
-                    img.src = e.target.result;
-                } else {
-                    // For PDF, return the result directly
-                    resolve(e.target.result);
-                }
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-
-        const b64Str = base64Data.split(',')[1];
-        const mimeType = file.type || 'application/pdf';
+        // 1. Extraction locale du texte
+        const rawTextExtracted = await extractRawText(file);
+        
+        if (!rawTextExtracted || rawTextExtracted.trim().length < 20) {
+            throw new Error("Impossible d'extraire suffisamment de texte de ce fichier.");
+        }
 
         const entreprise = document.getElementById('input-entreprise').value;
         const destinataire = document.getElementById('input-destinataire').value;
+
+        if (overlay.querySelector('h3')) overlay.querySelector('h3').innerText = 'Analyse et Rédaction par l\'IA Groq...';
 
         // 2. Call Supabase Edge Function
         const { data, error } = await supabaseClient.functions.invoke('generate-motivation', {
@@ -119,8 +122,7 @@ async function generateDocuments(event) {
                 jobTitle: poste,
                 companyName: entreprise,
                 addressedTo: destinataire,
-                cvImageBase64: b64Str,
-                mimeType: mimeType
+                rawText: rawTextExtracted
             }
         });
 

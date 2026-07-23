@@ -12,6 +12,10 @@
     <script src="auth-guard.js"></script>
     <!-- html2pdf for client-side PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Local Extraction Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         body { margin: 0; height: 100vh; display: flex; flex-direction: column; background: var(--body-bg); color: var(--text-main); overflow: hidden; }
         
@@ -235,9 +239,10 @@
                 <a href="auth.html" id="btn-login" class="btn btn-ghost" style="display: none; color: var(--text-main); font-size: 0.85rem;">Connexion</a>
                 
                 <!-- IA Button -->
-                <button class="btn btn-ghost" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md);" title="Fonctionnalité Premium" onclick="window.location.href='index.html'">
+                <button class="btn btn-ghost" id="btn-import-cv-ai" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md); cursor: pointer;" title="Téléverser un CV (Photo / PDF)" onclick="triggerAiCvImportInAiBuilder()">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hide-mobile">Importer ancien CV</span>
                 </button>
+                <input type="file" id="ai-cv-file-input-builder" accept="image/*,application/pdf,.pdf" style="display: none;" onchange="handleAiCvUploadInAiBuilder(event)">
                 <button class="btn btn-primary" id="btn-open-payment" style="font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer;" title="Télécharger">
                     <i class="fa-solid fa-download"></i> <span class="hide-mobile">Télécharger PDF (1000F)</span>
                 </button>
