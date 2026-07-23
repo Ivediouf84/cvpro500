@@ -13,6 +13,7 @@ let cloudDocumentId = null;
 
 // Initialize app
 const initApp = async () => {
+    alert("INIT APP DEMARRE");
     // Check for SenePay payment success redirect
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
@@ -38,10 +39,11 @@ const initApp = async () => {
 
     // Load AI generated HTML or JSON
     const importedDataStr = localStorage.getItem('importedCVData');
+    alert("importedDataStr est: " + (importedDataStr ? "PRESENT" : "VIDE"));
     const importedHtml = localStorage.getItem('importedCVHtml');
         if (importedDataStr) {
             try {
-                alert("Données importées trouvées ! Longueur: " + importedDataStr.length + " caractères. Début: " + importedDataStr.substring(0, 100));
+                alert("Données importées trouvées !");
                 const parsed = JSON.parse(importedDataStr);
                 renderParsedJsonToHtml(parsed);
                 localStorage.removeItem('importedCVData');
