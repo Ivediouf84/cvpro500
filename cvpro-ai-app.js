@@ -39,16 +39,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load AI generated HTML or JSON
     const importedDataStr = localStorage.getItem('importedCVData');
     const importedHtml = localStorage.getItem('importedCVHtml');
-    
-    if (importedDataStr) {
-        try {
-            const parsed = JSON.parse(importedDataStr);
-            renderParsedJsonToHtml(parsed);
-            localStorage.removeItem('importedCVData');
-        } catch (e) {
-            console.error("Error generating HTML from imported JSON", e);
-        }
-    } else if (importedHtml && importedHtml.trim().length > 50) {
+        if (importedDataStr) {
+            try {
+                alert("Données importées trouvées ! Longueur: " + importedDataStr.length + " caractères. Début: " + importedDataStr.substring(0, 100));
+                const parsed = JSON.parse(importedDataStr);
+                renderParsedJsonToHtml(parsed);
+                localStorage.removeItem('importedCVData');
+                alert("Rendu HTML terminé avec succès.");
+            } catch (e) {
+                alert("Erreur lors du rendu HTML: " + e.message);
+                console.error("Error generating HTML from imported JSON", e);
+            }
+        } else if (importedHtml && importedHtml.trim().length > 50) {
         if (docEl) docEl.innerHTML = importedHtml;
         triggerCloudSaveHtml(importedHtml);
     } else {
