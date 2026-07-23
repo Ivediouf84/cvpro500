@@ -1,6 +1,12 @@
-// cvpro-ai-app.js (Simplified for AI HTML flow)
+// cvpro-ai-app.js (AI Textual CV Builder with Word-like editing)
 const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-const SUPABASE_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+const HARDCODED_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+
+try {
+    localStorage.setItem('supabase_anon_key', HARDCODED_ANON_KEY);
+} catch(e) {}
+
+const SUPABASE_KEY = HARDCODED_ANON_KEY;
 let supabaseClient = null;
 let currentUserId = null;
 let cloudDocumentId = null;
@@ -17,10 +23,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Auth initialization
     if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        await initCloud();
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            await initCloud();
+        } catch(e) {}
     }
     
+    // Ensure #cv-document is contenteditable for Word-like direct editing
+    const docEl = document.getElementById('cv-document');
+    if (docEl) {
+        docEl.contentEditable = "true";
+        docEl.style.outline = "none";
+    }
+
     // Load AI generated HTML or JSON
     const importedDataStr = localStorage.getItem('importedCVData');
     const importedHtml = localStorage.getItem('importedCVHtml');
@@ -28,133 +43,211 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (importedDataStr) {
         try {
             const parsed = JSON.parse(importedDataStr);
-            const p = {
-                firstName: parsed.personal?.firstName || parsed.firstName || '',
-                lastName: parsed.personal?.lastName || parsed.lastName || '',
-                jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || '',
-                email: parsed.personal?.email || parsed.email || '',
-                phone: parsed.personal?.phone || parsed.phone || '',
-                city: parsed.personal?.city || parsed.personal?.location || parsed.location || '',
-                linkedin: parsed.personal?.linkedin || parsed.linkedin || '',
-                photo: parsed.personal?.photo || parsed.photo || ''
-            };
-            const profileSummary = parsed.profile?.summary || parsed.summary || '';
-            const education = parsed.education || [];
-            const formations = parsed.formations || [];
-            const experiences = parsed.experiences || parsed.experience || [];
-            const skills = parsed.skills || [];
-            const languages = parsed.languages || [];
-            const interests = parsed.interests || [];
-
-            const html = `
-                <div class="cv-header">
-                    <div class="cv-profile-pic" style="margin-right: 25px;"><img src="${p.photo}" alt="Profil" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
-                    <div class="cv-header-name" style="flex: 1;">
-                        <h1>${p.firstName || 'Prénom'} <span class="text-primary">${p.lastName || 'Nom'}</span></h1>
-                        <h2>${p.jobTitle || 'Titre Professionnel'}</h2>
-                    </div>
-                    <div class="cv-header-contact">
-                        ${p.email ? `<div><i class="fa-solid fa-envelope"></i> ${p.email}</div>` : ''}
-                        ${p.phone ? `<div><i class="fa-solid fa-phone"></i> ${p.phone}</div>` : ''}
-                        ${p.city ? `<div><i class="fa-solid fa-location-dot"></i> ${p.city}</div>` : ''}
-                        ${p.linkedin ? `<div><i class="fa-brands fa-linkedin"></i> ${p.linkedin}</div>` : ''}
-                    </div>
-                </div>
-                
-                <div class="cv-body">
-                    <div class="cv-main">
-                        ${profileSummary ? `
-                        <div class="cv-section">
-                            <h3 class="cv-section-title">Profil</h3>
-                            <p class="cv-summary">${profileSummary}</p>
-                        </div>` : ''}
-                        
-                        ${education.length > 0 ? `
-                        <div class="cv-section">
-                            <h3 class="cv-section-title">Études</h3>
-                            ${education.map(e => `
-                                <div class="cv-item">
-                                    <div class="cv-item-header">
-                                        <div class="cv-item-title">${e.studyType ? e.studyType + ' - ' : ''}${e.degree || 'Diplôme'} - <span class="cv-item-company">${e.school || 'Établissement'}</span></div>
-                                        <div class="cv-item-date">${e.year || ''}</div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>` : ''}
-                        
-                        ${formations.length > 0 ? `
-                        <div class="cv-section">
-                            <h3 class="cv-section-title">Formations</h3>
-                            ${formations.map(f => `
-                                <div class="cv-item">
-                                    <div class="cv-item-header">
-                                        <div class="cv-item-title">${f.title || 'Formation'} - <span class="cv-item-company">${f.institution || 'Institution'}</span></div>
-                                        <div class="cv-item-date">${f.startDate || ''} ${f.endDate ? '- ' + f.endDate : ''}</div>
-                                    </div>
-                                    <p class="cv-item-desc">${f.description || ''}</p>
-                                </div>
-                            `).join('')}
-                        </div>` : ''}
-
-                        ${experiences.length > 0 ? `
-                        <div class="cv-section">
-                            <h3 class="cv-section-title">Expérience Professionnelle</h3>
-                            ${experiences.map(e => `
-                                <div class="cv-item">
-                                    <div class="cv-item-header">
-                                        <div class="cv-item-title">${e.title || 'Poste'} - <span class="cv-item-company">${e.company || 'Entreprise'}</span></div>
-                                        <div class="cv-item-date">${e.startDate || ''} ${e.endDate ? '- ' + e.endDate : ''}</div>
-                                    </div>
-                                    <p class="cv-item-desc">${e.description || ''}</p>
-                                </div>
-                            `).join('')}
-                        </div>` : ''}
-                    </div>
-                    
-                    <div class="cv-sidebar">
-                        ${skills.length > 0 ? `
-                        <div class="cv-section">
-                            <h3 class="cv-section-title">Compétences</h3>
-                            <div class="cv-skills-list">
-                                ${skills.map(s => s.name ? `<span class="cv-skill-tag">${s.name}</span>` : '').join('')}
-                            </div>
-                        </div>` : ''}
-                        
-                        ${languages.length > 0 ? `
-                        <div class="cv-section">
-                            <h3 class="cv-section-title">Langues</h3>
-                            <ul class="cv-list">
-                                ${languages.map(l => l.name ? `<li><strong>${l.name}</strong> ${l.level ? `<span class="cv-level-text">- ${l.level}</span>` : ''}</li>` : '').join('')}
-                            </ul>
-                        </div>` : ''}
-                        
-                        ${interests.length > 0 ? `
-                        <div class="cv-section">
-                            <h3 class="cv-section-title">Intérêts</h3>
-                            <ul class="cv-list">
-                                ${interests.map(i => i.name ? `<li>${i.name}</li>` : '').join('')}
-                            </ul>
-                        </div>` : ''}
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('cv-document').innerHTML = html;
+            renderParsedJsonToHtml(parsed);
             localStorage.removeItem('importedCVData');
-            triggerCloudSaveHtml(html);
         } catch (e) {
             console.error("Error generating HTML from imported JSON", e);
         }
-    } else if (importedHtml) {
-        document.getElementById('cv-document').innerHTML = importedHtml;
+    } else if (importedHtml && importedHtml.trim().length > 50) {
+        if (docEl) docEl.innerHTML = importedHtml;
         triggerCloudSaveHtml(importedHtml);
     } else {
-        document.getElementById('cv-document').innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">Aucun CV importé. Veuillez scanner un CV depuis la page d\'accueil.</div>';
+        // Render default demo CV template (Ibou Diouf) so the page is NEVER blank
+        renderDefaultDemoCv();
     }
     
     // Setup photo upload listener if there is a placeholder
     setupPhotoUploader();
+    updateCVStyles();
 });
+
+function renderDefaultDemoCv() {
+    const docEl = document.getElementById('cv-document');
+    if (!docEl) return;
+    
+    docEl.innerHTML = `
+        <div class="cv-header" style="background: var(--primary, #4F46E5); padding: 1.5rem; color: white; border-radius: 8px; display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div class="cv-header-name" style="flex: 1;">
+                <h1 style="font-size: 2rem; margin: 0; color: white;">Ibou <span style="color: #fef08a;">Diouf</span></h1>
+                <h2 style="font-size: 1.1rem; margin-top: 0.3rem; font-weight: 400; color: #e0e7ff;">Chef de Projet Commercial & Marketing Digital</h2>
+            </div>
+            <div class="cv-header-contact" style="font-size: 0.85rem; line-height: 1.5;">
+                <div><i class="fa-solid fa-envelope"></i> ibou.diouf@example.com</div>
+                <div><i class="fa-solid fa-phone"></i> +221 77 654 32 10</div>
+                <div><i class="fa-solid fa-location-dot"></i> Dakar, Sénégal</div>
+                <div><i class="fa-brands fa-linkedin"></i> linkedin.com/in/iboudiouf</div>
+            </div>
+        </div>
+        
+        <div class="cv-body" style="display: flex; gap: 1.5rem;">
+            <div class="cv-main" style="flex: 2;">
+                <div class="cv-section" style="margin-bottom: 1.25rem;">
+                    <h3 class="cv-section-title" style="font-size: 1.1rem; border-bottom: 2px solid #4F46E5; padding-bottom: 0.3rem; color: #1e1b4b; margin-bottom: 0.5rem;">Profil</h3>
+                    <p class="cv-summary" style="font-size: 0.9rem; line-height: 1.5; color: #334155;">Professionnel passionné et stratégique comptant plus de 6 années d'expérience réussie dans la gestion de projets commerciaux, le développement des ventes et le marketing digital au Sénégal. Spécialisé dans la négociation B2B, l'animation d'équipes de vente et le déploiement de campagnes digitales à fort impact.</p>
+                </div>
+                
+                <div class="cv-section" style="margin-bottom: 1.25rem;">
+                    <h3 class="cv-section-title" style="font-size: 1.1rem; border-bottom: 2px solid #4F46E5; padding-bottom: 0.3rem; color: #1e1b4b; margin-bottom: 0.5rem;">Études</h3>
+                    <div class="cv-item" style="margin-bottom: 0.6rem;">
+                        <strong style="color: #0f172a;">Licence en Gestion & Marketing (FASEG)</strong> - <span style="color: #475569;">Université Cheikh Anta Diop (UCAD)</span> <span style="float: right; color: #64748b; font-size: 0.85rem;">3 ans</span>
+                    </div>
+                    <div class="cv-item" style="margin-bottom: 0.6rem;">
+                        <strong style="color: #0f172a;">Baccalauréat Série L2</strong> - <span style="color: #475569;">Lycée Lamine Guèye</span> <span style="float: right; color: #64748b; font-size: 0.85rem;">3 ans</span>
+                    </div>
+                </div>
+
+                <div class="cv-section" style="margin-bottom: 1.25rem;">
+                    <h3 class="cv-section-title" style="font-size: 1.1rem; border-bottom: 2px solid #4F46E5; padding-bottom: 0.3rem; color: #1e1b4b; margin-bottom: 0.5rem;">Expériences</h3>
+                    <div class="cv-item" style="margin-bottom: 0.8rem;">
+                        <div style="display: flex; justify-content: space-between;"><strong style="color: #0f172a;">Responsable Commercial & Marketing</strong> <span style="color: #64748b; font-size: 0.85rem;">Janv 2023 - Présent</span></div>
+                        <div style="color: #4F46E5; font-weight: 600; font-size: 0.9rem;">Sonatel / Orange Sénégal</div>
+                        <p style="font-size: 0.85rem; color: #334155; margin-top: 0.2rem;">Supervision d'une équipe de 5 commerciaux, élaboration des stratégies de vente B2B et gestion d'un portefeuille grands comptes.</p>
+                    </div>
+                    <div class="cv-item" style="margin-bottom: 0.8rem;">
+                        <div style="display: flex; justify-content: space-between;"><strong style="color: #0f172a;">Chef de Projet Ventes Junior</strong> <span style="color: #64748b; font-size: 0.85rem;">Juin 2021 - Déc 2022</span></div>
+                        <div style="color: #4F46E5; font-weight: 600; font-size: 0.9rem;">Wave Digital Finance Sénégal</div>
+                        <p style="font-size: 0.85rem; color: #334155; margin-top: 0.2rem;">Déploiement du réseau de distribution, formation des agents partenaires et animation des campagnes d'acquisition.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cv-sidebar" style="flex: 1; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div class="cv-section" style="margin-bottom: 1.25rem;">
+                    <h3 class="cv-section-title" style="font-size: 1rem; color: #1e1b4b; border-bottom: 1.5px solid #4F46E5; padding-bottom: 0.2rem; margin-bottom: 0.5rem;">Compétences</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                        <span style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Pack Office</span>
+                        <span style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Négociation B2B</span>
+                        <span style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Marketing Digital</span>
+                        <span style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Gestion CRM</span>
+                    </div>
+                </div>
+                
+                <div class="cv-section" style="margin-bottom: 1.25rem;">
+                    <h3 class="cv-section-title" style="font-size: 1rem; color: #1e1b4b; border-bottom: 1.5px solid #4F46E5; padding-bottom: 0.2rem; margin-bottom: 0.5rem;">Langues</h3>
+                    <ul style="padding-left: 1.2rem; margin: 0; font-size: 0.85rem; color: #334155; line-height: 1.5;">
+                        <li><strong>Wolof</strong> (Maternelle)</li>
+                        <li><strong>Français</strong> (Courant)</li>
+                        <li><strong>Anglais</strong> (Avancé)</li>
+                    </ul>
+                </div>
+                
+                <div class="cv-section">
+                    <h3 class="cv-section-title" style="font-size: 1rem; color: #1e1b4b; border-bottom: 1.5px solid #4F46E5; padding-bottom: 0.2rem; margin-bottom: 0.5rem;">Intérêts</h3>
+                    <ul style="padding-left: 1.2rem; margin: 0; font-size: 0.85rem; color: #334155; line-height: 1.5;">
+                        <li>Football & Bénévolat</li>
+                        <li>Lecture & Voyage</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderParsedJsonToHtml(parsed) {
+    const docEl = document.getElementById('cv-document');
+    if (!docEl || !parsed) return;
+
+    const p = {
+        firstName: parsed.personal?.firstName || parsed.firstName || 'Prénom',
+        lastName: parsed.personal?.lastName || parsed.lastName || 'Nom',
+        jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || 'Titre Professionnel',
+        email: parsed.personal?.email || parsed.email || '',
+        phone: parsed.personal?.phone || parsed.phone || '',
+        city: parsed.personal?.city || parsed.personal?.location || parsed.location || '',
+        linkedin: parsed.personal?.linkedin || parsed.linkedin || ''
+    };
+    const profileSummary = parsed.profile?.summary || parsed.summary || '';
+    const education = Array.isArray(parsed.education) ? parsed.education : [];
+    const formations = Array.isArray(parsed.formations) ? parsed.formations : [];
+    const experiences = Array.isArray(parsed.experiences) ? parsed.experiences : (Array.isArray(parsed.experience) ? parsed.experience : []);
+    const skills = Array.isArray(parsed.skills) ? parsed.skills : [];
+    const languages = Array.isArray(parsed.languages) ? parsed.languages : [];
+    const interests = Array.isArray(parsed.interests) ? parsed.interests : [];
+
+    const html = `
+        <div style="padding: 2rem; font-family: Arial, sans-serif; color: #000; line-height: 1.6;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 style="font-size: 24pt; margin: 0; color: #000;">${p.firstName} ${p.lastName}</h1>
+                <h2 style="font-size: 14pt; font-weight: normal; margin: 5px 0; color: #333;">${p.jobTitle}</h2>
+                <p style="font-size: 11pt; margin: 5px 0;">
+                    ${[p.email, p.phone, p.city, p.linkedin].filter(Boolean).join(' | ')}
+                </p>
+            </div>
+            
+            ${profileSummary ? `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Profil</h3>
+                <p style="font-size: 11pt; margin: 0;">${profileSummary}</p>
+            </div>` : ''}
+
+            ${experiences.length > 0 ? `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Expériences Professionnelles</h3>
+                ${experiences.map(e => `
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11pt; font-weight: bold;">
+                            <span>${e.title || 'Poste'} - ${e.company || 'Entreprise'}</span>
+                            <span>${e.startDate || ''} ${e.endDate ? '- ' + e.endDate : ''}</span>
+                        </div>
+                        <p style="font-size: 11pt; margin: 3px 0 0 0;">${e.description || ''}</p>
+                    </div>
+                `).join('')}
+            </div>` : ''}
+
+            ${education.length > 0 ? `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Études et Diplômes</h3>
+                ${education.map(e => `
+                    <div style="margin-bottom: 5px; font-size: 11pt;">
+                        <strong style="color: #000;">${e.degree || e.studyType || 'Diplôme'}</strong> - ${e.school || 'Établissement'} 
+                        <span style="float: right;">${e.year || ''}</span>
+                    </div>
+                `).join('')}
+            </div>` : ''}
+
+            ${formations.length > 0 ? `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Formations / Certifications</h3>
+                ${formations.map(f => `
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11pt; font-weight: bold;">
+                            <span>${f.title || 'Formation'} - ${f.institution || 'Institution'}</span>
+                            <span>${f.startDate || ''} ${f.endDate ? '- ' + f.endDate : ''}</span>
+                        </div>
+                        <p style="font-size: 11pt; margin: 3px 0 0 0;">${f.description || ''}</p>
+                    </div>
+                `).join('')}
+            </div>` : ''}
+
+            ${skills.length > 0 ? `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Compétences</h3>
+                <p style="font-size: 11pt; margin: 0;">
+                    ${skills.map(s => typeof s === 'string' ? s : s.name).filter(Boolean).join(' • ')}
+                </p>
+            </div>` : ''}
+
+            ${languages.length > 0 ? `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Langues</h3>
+                <ul style="font-size: 11pt; margin: 0; padding-left: 20px;">
+                    ${languages.map(l => typeof l === 'string' ? `<li>${l}</li>` : `<li><strong>${l.name || ''}</strong> ${l.level ? '(' + l.level + ')' : ''}</li>`).join('')}
+                </ul>
+            </div>` : ''}
+            
+            ${interests.length > 0 ? `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Centres d'intérêt</h3>
+                <p style="font-size: 11pt; margin: 0;">
+                    ${interests.map(i => typeof i === 'string' ? i : i.name).filter(Boolean).join(' • ')}
+                </p>
+            </div>` : ''}
+        </div>
+    `;
+
+    docEl.innerHTML = html;
+    triggerCloudSaveHtml(html);
+}
 
 function setupPhotoUploader() {
     const fileInput = document.createElement('input');
@@ -541,6 +634,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// AI Upload Handler for cvpro-ai-builder.html
+function triggerAiCvImportInAiBuilder() {
+    const fileInput = document.getElementById('ai-cv-file-input-builder');
+    if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
+    }
+}
+
+async function handleAiCvUploadInAiBuilder(e) {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+
+    const btn = document.getElementById('btn-import-cv-ai');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Extraction IA...';
+        btn.disabled = true;
+    }
+
+    try {
+        const reader = new FileReader();
+        reader.onload = async function(evt) {
+            try {
+                const base64Data = evt.target.result;
+                const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
+
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
+                    body: JSON.stringify({
+                        imageBase64: cleanBase64,
+                        mimeType: file.type || 'image/jpeg',
+                        text: `Analyse et extrait le texte de ce fichier CV (${file.name})`
+                    })
+                });
+
+                const rawText = await response.text();
+                let parsed = {};
+                try {
+                    parsed = JSON.parse(rawText);
+                } catch(err) {
+                    throw new Error("Format invalide de l'IA : " + rawText.substring(0, 100));
+                }
+
+                if (response.ok && parsed) {
+                    renderParsedJsonToHtml(parsed);
+                    alert("✨ Votre CV a été extrait textuellement par l'IA ! Vous pouvez maintenant cliquer n'importe où sur la feuille pour modifier directement le texte comme sur Word.");
+                } else {
+                    throw new Error(parsed.error || rawText);
+                }
+
+            } catch(err) {
+                console.error("AI Import Error:", err);
+                alert("Erreur lors de l'extraction IA : " + err.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        };
+        reader.readAsDataURL(file);
+    } catch(err) {
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+        alert("Erreur lecture fichier : " + err.message);
+    }
+}
 
 // Floating rich text toolbar has been removed as per user request. 
 // The formatting tools are now always accessible in the left style panel.

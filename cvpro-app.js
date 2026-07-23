@@ -78,44 +78,52 @@ let cvData = {
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-const SUPABASE_KEY = safeGet('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+const HARDCODED_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+safeSet('supabase_anon_key', HARDCODED_ANON_KEY);
+const SUPABASE_KEY = HARDCODED_ANON_KEY;
 let supabaseClient = null;
 let currentUserId = null;
 let cloudDocumentId = null;
 let saveTimeout = null;
 let currentZoom = 0.8;
 
+const DEFAULT_CV_DATA = JSON.parse(JSON.stringify(cvData));
+
 // Helper to sanitize and guarantee all cvData fields exist
 function sanitizeCvData(raw) {
-    if (!raw || typeof raw !== 'object') return cvData;
+    if (!raw || typeof raw !== 'object') return JSON.parse(JSON.stringify(DEFAULT_CV_DATA));
 
-    // Check if raw contains valid data or old Moussa Diop data
-    const rawFirst = raw.personal?.firstName;
-    const rawLast = raw.personal?.lastName;
-    
-    // If raw contains old 'Moussa' test data, override with Ibou Diouf demo
+    const rawFirst = raw.personal?.firstName?.trim();
+    const rawLast = raw.personal?.lastName?.trim();
     const isOldMoussa = rawFirst === 'Moussa' || rawLast === 'Diop';
     
+    if (isOldMoussa) return JSON.parse(JSON.stringify(DEFAULT_CV_DATA));
+
+    const hasContent = (arr) => Array.isArray(arr) && arr.length > 0 && arr.some(item => {
+        if (!item || typeof item !== 'object') return false;
+        return Object.values(item).some(val => typeof val === 'string' && val.trim().length > 0);
+    });
+
     return {
         personal: {
-            firstName: (!isOldMoussa && rawFirst) ? rawFirst : cvData.personal.firstName,
-            lastName: (!isOldMoussa && rawLast) ? rawLast : cvData.personal.lastName,
-            jobTitle: (!isOldMoussa && raw.personal?.jobTitle) ? raw.personal.jobTitle : cvData.personal.jobTitle,
-            email: (!isOldMoussa && raw.personal?.email) ? raw.personal.email : cvData.personal.email,
-            phone: (!isOldMoussa && raw.personal?.phone) ? raw.personal.phone : cvData.personal.phone,
-            city: (!isOldMoussa && raw.personal?.city) ? raw.personal.city : cvData.personal.city,
-            linkedin: (!isOldMoussa && raw.personal?.linkedin) ? raw.personal.linkedin : cvData.personal.linkedin,
+            firstName: rawFirst || DEFAULT_CV_DATA.personal.firstName,
+            lastName: rawLast || DEFAULT_CV_DATA.personal.lastName,
+            jobTitle: raw.personal?.jobTitle?.trim() || DEFAULT_CV_DATA.personal.jobTitle,
+            email: raw.personal?.email?.trim() || DEFAULT_CV_DATA.personal.email,
+            phone: raw.personal?.phone?.trim() || DEFAULT_CV_DATA.personal.phone,
+            city: raw.personal?.city?.trim() || DEFAULT_CV_DATA.personal.city,
+            linkedin: raw.personal?.linkedin?.trim() || DEFAULT_CV_DATA.personal.linkedin,
             photo: raw.personal?.photo || null
         },
         profile: {
-            summary: (!isOldMoussa && raw.profile?.summary) ? raw.profile.summary : cvData.profile.summary
+            summary: raw.profile?.summary?.trim() || DEFAULT_CV_DATA.profile.summary
         },
-        education: (Array.isArray(raw.education) && raw.education.length > 0 && !isOldMoussa) ? raw.education : cvData.education,
-        formations: (Array.isArray(raw.formations) && raw.formations.length > 0 && !isOldMoussa) ? raw.formations : cvData.formations,
-        experiences: (Array.isArray(raw.experiences) && raw.experiences.length > 0 && !isOldMoussa) ? raw.experiences : cvData.experiences,
-        skills: (Array.isArray(raw.skills) && raw.skills.length > 0 && !isOldMoussa) ? raw.skills : cvData.skills,
-        languages: (Array.isArray(raw.languages) && raw.languages.length > 0 && !isOldMoussa) ? raw.languages : cvData.languages,
-        interests: (Array.isArray(raw.interests) && raw.interests.length > 0 && !isOldMoussa) ? raw.interests : cvData.interests,
+        education: hasContent(raw.education) ? raw.education : DEFAULT_CV_DATA.education,
+        formations: hasContent(raw.formations) ? raw.formations : DEFAULT_CV_DATA.formations,
+        experiences: hasContent(raw.experiences) ? raw.experiences : DEFAULT_CV_DATA.experiences,
+        skills: hasContent(raw.skills) ? raw.skills : DEFAULT_CV_DATA.skills,
+        languages: hasContent(raw.languages) ? raw.languages : DEFAULT_CV_DATA.languages,
+        interests: hasContent(raw.interests) ? raw.interests : DEFAULT_CV_DATA.interests,
         references: Array.isArray(raw.references) ? raw.references : []
     };
 }
@@ -543,8 +551,13 @@ function renderCV() {
     const p = cvData.personal || {};
     
     const templateEl = document.getElementById('template-select');
-    const template = templateEl ? templateEl.value : 'modern';
+    let template = (templateEl && templateEl.value) ? templateEl.value : 'modern';
+    if (!['modern', 'classic', 'elegant', 'minimalist'].includes(template)) {
+        template = 'modern';
+    }
     doc.className = `cv-page-container cv-template-${template}`;
+    doc.contentEditable = "true";
+    doc.style.outline = "none";
     
     let html = '';
     
@@ -917,7 +930,9 @@ function renderCV() {
         `;
     }
     
-    doc.innerHTML = html;
+    if (html && html.trim().length > 0) {
+        doc.innerHTML = html;
+    }
 }
 
 // Template Switching
@@ -1089,3 +1104,87 @@ document.getElementById('cv-document')?.addEventListener('click', (e) => {
         selection.addRange(range);
     }
 });
+
+// AI CV Upload and Extraction Handler
+function triggerAiCvImport() {
+    const fileInput = document.getElementById('ai-cv-file-input');
+    if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
+    }
+}
+
+async function handleAiCvUpload(e) {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+
+    const btn = document.getElementById('btn-import-cv-ai');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyse par l\'IA...';
+        btn.disabled = true;
+    }
+
+    try {
+        const reader = new FileReader();
+        reader.onload = async function(evt) {
+            try {
+                const base64Data = evt.target.result;
+                const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
+
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
+                    body: JSON.stringify({
+                        imageBase64: cleanBase64,
+                        mimeType: file.type || 'image/jpeg',
+                        text: `Analyse et extrait le texte de ce fichier CV (${file.name})`
+                    })
+                });
+
+                const rawText = await response.text();
+                let parsed = {};
+                try {
+                    let cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const startIndex = cleanJson.indexOf('{');
+                    const endIndex = cleanJson.lastIndexOf('}');
+                    if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+                        cleanJson = cleanJson.substring(startIndex, endIndex + 1);
+                    }
+                    parsed = JSON.parse(cleanJson);
+                } catch(err) {
+                    throw new Error("Erreur de format de réponse de l'IA : " + rawText.substring(0, 100));
+                }
+
+                if (response.ok && parsed) {
+                    cvData = sanitizeCvData(parsed);
+                    renderForms();
+                    renderCV();
+                    triggerCloudSave();
+                    alert("✨ Votre CV a été extrait et inséré avec succès par l'IA ! Vous pouvez maintenant relire et modifier toutes les informations dans les formulaires.");
+                } else {
+                    throw new Error(parsed.error || rawText);
+                }
+
+            } catch(err) {
+                console.error("AI Import Error:", err);
+                alert("Erreur d'analyse IA : " + err.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        };
+        reader.readAsDataURL(file);
+    } catch(err) {
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+        alert("Erreur lecture du fichier : " + err.message);
+    }
+}
