@@ -268,6 +268,8 @@
             overlay.style.display = 'flex';
 
             try {
+                const statusText = overlay.querySelector('h2');
+                
                 // 1. Extraction locale du texte
                 const extractTextFromPDF = async (file) => {
                     const arrayBuffer = await file.arrayBuffer();
