@@ -68,7 +68,7 @@
         </div>
         
         <div class="form-card" id="input-section">
-            <form id="motivation-form" onsubmit="generateDocuments(event)">
+            <form id="motivation-form" onsubmit="event.preventDefault(); generateDocuments(event);">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Prénom</label>
