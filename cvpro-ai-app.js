@@ -728,6 +728,7 @@ async function handleAiCvUploadInAiBuilder(e) {
         }
 
         if (response.ok && parsed) {
+            alert("Debug JSON Llama 3.3: " + rawText.substring(0, 500));
             renderParsedJsonToHtml(parsed);
             alert("✨ Votre CV a été analysé et mis à jour avec succès par l'IA !");
         } else {
