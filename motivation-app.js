@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function handleFileSelect(event) {
     const file = event.target.files[0];
     if (file) {
-        document.getElementById('file-name-display').textContent = "CV sélectionné : " + file.name;
+        const display = document.getElementById('file-name-display');
+        display.textContent = "✅ CV prêt : " + file.name;
+        display.style.color = "#10b981"; // Success green color
     }
 }
 
