@@ -268,45 +268,46 @@
             overlay.style.display = 'flex';
 
             try {
-                // Convert file to base64 using a Promise with compression for images
-                const base64Data = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        if (selectedFile.type.startsWith('image/')) {
-                            const img = new Image();
-                            img.onload = () => {
-                                const canvas = document.createElement('canvas');
-                                const MAX_WIDTH = 1200;
-                                const MAX_HEIGHT = 1600;
-                                let width = img.width;
-                                let height = img.height;
+                // 1. Extraction locale du texte
+                const extractTextFromPDF = async (file) => {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                    let fullText = "";
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        fullText += textContent.items.map(s => s.str).join(" ") + "\n";
+                    }
+                    return fullText;
+                };
 
-                                if (width > height) {
-                                    if (width > MAX_WIDTH) {
-                                        height *= MAX_WIDTH / width;
-                                        width = MAX_WIDTH;
-                                    }
-                                } else {
-                                    if (height > MAX_HEIGHT) {
-                                        width *= MAX_HEIGHT / height;
-                                        height = MAX_HEIGHT;
-                                    }
-                                }
-                                canvas.width = width;
-                                canvas.height = height;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(img, 0, 0, width, height);
-                                resolve(canvas.toDataURL('image/jpeg', 0.8));
-                            };
-                            img.onerror = reject;
-                            img.src = e.target.result;
-                        } else {
-                            resolve(e.target.result); // PDF or other
+                const extractTextFromImage = async (file) => {
+                    const result = await Tesseract.recognize(file, 'fra', { 
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                statusText.textContent = `Lecture Image (${Math.round(m.progress * 100)}%)...`;
+                            }
                         }
-                    };
-                    reader.onerror = (error) => reject(error);
-                    reader.readAsDataURL(selectedFile);
-                });
+                    });
+                    return result.data.text;
+                };
+
+                let rawTextExtracted = "";
+                if (selectedFile.type === 'application/pdf') {
+                    statusText.textContent = 'Lecture du PDF...';
+                    rawTextExtracted = await extractTextFromPDF(selectedFile);
+                } else if (selectedFile.type.startsWith('image/')) {
+                    statusText.textContent = 'Initialisation OCR...';
+                    rawTextExtracted = await extractTextFromImage(selectedFile);
+                } else {
+                    throw new Error('Format non supporté. Veuillez utiliser un PDF ou une Image (JPG, PNG).');
+                }
+
+                if (!rawTextExtracted || rawTextExtracted.trim().length < 20) {
+                    throw new Error("Impossible d'extraire suffisamment de texte de ce fichier.");
+                }
+
+                statusText.textContent = 'Analyse par l\'IA Groq...';
 
                 // Use hardcoded key automatically
                 const HARDCODED_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
@@ -316,9 +317,6 @@
                 // Initialiser le client Supabase localement
                 const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
                 const supabaseClient = window.supabase.createClient(SUPABASE_URL, supabaseKey);
-
-                const mimeType = selectedFile.type || 'application/pdf';
-                const base64Clean = base64Data.split(',')[1];
                 
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
                     method: 'POST',
@@ -326,7 +324,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${supabaseKey}`
                     },
-                    body: JSON.stringify({ imageBase64: base64Clean, mimeType: mimeType })
+                    body: JSON.stringify({ rawText: rawTextExtracted })
                 });
 
                 const resultText = await response.text();
