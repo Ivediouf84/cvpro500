@@ -304,17 +304,10 @@
                     reader.readAsDataURL(selectedFile);
                 });
 
-                // Try to get Supabase API key from localStorage
-                let supabaseKey = localStorage.getItem('supabase_anon_key');
-                if (!supabaseKey) {
-                    supabaseKey = prompt("Pour utiliser l'IA, veuillez coller votre clé API Publique Supabase (anon) ici :");
-                    if (!supabaseKey) {
-                        overlay.style.display = 'none';
-                        modal.style.display = 'flex';
-                        return;
-                    }
-                    localStorage.setItem('supabase_anon_key', supabaseKey);
-                }
+                // Use hardcoded key automatically
+                const HARDCODED_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+                let supabaseKey = HARDCODED_ANON_KEY;
+                localStorage.setItem('supabase_anon_key', supabaseKey);
 
                 // Initialiser le client Supabase localement
                 const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
