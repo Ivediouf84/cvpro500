@@ -12,7 +12,7 @@ let currentUserId = null;
 let cloudDocumentId = null;
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', async () => {
+const initApp = async () => {
     // Check for SenePay payment success redirect
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
@@ -61,7 +61,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup photo upload listener if there is a placeholder
     setupPhotoUploader();
     updateCVStyles();
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 function renderDefaultDemoCv() {
     const docEl = document.getElementById('cv-document');
