@@ -232,9 +232,10 @@
                 <a href="auth.html" id="btn-login" class="btn btn-ghost" style="display: none; color: var(--text-main); font-size: 0.85rem;">Connexion</a>
                 
                 <!-- IA Button -->
-                <button class="btn btn-ghost" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md);" title="Fonctionnalité Premium" onclick="alert('Importation par IA disponible très bientôt')">
+                <button class="btn btn-ghost" id="btn-import-cv-ai" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md); cursor: pointer;" title="Importer votre CV (Photo / PDF)" onclick="triggerAiCvImport()">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hide-mobile">Importer ancien CV</span>
                 </button>
+                <input type="file" id="ai-cv-file-input" accept="image/*,application/pdf,.pdf" style="display: none;" onchange="handleAiCvUpload(event)">
                 <button class="btn btn-primary" id="btn-open-payment" style="font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer;" title="Télécharger">
                     <i class="fa-solid fa-download"></i> <span class="hide-mobile">Télécharger PDF (500F)</span>
                 </button>
@@ -673,8 +674,8 @@
             <div class="preview-scroll-area">
                 <!-- Wrapper for scaling -->
                 <div id="cv-scale-wrapper" style="transform: scale(0.8); transform-origin: top center; transition: transform 0.2s;">
-                    <!-- Actual A4 container to be converted to PDF -->
-                    <div id="cv-document" class="cv-page-container cv-template-modern">
+                    <!-- Actual A4 container to be converted to PDF (Word-like direct editing enabled) -->
+                    <div id="cv-document" class="cv-page-container cv-template-modern" contenteditable="true" style="outline: none;">
                         <!-- Default Modern Template rendered statically for 100% reliability -->
                         <div class="cv-header">
                             <div class="cv-header-name" style="flex: 1;">

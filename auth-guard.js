@@ -10,8 +10,7 @@ let supabaseClient = null;
 if (window.supabase) {
     let supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
     try {
-        const storedKey = localStorage.getItem('supabase_anon_key');
-        if (storedKey) supabaseKey = storedKey;
+        localStorage.setItem('supabase_anon_key', supabaseKey);
     } catch(e) {
         console.warn("Storage access restricted");
     }
