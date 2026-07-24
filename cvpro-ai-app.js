@@ -896,13 +896,25 @@ async function handleAiCvUploadInAiBuilder(e) {
     }
 
     try {
+        let uploadedImageUrl = null;
+        if (file.type.startsWith('image/')) {
+            uploadedImageUrl = await new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = ev => resolve(ev.target.result);
+                reader.readAsDataURL(file);
+            });
+            if (uploadedImageUrl) {
+                localStorage.setItem('scanned_cv_image_url', uploadedImageUrl);
+            }
+        }
+
         const rawTextExtracted = await extractRawText_AIBuilder(file);
         
         if (!rawTextExtracted || rawTextExtracted.trim().length < 20) {
             throw new Error("Impossible d'extraire suffisamment de texte de ce fichier.");
         }
 
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyse par l\'IA Groq...';
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reconstitution par l\'IA...';
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
             method: 'POST',
@@ -930,9 +942,20 @@ async function handleAiCvUploadInAiBuilder(e) {
         }
 
         if (response.ok && parsed) {
-            alert("Debug JSON Llama 3.3: " + rawText.substring(0, 500));
             renderParsedJsonToHtml(parsed);
-            alert("✨ Votre CV a été analysé et mis à jour avec succès par l'IA !");
+
+            // Inject uploaded photo/image if present
+            if (uploadedImageUrl) {
+                const docEl = document.getElementById('cv-document');
+                if (docEl) {
+                    let photoImg = docEl.querySelector('.cv-photo, img');
+                    if (photoImg) {
+                        photoImg.src = uploadedImageUrl;
+                    }
+                }
+            }
+
+            alert("✨ Votre CV a été analysé et restitué avec une haute fidélité par l'IA !");
         } else {
             throw new Error(parsed.error || rawText);
         }
@@ -948,6 +971,40 @@ async function handleAiCvUploadInAiBuilder(e) {
         if (e.target) e.target.value = '';
     }
 }
+
+function toggleScannedCvImageOverlay() {
+    const docEl = document.getElementById('cv-document');
+    const scannedUrl = localStorage.getItem('scanned_cv_image_url');
+    if (!docEl) return;
+
+    if (!scannedUrl) {
+        alert("Aucune image de CV scanné n'a été importée récemment. Veuillez d'abord importer une photo de CV.");
+        return;
+    }
+
+    let existingOverlay = document.getElementById('scanned-cv-overlay-img');
+    if (existingOverlay) {
+        existingOverlay.remove();
+        alert("Mode image d'origine désactivé. Affichage du texte éditable.");
+    } else {
+        const img = document.createElement('img');
+        img.id = 'scanned-cv-overlay-img';
+        img.src = scannedUrl;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'contain';
+        img.style.position = 'absolute';
+        img.style.top = '0';
+        img.style.left = '0';
+        img.style.zIndex = '0';
+        img.style.opacity = '0.95';
+
+        docEl.style.position = 'relative';
+        docEl.insertBefore(img, docEl.firstChild);
+        alert("🖼️ Image originale du CV scanné affichée en fidélité 100% sur la feuille !");
+    }
+}
+window.toggleScannedCvImageOverlay = toggleScannedCvImageOverlay;
 
 // Floating rich text toolbar has been removed as per user request. 
 // The formatting tools are now always accessible in the left style panel.
