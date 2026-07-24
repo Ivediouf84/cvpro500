@@ -75,7 +75,42 @@ const initApp = async () => {
     // Setup photo upload listener if there is a placeholder
     setupPhotoUploader();
     updateCVStyles();
+    setupDragAndDropImport();
 };
+
+function setupDragAndDropImport() {
+    const previewPanel = document.querySelector('.preview-panel') || document.body;
+    if (!previewPanel) return;
+
+    previewPanel.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        previewPanel.style.border = '2px dashed #4F46E5';
+    });
+
+    previewPanel.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        previewPanel.style.border = 'none';
+    });
+
+    previewPanel.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        previewPanel.style.border = 'none';
+        
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+                const fakeEvent = { target: { files: [file] } };
+                handleAiCvUploadInAiBuilder(fakeEvent);
+            } else {
+                alert("Veuillez déposer un fichier PDF ou une Image (JPG, PNG).");
+            }
+        }
+    });
+}
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
