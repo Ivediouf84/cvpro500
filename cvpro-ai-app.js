@@ -469,11 +469,16 @@ function exportPDF() {
 }
 
 function openPaymentModal() {
-    document.getElementById('payment-modal').classList.add('active');
+    const modal = document.getElementById('payment-modal');
+    if (modal) modal.classList.add('active');
 }
+window.openPaymentModal = openPaymentModal;
+
 function closePaymentModal() {
-    document.getElementById('payment-modal').classList.remove('active');
+    const modal = document.getElementById('payment-modal');
+    if (modal) modal.classList.remove('active');
 }
+window.closePaymentModal = closePaymentModal;
 function selectPayment(el) {
     document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
     el.classList.add('selected');
@@ -700,6 +705,7 @@ function triggerAiCvImportInAiBuilder() {
         fileInput.click();
     }
 }
+window.triggerAiCvImportInAiBuilder = triggerAiCvImportInAiBuilder;
 
 async function extractTextFromPDF_AIBuilder(file) {
     const arrayBuffer = await file.arrayBuffer();
