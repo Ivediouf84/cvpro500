@@ -140,8 +140,16 @@ async function generateDocuments(event) {
             generatedDemandeHtml = result.demandeHtml || result.demandeText;
             generatedMotivationHtml = result.motivationHtml || result.motivationText;
             
-            document.getElementById('doc-demande').innerHTML = generatedDemandeHtml;
-            document.getElementById('doc-motivation').innerHTML = generatedMotivationHtml;
+            const demandeEl = document.getElementById('doc-demande');
+            const motivationEl = document.getElementById('doc-motivation');
+            if (demandeEl) {
+                demandeEl.innerHTML = generatedDemandeHtml;
+                demandeEl.contentEditable = "true";
+            }
+            if (motivationEl) {
+                motivationEl.innerHTML = generatedMotivationHtml;
+                motivationEl.contentEditable = "true";
+            }
             
             // Save to localStorage to survive SenePay redirect
             localStorage.setItem('motivation_demande', generatedDemandeHtml);
