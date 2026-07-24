@@ -25,7 +25,6 @@ if (typeof cloudDocumentId === 'undefined') {
 
 // Initialize app
 const initApp = async () => {
-    alert("INIT APP DEMARRE");
     // Check for SenePay payment success redirect
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
@@ -51,18 +50,15 @@ const initApp = async () => {
 
     // Load AI generated HTML or JSON
     const importedDataStr = localStorage.getItem('importedCVData');
-    alert("importedDataStr est: " + (importedDataStr ? "PRESENT" : "VIDE"));
     const importedHtml = localStorage.getItem('importedCVHtml');
-        if (importedDataStr) {
-            try {
-                alert("Données importées trouvées !");
-                const parsed = JSON.parse(importedDataStr);
-                renderParsedJsonToHtml(parsed);
-                localStorage.removeItem('importedCVData');
-                alert("Rendu HTML terminé avec succès.");
-            } catch (e) {
-                alert("Erreur lors du rendu HTML: " + e.message);
-                console.error("Error generating HTML from imported JSON", e);
+    if (importedDataStr) {
+        try {
+            const parsed = JSON.parse(importedDataStr);
+            renderParsedJsonToHtml(parsed);
+            localStorage.removeItem('importedCVData');
+        } catch (e) {
+            console.error("Error generating HTML from imported JSON", e);
+        }
             }
         } else if (importedHtml && importedHtml.trim().length > 50) {
         if (docEl) docEl.innerHTML = importedHtml;
@@ -456,33 +452,55 @@ window.zoomOut = zoomOut;
 
 // Payment/Export logic
 function exportPDF() {
-    const doc = document.getElementById('cv-document');
-    const wrapper = document.getElementById('cv-scale-wrapper');
-    if (!doc) return;
-    
-    const prevWrapperTransform = wrapper ? wrapper.style.transform : '';
-    if (wrapper) wrapper.style.transform = 'none';
-    if (doc) doc.style.transform = 'none';
+    const originalDoc = document.getElementById('cv-document');
+    if (!originalDoc) return;
+
+    // Clone element to guarantee 100% non-blank PDF without CSS transform interference
+    const cloneContainer = document.createElement('div');
+    cloneContainer.style.position = 'fixed';
+    cloneContainer.style.top = '0';
+    cloneContainer.style.left = '0';
+    cloneContainer.style.width = '100vw';
+    cloneContainer.style.height = '100vh';
+    cloneContainer.style.background = '#ffffff';
+    cloneContainer.style.zIndex = '999999';
+    cloneContainer.style.overflow = 'auto';
+    cloneContainer.style.display = 'flex';
+    cloneContainer.style.justifyContent = 'center';
+    cloneContainer.style.alignItems = 'flex-start';
+    cloneContainer.style.padding = '0';
+
+    const clone = originalDoc.cloneNode(true);
+    clone.style.transform = 'none';
+    clone.style.margin = '0';
+    clone.style.boxShadow = 'none';
+    clone.style.width = '210mm';
+    clone.style.minHeight = '297mm';
+    clone.style.background = '#ffffff';
+    clone.style.color = '#000000';
+
+    cloneContainer.appendChild(clone);
+    document.body.appendChild(cloneContainer);
 
     const opt = {
         margin: 0,
         filename: 'cv_professionnel_ia.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, 
-            logging: false, 
-            scrollX: 0, 
-            scrollY: 0 
-        },
+        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(doc).save().then(() => {
-        applyZoom();
+    html2pdf().set(opt).from(clone).save().then(() => {
+        if (cloneContainer.parentNode) {
+            document.body.removeChild(cloneContainer);
+        }
+        closePaymentModal();
     }).catch(err => {
         console.error("PDF generation error:", err);
-        applyZoom();
+        if (cloneContainer.parentNode) {
+            document.body.removeChild(cloneContainer);
+        }
+        alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
     });
 }
 window.exportPDF = exportPDF;

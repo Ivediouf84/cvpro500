@@ -364,8 +364,6 @@
                     // Save extracted JSON data
                     localStorage.setItem('importedCVData', JSON.stringify(resultData));
                     
-                    alert("Succès ! Voici ce que Groq a renvoyé : " + JSON.stringify(resultData).substring(0, 300));
-                    
                     // Redirect to the AI builder for scanned CVs
                     window.location.href = 'cvpro-ai-builder.html';
                 } catch (e) {
