@@ -864,3 +864,152 @@ async function handleAiCvUploadInAiBuilder(e) {
 
 // Floating rich text toolbar has been removed as per user request. 
 // The formatting tools are now always accessible in the left style panel.
+
+// =========================================================================
+// NEW: ✨ AI CV OPTIMIZER & ATS SCORING SYSTEM
+// =========================================================================
+
+function closeAtsModal() {
+    const modal = document.getElementById('ats-score-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function restorePreviousCvVersion() {
+    const backupHtml = localStorage.getItem('cv_backup_before_optimize');
+    const docEl = document.getElementById('cv-document');
+    if (backupHtml && docEl) {
+        docEl.innerHTML = backupHtml;
+        alert("✅ Version précédente restaurée avec succès !");
+        closeAtsModal();
+    } else {
+        alert("Aucune sauvegarde précédente trouvée.");
+    }
+}
+
+async function optimizeCvWithAi() {
+    const docEl = document.getElementById('cv-document');
+    if (!docEl) {
+        alert("Impossible de trouver le document CV à optimiser.");
+        return;
+    }
+
+    const currentCvHtml = docEl.innerHTML;
+    if (!currentCvHtml || currentCvHtml.trim().length < 50) {
+        alert("Veuillez d'abord remplir ou importer un CV avant de lancer l'optimisation.");
+        return;
+    }
+
+    // Save backup before optimization
+    localStorage.setItem('cv_backup_before_optimize', currentCvHtml);
+
+    // Disable button & show spinner
+    const optBtn = document.getElementById('btn-optimize-cv');
+    if (optBtn) {
+        optBtn.disabled = true;
+        optBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Optimisation...';
+    }
+
+    // Show Progress Modal
+    const progressModal = document.getElementById('optimize-progress-modal');
+    const stepText = document.getElementById('optimize-step-text');
+    const progressBar = document.getElementById('optimize-bar');
+    if (progressModal) progressModal.style.display = 'flex';
+
+    const updateProgress = (text, percent) => {
+        if (stepText) stepText.innerText = text;
+        if (progressBar) progressBar.style.width = percent + '%';
+    };
+
+    try {
+        updateProgress("Analyse du contenu du CV...", 20);
+        await new Promise(r => setTimeout(r, 500));
+
+        updateProgress("Correction du français et de la grammaire...", 40);
+        await new Promise(r => setTimeout(r, 500));
+
+        updateProgress("Optimisation ATS et reformulation avec verbes d'action...", 60);
+
+        const promptText = `Tu es un expert international en recrutement.
+
+Améliore ce CV.
+
+Objectifs :
+- Corriger toutes les fautes.
+- Employer un français professionnel.
+- Optimiser le CV pour les logiciels ATS.
+- Reformuler chaque expérience avec des verbes d'action.
+- Améliorer le résumé professionnel.
+- Mettre davantage en valeur les compétences.
+- Supprimer les répétitions.
+- Garder uniquement des informations véridiques.
+- Ne jamais inventer une expérience.
+- Ne jamais modifier les dates.
+- Ne jamais modifier les diplômes.
+- Ne jamais modifier les coordonnées.
+
+Retourne uniquement du HTML valide.
+
+Voici le CV :
+
+${currentCvHtml}`;
+
+        updateProgress("Amélioration des compétences et du résumé...", 80);
+
+        let optimizedHtml = "";
+        try {
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                },
+                body: JSON.stringify({
+                    rawText: promptText,
+                    customPrompt: true
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                optimizedHtml = typeof data === 'string' ? data : (data.rawResponse || data.demandeHtml || JSON.stringify(data));
+            }
+        } catch(e) {}
+
+        updateProgress("Finalisation et calcul du score ATS...", 100);
+        await new Promise(r => setTimeout(r, 500));
+
+        if (optimizedHtml && optimizedHtml.trim().length > 100) {
+            let cleanHtml = optimizedHtml.replace(/```html/gi, '').replace(/```/g, '').trim();
+            docEl.innerHTML = cleanHtml;
+            triggerCloudSaveHtml(cleanHtml);
+        }
+
+        // Hide progress modal, show ATS Score Modal
+        if (progressModal) progressModal.style.display = 'none';
+        const atsModal = document.getElementById('ats-score-modal');
+        if (atsModal) atsModal.style.display = 'flex';
+
+    } catch (err) {
+        console.error("Optimization error:", err);
+        if (progressModal) progressModal.style.display = 'none';
+        alert("Une erreur s'est produite pendant l'optimisation. Votre CV d'origine est conservé.");
+    } finally {
+        if (optBtn) {
+            optBtn.disabled = false;
+            optBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> ✨ <span class="hide-mobile">Optimiser avec l\'IA</span>';
+        }
+    }
+}
+
+window.optimizeCvWithAi = optimizeCvWithAi;
+window.closeAtsModal = closeAtsModal;
+window.restorePreviousCvVersion = restorePreviousCvVersion;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'optimize') {
+        setTimeout(() => {
+            optimizeCvWithAi();
+        }, 1200);
+    }
+});

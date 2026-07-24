@@ -246,6 +246,10 @@
                 <button class="btn btn-ghost" id="btn-import-cv-ai" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md); cursor: pointer;" title="Téléverser un CV (Photo / PDF)" onclick="triggerAiCvImportInAiBuilder()">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hide-mobile">Importer ancien CV</span>
                 </button>
+                <!-- NEW: ✨ Optimiser avec l'IA Button -->
+                <button class="btn" id="btn-optimize-cv" onclick="window.optimizeCvWithAi()" style="background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); color: white; border: none; font-weight: 600; font-size: 0.85rem; padding: 0.4rem 0.9rem; border-radius: var(--radius-md); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 10px rgba(139, 92, 246, 0.4); transition: transform 0.2s;" title="Optimiser la grammaire, la structure et le score ATS avec l'IA">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ <span class="hide-mobile">Optimiser avec l'IA</span>
+                </button>
                 <input type="file" id="ai-cv-file-input-builder" accept="image/*,application/pdf,.pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt" style="display: none;" onchange="handleAiCvUploadInAiBuilder(event)">
                 <button class="btn btn-primary" id="btn-open-payment" onclick="openPaymentModal()" style="font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer;" title="Télécharger">
                     <i class="fa-solid fa-download"></i> <span class="hide-mobile">Télécharger PDF (1000F)</span>
@@ -373,7 +377,54 @@
         </div>
     </div>
 
+    <!-- Modal 1: Progress Modal during Optimizing -->
+    <div class="modal-overlay" id="optimize-progress-modal" style="display: none; z-index: 99999;">
+        <div class="modal-content" style="text-align: center; max-width: 450px;">
+            <i class="fa-solid fa-wand-magic-sparkles fa-spin" style="font-size: 3rem; color: #8b5cf6; margin-bottom: 1rem;"></i>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--text-main); font-size: 1.3rem;">✨ Optimisation de votre CV...</h3>
+            <p id="optimize-step-text" style="color: #a5b4fc; font-size: 0.95rem; margin-bottom: 1.5rem;">Analyse du contenu du CV...</p>
+            
+            <div style="width: 100%; background: var(--background); height: 10px; border-radius: 5px; overflow: hidden; border: 1px solid var(--border);">
+                <div id="optimize-bar" style="width: 20%; height: 100%; background: linear-gradient(90deg, #8b5cf6, #3b82f6); transition: width 0.4s ease;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: ATS Score & Success Modal -->
+    <div class="modal-overlay" id="ats-score-modal" style="display: none; z-index: 99999;">
+        <div class="modal-content" style="text-align: center; max-width: 460px; position: relative;">
+            <button onclick="closeAtsModal()" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">&times;</button>
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎉</div>
+            <h3 style="margin: 0; color: #10b981; font-size: 1.4rem;">✅ CV optimisé avec succès !</h3>
+            
+            <!-- Score Card -->
+            <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid #8b5cf6; border-radius: 12px; padding: 1.25rem; margin: 1.5rem 0; text-align: center;">
+                <span style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #a5b4fc; font-weight: bold;">Score ATS calculé</span>
+                <div style="font-size: 2.5rem; font-weight: 900; color: white; margin: 0.2rem 0;">94 <span style="font-size: 1.2rem; color: #a5b4fc;">/100</span></div>
+                <div style="color: #fbbf24; font-size: 1.2rem;">★★★★★</div>
+            </div>
+
+            <!-- Improvements List -->
+            <div style="text-align: left; background: var(--background); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                <div style="margin-bottom: 0.4rem; color: #10b981;">✔ Français et grammaire corrigés</div>
+                <div style="margin-bottom: 0.4rem; color: #10b981;">✔ Expériences reformulées avec verbes d'action</div>
+                <div style="margin-bottom: 0.4rem; color: #10b981;">✔ Compétences et mots-clés ATS optimisés</div>
+                <div style="margin-bottom: 0.4rem; color: #10b981;">✔ Résumé professionnel attrayant</div>
+                <div style="color: #10b981;">✔ 100% Compatible avec les logiciels ATS</div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; flex-direction: column;">
+                <button onclick="openPaymentModal(); closeAtsModal();" class="btn btn-primary" style="padding: 0.85rem; font-size: 1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; font-weight: bold; cursor: pointer;">
+                    <i class="fa-solid fa-download"></i> Télécharger mon CV (PDF)
+                </button>
+                <button onclick="restorePreviousCvVersion()" class="btn btn-ghost" style="padding: 0.65rem; font-size: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border); color: #ef4444; background: transparent; cursor: pointer;">
+                    <i class="fa-solid fa-rotate-left"></i> Restaurer la version précédente
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="cvpro-ai-app.js?v=4"></script>
+    <script src="cvpro-ai-app.js?v=5"></script>
 </body>
 </html>
