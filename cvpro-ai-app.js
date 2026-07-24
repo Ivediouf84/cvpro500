@@ -457,23 +457,32 @@ window.zoomOut = zoomOut;
 // Payment/Export logic
 function exportPDF() {
     const doc = document.getElementById('cv-document');
+    const wrapper = document.getElementById('cv-scale-wrapper');
     if (!doc) return;
     
+    const prevWrapperTransform = wrapper ? wrapper.style.transform : '';
+    if (wrapper) wrapper.style.transform = 'none';
+    if (doc) doc.style.transform = 'none';
+
     const opt = {
         margin: 0,
         filename: 'cv_professionnel_ia.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false, 
+            scrollX: 0, 
+            scrollY: 0 
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    const prevTransform = doc.style.transform;
-    doc.style.transform = 'scale(1)'; // Reset zoom before print
     html2pdf().set(opt).from(doc).save().then(() => {
         applyZoom();
     }).catch(err => {
         console.error("PDF generation error:", err);
-        doc.style.transform = prevTransform;
+        applyZoom();
     });
 }
 window.exportPDF = exportPDF;
@@ -730,7 +739,7 @@ async function extractTextFromPDF_AIBuilder(file) {
 }
 
 async function extractTextFromImage_AIBuilder(file) {
-    const result = await Tesseract.recognize(file, 'fra', { 
+    const result = await Tesseract.recognize(file, 'fra+eng', { 
         logger: m => {
             const btn = document.getElementById('btn-import-cv-ai');
             if (btn && m.status === 'recognizing text') {
