@@ -11,6 +11,19 @@
     box-sizing: border-box;
     text-align: left;
     overflow: hidden;
+    min-height: 297mm;
+    display: flex;
+    flex-direction: column;
+}
+
+.cv-canva-left, .cv-canva-right,
+.cv-emerald-left, .cv-emerald-right,
+.cv-navy-left, .cv-navy-right,
+.cv-nude-left, .cv-nude-right,
+.cv-template-modern .cv-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .cv-page-container * {

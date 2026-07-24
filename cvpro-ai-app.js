@@ -646,6 +646,12 @@ function changeCvTemplate(templateClass) {
     const docEl = document.getElementById('cv-document');
     if (!docEl) return;
 
+    // Remove any stuck scanned image overlay that blocks the screen
+    const existingOverlay = document.getElementById('scanned-cv-overlay-img');
+    if (existingOverlay) {
+        existingOverlay.remove();
+    }
+
     // Remove all old template classes
     docEl.classList.remove(
         'cv-template-modern', 'cv-template-classic', 'cv-template-creative', 'cv-template-executive',
@@ -654,9 +660,24 @@ function changeCvTemplate(templateClass) {
     docEl.classList.add(templateClass);
 
     updateCVStyles();
+    balanceA4PageLayout();
     triggerCloudSaveHtml(docEl.innerHTML);
 }
 window.changeCvTemplate = changeCvTemplate;
+
+// Balance A4 Page Layout so content fills full page height
+function balanceA4PageLayout() {
+    const docEl = document.getElementById('cv-document');
+    if (!docEl) return;
+
+    const sections = docEl.querySelectorAll('.cv-section, .cv-canva-box-title, .cv-emerald-card, .cv-navy-section-title, .cv-mustard-pill-title, .cv-nude-title');
+    sections.forEach(s => {
+        if (!s.style.marginBottom || parseInt(s.style.marginBottom) < 10) {
+            s.style.marginBottom = '14px';
+        }
+    });
+}
+window.balanceA4PageLayout = balanceA4PageLayout;
 
 // Auto-Fit CV on 1 Single A4 Page
 function autoFitCvToOnePage() {
