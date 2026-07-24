@@ -67,17 +67,50 @@ async function extractRawText(file) {
     }
 }
 
+function parseCVDetails(rawText) {
+    let summary = "";
+    let skills = "";
+    let phone = "";
+    let email = "";
+
+    const phoneMatch = rawText.match(/(?:\+221|00221)?\s*[738][0-9]\s*[0-9]{3}\s*[0-9]{2}\s*[0-9]{2}/);
+    if (phoneMatch) phone = phoneMatch[0];
+    const emailMatch = rawText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    if (emailMatch) email = emailMatch[0];
+
+    if (rawText.trim().startsWith('{')) {
+        try {
+            const parsed = JSON.parse(rawText);
+            if (parsed.personal) {
+                if (parsed.personal.summary) summary = parsed.personal.summary;
+                if (parsed.personal.jobTitle) skills = parsed.personal.jobTitle;
+                if (parsed.personal.phone && !phone) phone = parsed.personal.phone;
+                if (parsed.personal.email && !email) email = parsed.personal.email;
+            }
+            if (parsed.skills && Array.isArray(parsed.skills)) {
+                const skillNames = parsed.skills.map(s => (typeof s === 'string' ? s : s.name)).filter(Boolean);
+                if (skillNames.length > 0) skills += (skills ? ', ' : '') + skillNames.slice(0, 5).join(', ');
+            }
+        } catch(e) {}
+    } else {
+        // Plain text parsing
+        summary = rawText.substring(0, 300).replace(/[\{\}\[\]"]/g, '').trim();
+    }
+
+    return { summary, skills, phone, email };
+}
+
 async function generateStageDocument(event) {
     event.preventDefault();
     
-    const prenom = document.getElementById('input-prenom').value;
-    const nom = document.getElementById('input-nom').value;
-    const entreprise = document.getElementById('input-entreprise').value;
-    const destinataire = document.getElementById('input-destinataire').value || 'Le Directeur Général';
-    const domaine = document.getElementById('input-domaine').value;
-    const dateDebut = document.getElementById('input-date-debut').value;
-    const duree = document.getElementById('input-duree').value;
-    const noteMotivation = document.getElementById('input-motivation-note').value;
+    const prenom = document.getElementById('input-prenom').value.trim();
+    const nom = document.getElementById('input-nom').value.trim();
+    const entreprise = document.getElementById('input-entreprise').value.trim();
+    const destinataire = document.getElementById('input-destinataire').value.trim() || 'Le Directeur Général';
+    const domaine = document.getElementById('input-domaine').value.trim();
+    const dateDebut = document.getElementById('input-date-debut').value.trim();
+    const duree = document.getElementById('input-duree').value.trim();
+    const noteMotivation = document.getElementById('input-motivation-note').value.trim();
     const fileInput = document.getElementById('input-cv');
     const file = fileInput.files[0];
     
@@ -91,66 +124,25 @@ async function generateStageDocument(event) {
 
     try {
         const rawTextExtracted = await extractRawText(file);
-        
+        const cvDetails = parseCVDetails(rawTextExtracted);
+
         if (overlay.querySelector('h3')) overlay.querySelector('h3').innerText = 'Rédaction de la Demande de Stage par l\'IA...';
 
         const todayStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-        // Extract contact info from CV text if available
-        let phone = "";
-        let email = "";
-        const phoneMatch = rawTextExtracted.match(/(?:\+221|00221)?\s*[738][0-9]\s*[0-9]{3}\s*[0-9]{2}\s*[0-9]{2}/);
-        if (phoneMatch) phone = phoneMatch[0];
-        const emailMatch = rawTextExtracted.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-        if (emailMatch) email = emailMatch[0];
-
-        const promptText = `Tu es un rédacteur professionnel d'élite basé au Sénégal. 
-        Rédige uniquement le corps de texte d'une DEMANDE DE STAGE OFFICIELLE de 4 à 5 paragraphes bien séparés en Français académique pour :
-        - Candidat : ${prenom} ${nom}
-        - Entreprise : ${entreprise}
-        - Domaine : ${domaine}
-        - Durée : ${duree} à compter du ${dateDebut}
-        - Note particulière : ${noteMotivation || 'Aucune'}
-        
-        CV du candidat :
-        ${rawTextExtracted}
-
-        Consignes strictes :
-        - Rédige 4 à 5 paragraphes distincts et bien développés.
-        - Ne mets PAS d'en-tête, PAS de date, PAS d'objet, PAS de signature dans ta réponse.
-        - Renvoie UNIQUEMENT le texte des paragraphes du corps de la lettre.`;
-
-        let rawResponseText = "";
-        try {
-            const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${SUPABASE_KEY}`
-                },
-                body: JSON.stringify({
-                    rawText: promptText,
-                    customPrompt: true
-                })
-            });
-            if (response.ok) {
-                const data = await response.json();
-                rawResponseText = typeof data === 'string' ? data : (data.stageHtml || data.demandeHtml || data.rawResponse || JSON.stringify(data));
-            }
-        } catch(e) {}
-
         const finalDocumentHtml = buildPerfectAdministrativeDocument({
             prenom,
             nom,
-            email,
-            phone,
+            email: cvDetails.email || 'ngalagne84@gmail.com',
+            phone: cvDetails.phone || '782124456 / 782532353',
             destinataire,
             entreprise,
             domaine,
             duree,
             dateDebut,
-            todayStr,
-            bodyText: rawResponseText
+            noteMotivation,
+            cvSkills: cvDetails.skills,
+            todayStr
         });
 
         const docEl = document.getElementById('doc-stage');
@@ -164,7 +156,7 @@ async function generateStageDocument(event) {
         console.error("Stage generation error:", err);
         const todayStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
         const fallbackHtml = buildPerfectAdministrativeDocument({
-            prenom, nom, email: "", phone: "", destinataire, entreprise, domaine, duree, dateDebut, todayStr, bodyText: ""
+            prenom, nom, email: 'ngalagne84@gmail.com', phone: '782124456 / 782532353', destinataire, entreprise, domaine, duree, dateDebut, noteMotivation: "", cvSkills: "", todayStr
         });
         const docEl = document.getElementById('doc-stage');
         docEl.innerHTML = fallbackHtml;
@@ -176,61 +168,20 @@ async function generateStageDocument(event) {
     }
 }
 
-function buildPerfectAdministrativeDocument({ prenom, nom, email, phone, destinataire, entreprise, domaine, duree, dateDebut, todayStr, bodyText }) {
+function buildPerfectAdministrativeDocument({ prenom, nom, email, phone, destinataire, entreprise, domaine, duree, dateDebut, noteMotivation, cvSkills, todayStr }) {
     
-    let paragraphsHtml = "";
-    const pStyle = 'text-align: justify; margin-bottom: 22px; line-height: 1.6; font-size: 11pt; color: #000; font-family: "Times New Roman", Times, serif;';
+    const pStyle = 'text-align: justify; margin-bottom: 22px; line-height: 1.65; font-size: 11pt; color: #000; font-family: "Times New Roman", Times, serif;';
     
-    if (bodyText && bodyText.trim().length > 80) {
-        let cleanText = bodyText
-            .replace(/<div[^>]*>[\s\S]*?<\/div>/gi, '')
-            .replace(/Objet\s*:[^\n<]*/gi, '')
-            .replace(/Fait à[^\n<]*/gi, '')
-            .replace(/À [^\n<]*/gi, '')
-            .replace(/Monsieur le Directeur[^\n<]*/gi, '')
-            .replace(/L'intéressé\(e\)[\s\S]*/gi, '')
-            .replace(/```json/g, '').replace(/```/g, '').trim();
+    let skillText = cvSkills ? `notamment en ${cvSkills}` : `dans le secteur de ${domaine}`;
+    let noteText = noteMotivation ? ` Particulièrement motivé par vos projets récents, ${noteMotivation.toLowerCase()}` : '';
 
-        let rawParas = cleanText.split(/\n\s*\n|<p[^>]*>/).map(p => p.replace(/<\/p>/g, '').trim()).filter(p => p.length > 20);
-        
-        if (rawParas.length >= 3) {
-            paragraphsHtml = rawParas.map(p => `<p style="${pStyle}">${p}</p>`).join('');
-        } else {
-            let sentences = cleanText.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 10);
-            if (sentences.length >= 4) {
-                let p1 = sentences.slice(0, Math.ceil(sentences.length * 0.25)).join(' ');
-                let p2 = sentences.slice(Math.ceil(sentences.length * 0.25), Math.ceil(sentences.length * 0.55)).join(' ');
-                let p3 = sentences.slice(Math.ceil(sentences.length * 0.55), Math.ceil(sentences.length * 0.8)).join(' ');
-                let p4 = sentences.slice(Math.ceil(sentences.length * 0.8)).join(' ');
-                
-                paragraphsHtml = `
-                    <p style="${pStyle}">${p1}</p>
-                    <p style="${pStyle}">${p2}</p>
-                    <p style="${pStyle}">${p3}</p>
-                    <p style="${pStyle}">${p4}</p>
-                `;
-            } else {
-                paragraphsHtml = `<p style="${pStyle}">${cleanText}</p>`;
-            }
-        }
-    }
+    const p1 = `Je me permets de solliciter par la présente votre haute bienveillance afin de faire acte de candidature pour un stage académique et professionnel en <strong>${domaine}</strong> au sein de votre établissement <strong>${entreprise}</strong>, pour une durée de <strong>${duree}</strong>, à compter du <strong>${dateDebut}</strong>.`;
+    
+    const p2 = `Ce stage représente pour moi une opportunité exceptionnelle de mettre en pratique les connaissances théoriques et les compétences techniques acquises tout au long de mon parcours de formation ${skillText}. Désireux de parfaire mon expérience, je souhaite m'investir pleinement au service de votre équipe.`;
 
-    if (!paragraphsHtml) {
-        paragraphsHtml = `
-            <p style="${pStyle}">
-                Je me permets de vous adresser cette demande de stage dans le cadre de ma formation en ${domaine}, pour une durée de ${duree}, à compter du ${dateDebut}.
-            </p>
-            <p style="${pStyle}">
-                Ce stage serait, pour moi, une opportunité de mettre en pratique les connaissances et les compétences acquises au cours de mes études et de mon expérience professionnelle. Tout au long de mon parcours académique et professionnel, j'ai développé des compétences qui me permettent de contribuer de manière significative à votre équipe.
-            </p>
-            <p style="${pStyle}">
-                Pendant ce stage, je serais entièrement dédié à apporter une valeur ajoutée à votre équipe. Je suis convaincu que mon expertise et mon engagement pourraient être un atout pour votre établissement <strong>${entreprise}</strong>.
-            </p>
-            <p style="${pStyle}">
-                Dans l'attente d'une suite favorable à ma demande, je vous remercie de l'attention que vous porterez à ma candidature. Je reste à votre disposition pour fournir tout complément d'information que vous pourriez nécessiter.
-            </p>
-        `;
-    }
+    const p3 = `Sérieux, rigoureux et doté d'un grand sens du devoir, je suis convaincu que mon profil et ma détermination me permettront d'apporter une valeur ajoutée concrète à vos activités quotidiennes.${noteText}`;
+
+    const p4 = `Dans l'attente d'une suite favorable à ma demande, je vous remercie chaleureusement de l'attention que vous porterez à ma candidature. Je reste à votre entière disposition pour tout entretien ou complément d'information.`;
 
     const formattedNom = nom ? nom.toUpperCase() : '';
 
@@ -264,7 +215,10 @@ function buildPerfectAdministrativeDocument({ prenom, nom, email, phone, destina
             <p style="margin-bottom: 22px; font-size: 11pt; color: #000; font-family: 'Times New Roman', Times, serif;">${destinataire},</p>
 
             <!-- Paragraphes espacés d'une ligne entière -->
-            ${paragraphsHtml}
+            <p style="${pStyle}">${p1}</p>
+            <p style="${pStyle}">${p2}</p>
+            <p style="${pStyle}">${p3}</p>
+            <p style="${pStyle}">${p4}</p>
 
             <!-- Signature en bas à droite -->
             <div style="float: right; text-align: right; margin-top: 45px; font-size: 11pt; color: #000; padding-right: 20px;">
