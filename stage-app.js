@@ -170,7 +170,7 @@ async function generateStageDocument(event) {
 
 function buildPerfectAdministrativeDocument({ prenom, nom, email, phone, destinataire, entreprise, domaine, duree, dateDebut, noteMotivation, cvSkills, todayStr }) {
     
-    const pStyle = 'text-align: justify; margin-bottom: 22px; line-height: 1.65; font-size: 11pt; color: #000; font-family: "Times New Roman", Times, serif;';
+    const pStyle = 'text-align: justify; margin-bottom: 22px; line-height: 1.65; font-size: 12pt; color: #000; font-family: "Times New Roman", Times, serif;';
     
     let skillText = cvSkills ? `notamment en ${cvSkills}` : `dans le secteur de ${domaine}`;
     let noteText = noteMotivation ? ` Particulièrement motivé par vos projets récents, ${noteMotivation.toLowerCase()}` : '';
@@ -186,33 +186,33 @@ function buildPerfectAdministrativeDocument({ prenom, nom, email, phone, destina
     const formattedNom = nom ? nom.toUpperCase() : '';
 
     return `
-        <div style="font-family: 'Times New Roman', Times, serif; font-size: 11pt; color: #000; line-height: 1.5; padding: 10px;">
+        <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000; line-height: 1.5; padding: 10px;">
             <!-- En-tête Expéditeur et Date -->
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px;">
-                <div style="font-size: 11pt; line-height: 1.5; color: #000;">
+                <div style="font-size: 12pt; line-height: 1.5; color: #000;">
                     <strong>${prenom} ${nom}</strong><br>
                     Dakar, Sénégal<br>
                     ${phone ? 'Tél : ' + phone + '<br>' : ''}
                     ${email ? 'Email : ' + email : ''}
                 </div>
-                <div style="font-size: 11pt; text-align: right; margin-top: 45px;">
+                <div style="font-size: 12pt; text-align: right; margin-top: 45px;">
                     Fait à Dakar, le ${todayStr}
                 </div>
             </div>
 
             <!-- Destinataire (À Monsieur le Directeur...) -->
-            <div style="text-align: right; font-size: 11pt; line-height: 1.5; color: #000; margin-bottom: 40px; padding-right: 10px;">
+            <div style="text-align: right; font-size: 12pt; line-height: 1.5; color: #000; margin-bottom: 40px; padding-right: 10px;">
                 <strong>À ${destinataire}</strong><br>
                 <strong>${entreprise}</strong>
             </div>
 
             <!-- Objet (Seul le mot Objet est souligné) -->
-            <div style="font-size: 11pt; margin-bottom: 25px; color: #000;">
+            <div style="font-size: 12pt; margin-bottom: 25px; color: #000;">
                 <strong><u>Objet</u> : Demande de stage en ${domaine} (Durée : ${duree})</strong>
             </div>
 
             <!-- Formule d'appel -->
-            <p style="margin-bottom: 22px; font-size: 11pt; color: #000; font-family: 'Times New Roman', Times, serif;">${destinataire},</p>
+            <p style="margin-bottom: 22px; font-size: 12pt; color: #000; font-family: 'Times New Roman', Times, serif;">${destinataire},</p>
 
             <!-- Paragraphes espacés d'une ligne entière -->
             <p style="${pStyle}">${p1}</p>
