@@ -743,14 +743,32 @@ async function extractTextFromImage_AIBuilder(file) {
 
 async function extractRawText_AIBuilder(file) {
     const btn = document.getElementById('btn-import-cv-ai');
-    if (file.type === 'application/pdf') {
+    const filename = file.name ? file.name.toLowerCase() : '';
+    
+    if (file.type === 'application/pdf' || filename.endsWith('.pdf')) {
         if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Lecture du PDF...';
         return await extractTextFromPDF_AIBuilder(file);
     } else if (file.type.startsWith('image/')) {
         if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Initialisation OCR...';
         return await extractTextFromImage_AIBuilder(file);
+    } else if (filename.endsWith('.docx') || filename.endsWith('.doc') || file.type.includes('word')) {
+        if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Lecture du fichier Word...';
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            if (window.mammoth) {
+                const result = await window.mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                return result.value;
+            } else {
+                const textDecoder = new TextDecoder('utf-8');
+                return textDecoder.decode(arrayBuffer);
+            }
+        } catch(e) {
+            throw new Error("Erreur de lecture du fichier Word: " + e.message);
+        }
+    } else if (file.type.startsWith('text/') || filename.endsWith('.txt')) {
+        return await file.text();
     } else {
-        throw new Error('Format non supporté. Veuillez utiliser un PDF ou une Image (JPG, PNG).');
+        throw new Error('Format non supporté. Veuillez utiliser un PDF, une Image (JPG, PNG) ou un fichier Word (.docx).');
     }
 }
 

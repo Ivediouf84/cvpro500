@@ -16,6 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <style>
         body { margin: 0; height: 100vh; display: flex; flex-direction: column; background: var(--body-bg); color: var(--text-main); overflow: hidden; }
         
@@ -145,6 +146,9 @@
             background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
             display: none; align-items: center; justify-content: center; z-index: 1000;
         }
+        .modal-overlay.active {
+            display: flex !important;
+        }
         .modal-content {
             background: var(--surface); padding: 2rem; border-radius: var(--radius-lg);
             width: 90%; max-width: 450px; position: relative;
@@ -242,7 +246,7 @@
                 <button class="btn btn-ghost" id="btn-import-cv-ai" style="color: var(--secondary); border: 1px solid var(--secondary); font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: var(--radius-md); cursor: pointer;" title="Téléverser un CV (Photo / PDF)" onclick="triggerAiCvImportInAiBuilder()">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> <span class="hide-mobile">Importer ancien CV</span>
                 </button>
-                <input type="file" id="ai-cv-file-input-builder" accept="image/*,application/pdf,.pdf" style="display: none;" onchange="handleAiCvUploadInAiBuilder(event)">
+                <input type="file" id="ai-cv-file-input-builder" accept="image/*,application/pdf,.pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt" style="display: none;" onchange="handleAiCvUploadInAiBuilder(event)">
                 <button class="btn btn-primary" id="btn-open-payment" onclick="openPaymentModal()" style="font-size: 0.85rem; padding: 0.4rem 1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer;" title="Télécharger">
                     <i class="fa-solid fa-download"></i> <span class="hide-mobile">Télécharger PDF (1000F)</span>
                 </button>
