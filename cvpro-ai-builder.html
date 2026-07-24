@@ -25,6 +25,107 @@
         .builder-nav-brand { font-weight: 800; font-size: 1.2rem; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
         .builder-actions { display: flex; gap: 0.75rem; }
         
+        /* Word-Style Horizontal Top Toolbar */
+        .horizontal-editor-toolbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0.5rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            overflow-x: auto;
+            white-space: nowrap;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+        }
+        .toolbar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .toolbar-group label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+        .toolbar-select {
+            padding: 0.35rem 0.6rem;
+            font-size: 0.8rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--text-main);
+            outline: none;
+        }
+        .toolbar-btn {
+            padding: 0.35rem 0.6rem;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .toolbar-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .toolbar-btn-action {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid var(--primary);
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.2s;
+        }
+        .toolbar-btn-action:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .toolbar-btn-success {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 6px;
+            border: 1px solid #10b981;
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.2s;
+        }
+        .toolbar-btn-success:hover {
+            background: #10b981;
+            color: white;
+        }
+        .toolbar-color {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .toolbar-divider {
+            width: 1px;
+            height: 32px;
+            background: var(--border);
+            margin: 0 0.2rem;
+            flex-shrink: 0;
+        }
+        
         /* Main Layout */
         .builder-container { display: flex; flex: 1; overflow: hidden; }
         
@@ -252,108 +353,107 @@
                 </button>
             </div>
     </nav>
+       <!-- Horizontal Top Editor Toolbar (Word-Style) -->
+    <div class="horizontal-editor-toolbar">
+        <!-- Modèle -->
+        <div class="toolbar-group">
+            <label><i class="fa-solid fa-layer-group"></i> Modèle</label>
+            <select id="style-template-selector" onchange="changeCvTemplate(this.value)" class="toolbar-select">
+                <option value="cv-template-modern">🟦 Moderne</option>
+                <option value="cv-template-classic">🏛️ Classique</option>
+                <option value="cv-template-creative">🎨 Créatif</option>
+                <option value="cv-template-executive">👔 Exécutif</option>
+            </select>
+        </div>
 
-    <div class="builder-container">
-        
-        <!-- Style Panel -->
-        <div class="style-panel" style="padding: 1.5rem; overflow-y: auto; border-right: 1px solid var(--border); width: 35%; max-width: 450px;">
-            <h3 class="style-panel-title" style="margin-top:0;"><i class="fa-solid fa-paintbrush"></i> Style & Modèle du CV</h3>
+        <div class="toolbar-divider"></div>
 
-            <div class="form-group" style="margin-bottom: 1.25rem;">
-                <label style="color: var(--secondary); font-weight: bold;"><i class="fa-solid fa-layer-group"></i> Modèle de CV</label>
-                <select id="style-template-selector" class="form-control" onchange="changeCvTemplate(this.value)">
-                    <option value="cv-template-modern">🟦 Modèle Moderne (2 Colonnes)</option>
-                    <option value="cv-template-classic">🏛️ Modèle Classique (Traditionnel)</option>
-                    <option value="cv-template-creative">🎨 Modèle Créatif (Sidebar Coloré)</option>
-                    <option value="cv-template-executive">👔 Modèle Exécutif (Élite 1 Page)</option>
-                </select>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 1.25rem;">
-                <button id="btn-auto-fit-page" onclick="autoFitCvToOnePage()" class="btn btn-ghost" style="width: 100%; border: 1.5px solid #10b981; color: #10b981; padding: 0.65rem; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem; font-weight: bold; background: rgba(16, 185, 129, 0.1); transition: all 0.2s;" title="Ajuste automatiquement la taille du texte et les espacements pour faire tenir tout le CV sur 1 seule feuille A4">
-                    <i class="fa-solid fa-compress"></i> ⚡ Ajuster à 1 page A4 (Auto-Fit)
-                </button>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Couleur du texte</label>
-                    <input type="color" id="style-text-color" class="form-control" value="#1a1a1a" style="height: 40px; padding: 2px; cursor: pointer;">
-                </div>
-                <div class="form-group">
-                    <label>Couleur de l'entête</label>
-                    <input type="color" id="style-header-color" class="form-control" value="#4f46e5" style="height: 40px; padding: 2px; cursor: pointer;">
-                </div>
-            </div>
-            
-            <div class="form-group" style="margin-top: 1rem;">
-                <label>Outils d'édition (Texte sélectionné)</label>
-                <div class="rich-text-toolbar">
-                    <button onmousedown="event.preventDefault(); document.execCommand('bold', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Gras"><i class="fa-solid fa-bold"></i></button>
-                    <button onmousedown="event.preventDefault(); document.execCommand('italic', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Italique"><i class="fa-solid fa-italic"></i></button>
-                    <button onmousedown="event.preventDefault(); document.execCommand('underline', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Souligné"><i class="fa-solid fa-underline"></i></button>
-                    <div style="width:1px; height:20px; background:var(--border);"></div>
-                    <button onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '5'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Agrandir"><i class="fa-solid fa-text-height"></i>+</button>
-                    <button onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '2'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Réduire"><i class="fa-solid fa-text-height"></i>-</button>
-                    <button onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '3'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Normal" style="font-size:0.8rem;">Normal</button>
-                    <div style="width:1px; height:20px; background:var(--border);"></div>
-                    <input type="color" oninput="document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, this.value); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Couleur sélection" style="width:25px; height:25px; padding:0; border:none; border-radius:4px; cursor:pointer;">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Taille du texte globale <span id="val-font-size">14px</span></label>
-                <input type="range" id="style-font-size" class="form-control" min="10" max="24" value="14" style="padding: 0;">
-            </div>
-            <div class="form-group">
-                <label>Police de caractères</label>
-                <select id="style-font-family" class="form-control">
-                    <option value="inherit">Par défaut (Générée)</option>
-                    <option value="'Inter', sans-serif">Inter (Moderne)</option>
+        <!-- Police & Taille -->
+        <div class="toolbar-group">
+            <label><i class="fa-solid fa-font"></i> Police & Taille</label>
+            <div style="display: flex; align-items: center; gap: 0.3rem;">
+                <select id="style-font-family" class="toolbar-select" style="max-width: 130px;">
+                    <option value="inherit">Par défaut</option>
+                    <option value="'Inter', sans-serif">Inter</option>
                     <option value="'Roboto', sans-serif">Roboto</option>
                     <option value="'Open Sans', sans-serif">Open Sans</option>
                     <option value="Arial, sans-serif">Arial</option>
                     <option value="'Times New Roman', serif">Times New Roman</option>
                     <option value="'Courier New', monospace">Courier New</option>
                 </select>
+
+                <!-- Size Buttons -->
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '5'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Agrandir écriture"><i class="fa-solid fa-plus"></i></button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); document.execCommand('fontSize', false, '2'); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Réduire écriture"><i class="fa-solid fa-minus"></i></button>
+                <input type="range" id="style-font-size" min="10" max="24" value="14" style="width: 70px;" title="Taille globale">
+                <span id="val-font-size" style="font-size: 0.75rem; color: var(--text-muted);">14px</span>
             </div>
-            <div class="form-group">
-                <label>Interligne (Aération) <span id="val-line-height">1.3</span></label>
-                <input type="range" id="style-line-height" class="form-control" min="1" max="2.5" step="0.1" value="1.3" style="padding: 0;">
-            </div>
-            <div class="form-group">
-                <label>Espace entre rubriques <span id="val-spacing">0.5rem</span></label>
-                <input type="range" id="style-spacing" class="form-control" min="0" max="2" step="0.1" value="0.5" style="padding: 0;">
-            </div>
-            <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
-                <label style="color: var(--primary); font-weight: bold;"><i class="fa-solid fa-arrows-up-down-left-right"></i> Déplacement Libre</label>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: none;">Déplacez librement les photos, icônes et autres éléments non textuels.</p>
-                <button id="btn-free-move" class="btn btn-ghost" style="width: 100%; border: 1px solid var(--primary); color: var(--primary); padding: 0.5rem; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem; transition: all 0.2s;">
-                    Activer le déplacement libre
-                </button>
-            </div>
-            <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
-                <label style="color: var(--primary); font-weight: bold;"><i class="fa-solid fa-camera"></i> Photo du Candidat</label>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: none;">Remplacez ou ajoutez une photo professionnelle.</p>
-                <button onclick="document.getElementById('photo-upload-input')?.click()" class="btn btn-ghost" style="width: 100%; border: 1px dashed var(--primary); color: var(--primary); padding: 0.5rem; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem;">
-                    <i class="fa-solid fa-upload"></i> Insérer / Changer la photo
-                </button>
-                <input type="file" id="photo-upload-input" accept="image/*" style="display: none;" onchange="handlePhotoUploadInCv(event)">
-            </div>
-            <button class="btn btn-primary" onclick="window.print()" style="width: 100%; margin-top: 1rem; background: var(--grad-primary); border: none; padding: 0.75rem; border-radius: var(--radius-md); color: white; cursor: pointer;">
-                <i class="fa-solid fa-print"></i> Aperçu Impression
-            </button>
         </div>
 
-        <!-- Preview Panel -->
-        <div class="preview-panel">
-            <div class="preview-toolbar" style="justify-content: flex-end;">
-                <div style="display:flex; gap:0.5rem;">
-                    <button class="btn btn-ghost" onclick="zoomIn()" style="padding: 0.3rem 0.6rem; border-radius: 4px;"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-                    <button class="btn btn-ghost" onclick="zoomOut()" style="padding: 0.3rem 0.6rem; border-radius: 4px;"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
-                </div>
+        <div class="toolbar-divider"></div>
+
+        <!-- Style du Texte (Gras, Italique, Souligné, Couleur) -->
+        <div class="toolbar-group">
+            <label><i class="fa-solid fa-palette"></i> Style & Couleur</label>
+            <div style="display: flex; align-items: center; gap: 0.3rem;">
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); document.execCommand('bold', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Gras"><i class="fa-solid fa-bold"></i></button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); document.execCommand('italic', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Italique"><i class="fa-solid fa-italic"></i></button>
+                <button class="toolbar-btn" onmousedown="event.preventDefault(); document.execCommand('underline', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Souligné"><i class="fa-solid fa-underline"></i></button>
+                
+                <input type="color" id="style-text-color" value="#1a1a1a" class="toolbar-color" title="Couleur du texte principal">
+                <input type="color" id="style-header-color" value="#4f46e5" class="toolbar-color" title="Couleur de l'en-tête / Sidebar">
             </div>
-            
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Interligne comme Word -->
+        <div class="toolbar-group">
+            <label><i class="fa-solid fa-align-left"></i> Interligne (Word)</label>
+            <select id="style-line-height" class="toolbar-select" style="width: 100px;">
+                <option value="1.0">1.0 (Étroit)</option>
+                <option value="1.15">1.15 (Normal)</option>
+                <option value="1.3" selected>1.3 (Aéré)</option>
+                <option value="1.5">1.5 (Large)</option>
+                <option value="2.0">2.0 (Double)</option>
+            </select>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Insertion Photo & Déplacement libre -->
+        <div class="toolbar-group">
+            <label><i class="fa-solid fa-image"></i> Photo & Éléments</label>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <button class="toolbar-btn-action" onclick="document.getElementById('photo-upload-input')?.click()" title="Insérer une photo de profil">
+                    <i class="fa-solid fa-camera"></i> Insérer Photo
+                </button>
+                <input type="file" id="photo-upload-input" accept="image/*" style="display: none;" onchange="handlePhotoUploadInCv(event)">
+
+                <button id="btn-free-move" class="toolbar-btn-action" title="Déplacement libre des photos et icônes">
+                    <i class="fa-solid fa-arrows-up-down-left-right"></i> Déplacement Libre
+                </button>
+            </div>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Actions Rapides: Auto-Fit 1 Page & Zoom -->
+        <div class="toolbar-group">
+            <label><i class="fa-solid fa-bolt"></i> Actions</label>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <button onclick="autoFitCvToOnePage()" class="toolbar-btn-success" title="Ajuster sur 1 feuille A4">
+                    <i class="fa-solid fa-compress"></i> ⚡ 1 Page A4
+                </button>
+                <button class="toolbar-btn" onclick="zoomIn()" title="Zoom +"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                <button class="toolbar-btn" onclick="zoomOut()" title="Zoom -"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="builder-container">
+        <!-- Preview Panel Full Width -->
+        <div class="preview-panel" style="flex: 1; width: 100%;">
             <div class="preview-scroll-area">
                 <!-- Wrapper for scaling -->
                 <div id="cv-scale-wrapper" style="transform: scale(0.8); transform-origin: top center; transition: transform 0.2s;">
