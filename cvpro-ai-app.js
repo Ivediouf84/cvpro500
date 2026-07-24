@@ -432,7 +432,7 @@ document.getElementById('cv-document').addEventListener('click', (e) => {
 });
 
 // Zoom logic
-let currentZoom = 1;
+let currentZoom = 0.8;
 function zoomIn() {
     if (currentZoom < 1.5) {
         currentZoom += 0.1;
@@ -440,19 +440,24 @@ function zoomIn() {
     }
 }
 function zoomOut() {
-    if (currentZoom > 0.5) {
+    if (currentZoom > 0.4) {
         currentZoom -= 0.1;
         applyZoom();
     }
 }
 function applyZoom() {
-    const doc = document.getElementById('cv-document');
-    doc.style.transform = `scale(${currentZoom})`;
+    const wrapper = document.getElementById('cv-scale-wrapper') || document.getElementById('cv-document');
+    if (wrapper) {
+        wrapper.style.transform = `scale(${currentZoom})`;
+    }
 }
+window.zoomIn = zoomIn;
+window.zoomOut = zoomOut;
 
 // Payment/Export logic
 function exportPDF() {
     const doc = document.getElementById('cv-document');
+    if (!doc) return;
     
     const opt = {
         margin: 0,
@@ -462,11 +467,16 @@ function exportPDF() {
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
+    const prevTransform = doc.style.transform;
     doc.style.transform = 'scale(1)'; // Reset zoom before print
     html2pdf().set(opt).from(doc).save().then(() => {
         applyZoom();
+    }).catch(err => {
+        console.error("PDF generation error:", err);
+        doc.style.transform = prevTransform;
     });
 }
+window.exportPDF = exportPDF;
 
 function openPaymentModal() {
     const modal = document.getElementById('payment-modal');
@@ -479,23 +489,22 @@ function closePaymentModal() {
     if (modal) modal.classList.remove('active');
 }
 window.closePaymentModal = closePaymentModal;
+
 function selectPayment(el) {
     document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
     el.classList.add('selected');
 }
+window.selectPayment = selectPayment;
+
 async function processPayment() {
     const btn = document.getElementById('btn-confirm-payment');
+    if (!btn) return;
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirection SenePay...';
     btn.disabled = true;
 
     try {
-        const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-        const supabaseKey = localStorage.getItem('supabase_anon_key');
-        
-        if (!supabaseKey) {
-            throw new Error("Clé Supabase manquante. Veuillez rafraîchir la page.");
-        }
+        const supabaseKey = localStorage.getItem('supabase_anon_key') || HARDCODED_ANON_KEY;
 
         // Appeler la fonction backend sécurisée
         const response = await fetch(`${SUPABASE_URL}/functions/v1/init-senepay`, {
@@ -528,6 +537,7 @@ async function processPayment() {
         btn.disabled = false;
     }
 }
+window.processPayment = processPayment;
 
 // Add event listener to the download button
 document.addEventListener('DOMContentLoaded', () => {
