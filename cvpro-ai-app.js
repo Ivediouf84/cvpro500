@@ -614,18 +614,105 @@ function updateCVStyles() {
         #cv-document p, #cv-document ul, #cv-document div, #cv-document span {
             margin-bottom: ${spacing}rem;
         }
-        #cv-document .cv-header {
+        #cv-document .cv-header,
+        #cv-document .cv-classic-header,
+        #cv-document .cv-sidebar {
             background-color: ${headerColor} !important;
         }
     `;
 }
+
+// Switch CV Template dynamically
+function changeCvTemplate(templateClass) {
+    const docEl = document.getElementById('cv-document');
+    if (!docEl) return;
+
+    // Remove all old template classes
+    docEl.classList.remove('cv-template-modern', 'cv-template-classic', 'cv-template-creative', 'cv-template-executive');
+    docEl.classList.add(templateClass);
+
+    updateCVStyles();
+    triggerCloudSaveHtml(docEl.innerHTML);
+}
+window.changeCvTemplate = changeCvTemplate;
+
+// Auto-Fit CV on 1 Single A4 Page
+function autoFitCvToOnePage() {
+    const docEl = document.getElementById('cv-document');
+    if (!docEl) return;
+
+    const fontSizeInput = document.getElementById('style-font-size');
+    const lineHeightInput = document.getElementById('style-line-height');
+    const spacingInput = document.getElementById('style-spacing');
+
+    if (fontSizeInput) fontSizeInput.value = "12";
+    if (lineHeightInput) lineHeightInput.value = "1.25";
+    if (spacingInput) spacingInput.value = "0.3";
+
+    if (document.getElementById('val-font-size')) document.getElementById('val-font-size').innerText = '12px';
+    if (document.getElementById('val-line-height')) document.getElementById('val-line-height').innerText = '1.25';
+    if (document.getElementById('val-spacing')) document.getElementById('val-spacing').innerText = '0.3rem';
+
+    updateCVStyles();
+
+    // Compact item paddings and margins inside docEl
+    const items = docEl.querySelectorAll('.cv-section, .cv-item, p, ul, h1, h2, h3');
+    items.forEach(el => {
+        el.style.marginBottom = '4px';
+        el.style.marginTop = '2px';
+    });
+
+    triggerCloudSaveHtml(docEl.innerHTML);
+    alert("⚡ Votre CV a été compacté avec succès pour tenir sur 1 seule feuille A4 !");
+}
+window.autoFitCvToOnePage = autoFitCvToOnePage;
+
+// Handle candidate photo upload
+function handlePhotoUploadInCv(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const photoUrl = e.target.result;
+        const docEl = document.getElementById('cv-document');
+        if (!docEl) return;
+
+        // Find existing photo or header to insert
+        let photoImg = docEl.querySelector('.cv-photo, img.cv-profile-photo, .cv-header img');
+        if (photoImg) {
+            photoImg.src = photoUrl;
+        } else {
+            // Insert photo in header
+            const header = docEl.querySelector('.cv-header, .cv-classic-header') || docEl;
+            const img = document.createElement('img');
+            img.src = photoUrl;
+            img.className = 'cv-photo';
+            img.style.width = '100px';
+            img.style.height = '100px';
+            img.style.borderRadius = '50%';
+            img.style.objectFit = 'cover';
+            img.style.border = '2px solid white';
+            img.style.marginRight = '15px';
+
+            if (header.firstChild) {
+                header.insertBefore(img, header.firstChild);
+            } else {
+                header.appendChild(img);
+            }
+        }
+        triggerCloudSaveHtml(docEl.innerHTML);
+        alert("📷 Photo ajoutée et enregistrée avec succès dans le CV !");
+    };
+    reader.readAsDataURL(file);
+}
+window.handlePhotoUploadInCv = handlePhotoUploadInCv;
 
 // Add event listeners to style controls
 ['style-text-color', 'style-header-color', 'style-font-size', 'style-font-family', 'style-line-height', 'style-spacing'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
         el.addEventListener('input', (e) => {
-            // Update displayed values for sliders
             if (id === 'style-font-size') document.getElementById('val-font-size').innerText = e.target.value + 'px';
             if (id === 'style-line-height') document.getElementById('val-line-height').innerText = e.target.value;
             if (id === 'style-spacing') document.getElementById('val-spacing').innerText = e.target.value + 'rem';

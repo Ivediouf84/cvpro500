@@ -257,10 +257,27 @@
         
         <!-- Style Panel -->
         <div class="style-panel" style="padding: 1.5rem; overflow-y: auto; border-right: 1px solid var(--border); width: 35%; max-width: 450px;">
-            <h3 class="style-panel-title" style="margin-top:0;"><i class="fa-solid fa-paintbrush"></i> Style du CV</h3>
+            <h3 class="style-panel-title" style="margin-top:0;"><i class="fa-solid fa-paintbrush"></i> Style & Modèle du CV</h3>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label style="color: var(--secondary); font-weight: bold;"><i class="fa-solid fa-layer-group"></i> Modèle de CV</label>
+                <select id="style-template-selector" class="form-control" onchange="changeCvTemplate(this.value)">
+                    <option value="cv-template-modern">🟦 Modèle Moderne (2 Colonnes)</option>
+                    <option value="cv-template-classic">🏛️ Modèle Classique (Traditionnel)</option>
+                    <option value="cv-template-creative">🎨 Modèle Créatif (Sidebar Coloré)</option>
+                    <option value="cv-template-executive">👔 Modèle Exécutif (Élite 1 Page)</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <button id="btn-auto-fit-page" onclick="autoFitCvToOnePage()" class="btn btn-ghost" style="width: 100%; border: 1.5px solid #10b981; color: #10b981; padding: 0.65rem; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem; font-weight: bold; background: rgba(16, 185, 129, 0.1); transition: all 0.2s;" title="Ajuste automatiquement la taille du texte et les espacements pour faire tenir tout le CV sur 1 seule feuille A4">
+                    <i class="fa-solid fa-compress"></i> ⚡ Ajuster à 1 page A4 (Auto-Fit)
+                </button>
+            </div>
+
             <div class="form-row">
                 <div class="form-group">
-                    <label>Couleur du texte principal</label>
+                    <label>Couleur du texte</label>
                     <input type="color" id="style-text-color" class="form-control" value="#1a1a1a" style="height: 40px; padding: 2px; cursor: pointer;">
                 </div>
                 <div class="form-group">
@@ -316,11 +333,12 @@
                 </button>
             </div>
             <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
-                <label style="color: var(--primary); font-weight: bold;"><i class="fa-solid fa-camera"></i> Changer la photo</label>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: none;">Remplacez la photo du CV (si présente).</p>
+                <label style="color: var(--primary); font-weight: bold;"><i class="fa-solid fa-camera"></i> Photo du Candidat</label>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: none;">Remplacez ou ajoutez une photo professionnelle.</p>
                 <button onclick="document.getElementById('photo-upload-input')?.click()" class="btn btn-ghost" style="width: 100%; border: 1px dashed var(--primary); color: var(--primary); padding: 0.5rem; border-radius: var(--radius-md); cursor: pointer; font-size: 0.85rem;">
-                    <i class="fa-solid fa-upload"></i> Choisir une image
+                    <i class="fa-solid fa-upload"></i> Insérer / Changer la photo
                 </button>
+                <input type="file" id="photo-upload-input" accept="image/*" style="display: none;" onchange="handlePhotoUploadInCv(event)">
             </div>
             <button class="btn btn-primary" onclick="window.print()" style="width: 100%; margin-top: 1rem; background: var(--grad-primary); border: none; padding: 0.75rem; border-radius: var(--radius-md); color: white; cursor: pointer;">
                 <i class="fa-solid fa-print"></i> Aperçu Impression
