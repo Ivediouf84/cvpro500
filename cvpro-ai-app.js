@@ -195,14 +195,21 @@ function renderDefaultDemoCv() {
     `;
 }
 
-function renderParsedJsonToHtml(parsed) {
+let lastParsedCvData = null;
+
+function renderParsedJsonToHtml(parsed, requestedTemplate) {
     const docEl = document.getElementById('cv-document');
     if (!docEl || !parsed) return;
 
-    // Set class to cv-template-canva (Modèle Canva / Ibou Diouf Bordeaux & Bleu)
-    docEl.className = "cv-page-container cv-template-canva";
+    lastParsedCvData = parsed;
+    const templateClass = requestedTemplate || document.getElementById('style-template-selector')?.value || 'cv-template-canva';
+    
+    // Set container class
+    docEl.className = "cv-page-container " + templateClass;
     const templateSelector = document.getElementById('style-template-selector');
-    if (templateSelector) templateSelector.value = "cv-template-canva";
+    if (templateSelector && templateSelector.value !== templateClass) {
+        templateSelector.value = templateClass;
+    }
 
     const p = {
         firstName: parsed.personal?.firstName || parsed.firstName || 'IBOU',
@@ -223,100 +230,68 @@ function renderParsedJsonToHtml(parsed) {
     const interests = Array.isArray(parsed.interests) ? parsed.interests : [];
     const scannedPhotoUrl = localStorage.getItem('scanned_cv_image_url') || '';
 
-    const html = `
-        <!-- Modèle Canva / Ibou Diouf (Bordeaux & Bleu) -->
-        <div class="cv-canva-left">
-            <div class="cv-canva-left-accent"></div>
-            
-            <div class="cv-canva-photo-container" onclick="document.getElementById('photo-upload-input')?.click()" style="cursor: pointer;" title="Cliquez pour insérer votre photo">
-                ${scannedPhotoUrl ? 
-                  `<img src="${scannedPhotoUrl}" class="cv-photo" alt="Photo du candidat">` : 
-                  `<div style="width:110px; height:110px; border-radius:50%; border:2px dashed #800000; background:#f8fafc; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#800000; margin:0 auto; font-size:0.75rem; font-weight:bold;"><i class="fa-solid fa-camera" style="font-size:1.6rem; margin-bottom:4px;"></i><span>Votre Photo</span></div>`}
+    let html = '';
+
+    if (templateClass === 'cv-template-modern') {
+        html = `
+            <div class="cv-header" style="background:#4f46e5; color:white; padding:25px; text-align:center; flex-shrink:0;">
+                <h1 style="font-size:26pt; margin:0; text-transform:uppercase;">${p.firstName} ${p.lastName}</h1>
+                <h2 style="font-size:13pt; margin:5px 0 10px 0; font-weight:normal;">${p.jobTitle}</h2>
+                <div style="font-size:9.5pt;">${[p.email, p.phone, p.city, p.birth].filter(Boolean).join('  |  ')}</div>
             </div>
-
-            ${profileSummary ? `
-            <div class="cv-canva-presentation-title">Présentation</div>
-            <p style="font-size: 8.5pt; color: #333; line-height: 1.4; margin: 0 0 10px 0;">${profileSummary}</p>
-            ` : ''}
-
-            <div>
-                ${p.phone ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-phone"></i></div> <span>${p.phone}</span></div>` : ''}
-                ${p.email ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-envelope"></i></div> <span>${p.email}</span></div>` : ''}
-                ${p.city ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-location-dot"></i></div> <span>${p.city}</span></div>` : ''}
-            </div>
-
-            ${languages.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title">Langues</div>
-                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.5; color: #333;">
-                    ${languages.map(l => `<li>${typeof l === 'string' ? l : (l.name + (l.level ? ' (' + l.level + ')' : ''))}</li>`).join('')}
-                </ul>
-            </div>` : ''}
-
-            ${skills.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title">Compétences</div>
-                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.5; color: #333;">
-                    ${skills.map(s => `<li>${typeof s === 'string' ? s : s.name}</li>`).join('')}
-                </ul>
-            </div>` : ''}
-        </div>
-
-        <div class="cv-canva-right">
-            <div class="cv-canva-header-name">
-                <h1>${p.firstName} <span>${p.lastName}</span></h1>
-            </div>
-            <div class="cv-canva-header-title">${p.jobTitle}</div>
-            ${p.birth ? `<div class="cv-canva-header-birth">${p.birth}</div>` : ''}
-
-            ${education.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title">Études</div>
-                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.4; color: #333;">
-                    ${education.map(e => `
-                        <li style="margin-bottom: 4px;">
-                            <strong>${e.degree || e.studyType || 'Diplôme'}</strong> ${e.school ? ' - ' + e.school : ''} ${e.year ? '(' + e.year + ')' : ''}
-                        </li>
-                    `).join('')}
-                </ul>
-            </div>` : ''}
-
-            ${formations.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title">Formations</div>
-                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.4; color: #333;">
-                    ${formations.map(f => `
-                        <li style="margin-bottom: 4px;">
-                            <strong>${typeof f === 'string' ? f : (f.title || f.name)}</strong> ${f.year ? '(' + f.year + ')' : ''}
-                        </li>
-                    `).join('')}
-                </ul>
-            </div>` : ''}
-
-            ${experiences.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title">Expériences</div>
-                ${experiences.map(e => `
-                    <div style="margin-bottom: 6px; font-size: 8.5pt;">
-                        <strong style="color: #0d1b2a;">${e.title || 'Poste'}</strong> ${e.company ? '- ' + e.company : ''} 
-                        ${e.startDate ? `<span style="float: right; color: #64748b;">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</span>` : ''}
-                        ${e.description ? `<p style="margin: 2px 0 0 0; color: #333;">${e.description}</p>` : ''}
+            <div class="cv-body" style="padding:25px; display:flex; gap:20px; flex:1;">
+                <div class="cv-sidebar" style="width:35%;">
+                    <div onclick="document.getElementById('photo-upload-input')?.click()" style="cursor:pointer; margin-bottom:15px;">
+                        ${scannedPhotoUrl ? `<img src="${scannedPhotoUrl}" style="width:120px; height:120px; border-radius:50%; object-fit:cover; margin:0 auto; display:block;">` : `<div style="width:100px; height:100px; border-radius:50%; border:2px dashed #4f46e5; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:0.75rem; font-weight:bold; color:#4f46e5;"><i class="fa-solid fa-camera" style="font-size:1.5rem;"></i></div>`}
                     </div>
-                `).join('')}
-            </div>` : ''}
-
-            ${interests.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title">Loisirs / Autres</div>
-                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.4; color: #333;">
-                    ${interests.map(i => `<li>${typeof i === 'string' ? i : i.name}</li>`).join('')}
-                </ul>
-            </div>` : ''}
-        </div>
-    `;
+                    ${profileSummary ? `<div class="cv-section" style="margin-bottom:15px;"><h3 style="border-bottom:2px solid #4f46e5; padding-bottom:3px; color:#4f46e5;">PROFIL</h3><p style="font-size:9.5pt;">${profileSummary}</p></div>` : ''}
+                    ${skills.length > 0 ? `<div class="cv-section" style="margin-bottom:15px;"><h3 style="border-bottom:2px solid #4f46e5; padding-bottom:3px; color:#4f46e5;">COMPÉTENCES</h3><ul style="padding-left:15px; font-size:9.5pt;">${skills.map(s => `<li>${typeof s === 'string' ? s : s.name}</li>`).join('')}</ul></div>` : ''}
+                    ${languages.length > 0 ? `<div class="cv-section" style="margin-bottom:15px;"><h3 style="border-bottom:2px solid #4f46e5; padding-bottom:3px; color:#4f46e5;">LANGUES</h3><ul style="padding-left:15px; font-size:9.5pt;">${languages.map(l => `<li>${typeof l === 'string' ? l : l.name}</li>`).join('')}</ul></div>` : ''}
+                </div>
+                <div class="cv-main" style="width:65%;">
+                    ${experiences.length > 0 ? `<div class="cv-section" style="margin-bottom:15px;"><h3 style="border-bottom:2px solid #4f46e5; padding-bottom:3px; color:#4f46e5;">EXPÉRIENCES</h3>${experiences.map(e => `<div style="margin-bottom:8px; font-size:9.5pt;"><strong>${e.title || 'Poste'}</strong> - ${e.company || ''} <span style="float:right; color:#666;">${e.startDate || ''}</span><p style="margin:2px 0 0 0;">${e.description || ''}</p></div>`).join('')}</div>` : ''}
+                    ${education.length > 0 ? `<div class="cv-section" style="margin-bottom:15px;"><h3 style="border-bottom:2px solid #4f46e5; padding-bottom:3px; color:#4f46e5;">ÉTUDES</h3><ul style="padding-left:15px; font-size:9.5pt;">${education.map(e => `<li><strong>${e.degree || e.studyType || 'Diplôme'}</strong> ${e.school ? ' - ' + e.school : ''}</li>`).join('')}</ul></div>` : ''}
+                    ${formations.length > 0 ? `<div class="cv-section" style="margin-bottom:15px;"><h3 style="border-bottom:2px solid #4f46e5; padding-bottom:3px; color:#4f46e5;">FORMATIONS</h3><ul style="padding-left:15px; font-size:9.5pt;">${formations.map(f => `<li><strong>${typeof f === 'string' ? f : f.title}</strong></li>`).join('')}</ul></div>` : ''}
+                </div>
+            </div>
+        `;
+    } else {
+        // Default: Modèle Officiel Canva (Bordeaux & Bleu)
+        html = `
+            <!-- Modèle Canva / Ibou Diouf (Bordeaux & Bleu) -->
+            <div class="cv-canva-left">
+                <div class="cv-canva-left-accent"></div>
+                <div class="cv-canva-photo-container" onclick="document.getElementById('photo-upload-input')?.click()" style="cursor: pointer;" title="Cliquez pour insérer votre photo">
+                    ${scannedPhotoUrl ? 
+                      `<img src="${scannedPhotoUrl}" class="cv-photo" alt="Photo du candidat">` : 
+                      `<div style="width:120px; height:120px; border-radius:50%; border:3px dashed #800000; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#800000; margin:0 auto; font-size:0.8rem; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><i class="fa-solid fa-camera" style="font-size:1.8rem; margin-bottom:4px;"></i><span>Votre Photo</span></div>`}
+                </div>
+                ${profileSummary ? `<div class="cv-canva-presentation-title">Présentation</div><p style="font-size: 9.5pt; color: #222222; line-height: 1.5; margin: 0 0 12px 0;">${profileSummary}</p>` : ''}
+                <div style="margin-top: 5px;">
+                    ${p.phone ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-phone"></i></div> <span style="font-weight:600; color:#1a1a1a;">${p.phone}</span></div>` : ''}
+                    ${p.email ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-envelope"></i></div> <span style="font-weight:600; color:#1a1a1a;">${p.email}</span></div>` : ''}
+                    ${p.city ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-location-dot"></i></div> <span style="font-weight:600; color:#1a1a1a;">${p.city}</span></div>` : ''}
+                </div>
+                ${languages.length > 0 ? `<div><div class="cv-canva-box-title">LANGUES</div><ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1a1a1a;">${languages.map(l => `<li style="margin-bottom:3px;"><strong>${typeof l === 'string' ? l : l.name}</strong> ${l.level ? '<span style="color:#64748b;">(' + l.level + ')</span>' : ''}</li>`).join('')}</ul></div>` : ''}
+                ${skills.length > 0 ? `<div><div class="cv-canva-box-title">COMPÉTENCES</div><ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1a1a1a;">${skills.map(s => `<li style="margin-bottom:3px;"><strong>${typeof s === 'string' ? s : s.name}</strong></li>`).join('')}</ul></div>` : ''}
+            </div>
+            <div class="cv-canva-right">
+                <div class="cv-canva-header-name">
+                    <h1 style="font-size: 28pt; font-weight: 900; color: #0d1b2a; margin: 0; line-height: 1.1; text-transform: uppercase;">${p.firstName} <span style="color:#0d1b2a;">${p.lastName}</span></h1>
+                </div>
+                <div class="cv-canva-header-title" style="font-size: 13pt; font-weight: 700; color: #1e293b; margin-top: 4px;">${p.jobTitle}</div>
+                ${p.birth ? `<div class="cv-canva-header-birth" style="font-size: 10pt; font-weight: 700; color: #334155; margin-top: 4px; margin-bottom: 12px;">${p.birth}</div>` : ''}
+                ${education.length > 0 ? `<div><div class="cv-canva-box-title">ÉTUDES</div><ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a;">${education.map(e => `<li style="margin-bottom: 6px;"><strong style="color: #0d1b2a; font-size: 10pt;">${e.degree || e.studyType || 'Diplôme'}</strong> ${e.school ? '<span style="color:#475569;"> - ' + e.school + '</span>' : ''} ${e.year ? '<span style="color:#64748b; font-weight:600;">(' + e.year + ')</span>' : ''}</li>`).join('')}</ul></div>` : ''}
+                ${formations.length > 0 ? `<div><div class="cv-canva-box-title">FORMATIONS</div><ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a;">${formations.map(f => `<li style="margin-bottom: 6px;"><strong style="color: #0d1b2a; font-size: 10pt;">${typeof f === 'string' ? f : (f.title || f.name)}</strong> ${f.year ? '<span style="color:#64748b; font-weight:600;">(' + f.year + ')</span>' : ''}</li>`).join('')}</ul></div>` : ''}
+                ${experiences.length > 0 ? `<div><div class="cv-canva-box-title">EXPÉRIENCES</div>${experiences.map(e => `<div style="margin-bottom: 8px; font-size: 9.5pt; line-height: 1.5;"><strong style="color: #0d1b2a; font-size: 10.5pt;">${e.title || 'Poste'}</strong> ${e.company ? '<span style="color:#475569; font-weight:600;"> - ' + e.company + '</span>' : ''} ${e.startDate ? `<span style="float: right; color: #64748b; font-weight:600;">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</span>` : ''}${e.description ? `<p style="margin: 3px 0 0 0; color: #334155; font-size: 9.5pt;">${e.description}</p>` : ''}</div>`).join('')}</div>` : ''}
+                ${interests.length > 0 ? `<div><div class="cv-canva-box-title">LOISIRS / AUTRES</div><ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a;">${interests.map(i => `<li style="margin-bottom:3px;">${typeof i === 'string' ? i : i.name}</li>`).join('')}</ul></div>` : ''}
+            </div>
+        `;
+    }
 
     docEl.innerHTML = html;
     updateCVStyles();
+    balanceA4PageLayout();
     triggerCloudSaveHtml(html);
 }
 
@@ -635,8 +610,13 @@ function updateCVStyles() {
         }
         #cv-document .cv-header,
         #cv-document .cv-classic-header,
-        #cv-document .cv-sidebar {
+        #cv-document .cv-sidebar,
+        #cv-document .cv-canva-box-title,
+        #cv-document .cv-mustard-pill-title {
             background-color: ${headerColor} !important;
+        }
+        #cv-document .cv-canva-photo-container img {
+            border-color: ${headerColor} !important;
         }
     `;
 }
@@ -652,16 +632,14 @@ function changeCvTemplate(templateClass) {
         existingOverlay.remove();
     }
 
-    // Remove all old template classes
-    docEl.classList.remove(
-        'cv-template-modern', 'cv-template-classic', 'cv-template-creative', 'cv-template-executive',
-        'cv-template-canva', 'cv-template-emerald', 'cv-template-navy', 'cv-template-mustard', 'cv-template-nude'
-    );
-    docEl.classList.add(templateClass);
-
-    updateCVStyles();
-    balanceA4PageLayout();
-    triggerCloudSaveHtml(docEl.innerHTML);
+    if (lastParsedCvData) {
+        renderParsedJsonToHtml(lastParsedCvData, templateClass);
+    } else {
+        docEl.className = "cv-page-container " + templateClass;
+        updateCVStyles();
+        balanceA4PageLayout();
+        triggerCloudSaveHtml(docEl.innerHTML);
+    }
 }
 window.changeCvTemplate = changeCvTemplate;
 
