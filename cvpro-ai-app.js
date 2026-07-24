@@ -1,15 +1,27 @@
 // cvpro-ai-app.js (AI Textual CV Builder with Word-like editing)
-const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-const HARDCODED_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+if (typeof SUPABASE_URL === 'undefined') {
+    var SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+}
+if (typeof HARDCODED_ANON_KEY === 'undefined') {
+    var HARDCODED_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
+}
 
 try {
     localStorage.setItem('supabase_anon_key', HARDCODED_ANON_KEY);
 } catch(e) {}
 
-const SUPABASE_KEY = HARDCODED_ANON_KEY;
-let supabaseClient = null;
-let currentUserId = null;
-let cloudDocumentId = null;
+if (typeof SUPABASE_KEY === 'undefined') {
+    var SUPABASE_KEY = HARDCODED_ANON_KEY;
+}
+if (typeof supabaseClient === 'undefined') {
+    var supabaseClient = null;
+}
+if (typeof currentUserId === 'undefined') {
+    var currentUserId = null;
+}
+if (typeof cloudDocumentId === 'undefined') {
+    var cloudDocumentId = null;
+}
 
 // Initialize app
 const initApp = async () => {
