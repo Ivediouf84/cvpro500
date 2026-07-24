@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Demande de Stage (IA) - CV PRO 500</title>
+    <link rel="stylesheet" href="styles.css?v=cvpro1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS & Auth Guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth-guard.js"></script>
+    <!-- html2pdf for client-side PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Local Extraction Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <style>
+        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--body-bg); color: var(--text-main); font-family: 'Inter', sans-serif; }
+        .builder-nav { height: 60px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; flex-shrink: 0; }
+        .builder-nav-brand { font-weight: 800; font-size: 1.2rem; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+        
+        .container-main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; flex: 1; width: 100%; box-sizing: border-box; }
+        .header-title { text-align: center; margin-bottom: 2rem; }
+        .header-title h1 { color: var(--primary); font-size: 1.8rem; text-transform: uppercase; line-height: 1.4; margin-bottom: 0.5rem; }
+        .header-title p { color: var(--text-muted); font-size: 1rem; margin: 0; }
+        
+        .form-card { background: var(--surface); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .form-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 220px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .form-control { width: 100%; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--background); color: var(--text-main); font-size: 1rem; box-sizing: border-box; }
+        .form-control:focus { outline: none; border-color: var(--primary); }
+        
+        .upload-area { border: 2px dashed var(--primary); padding: 2rem; text-align: center; border-radius: var(--radius-md); cursor: pointer; background: rgba(79, 70, 229, 0.05); transition: all 0.2s; }
+        .upload-area:hover { background: rgba(79, 70, 229, 0.1); }
+        .upload-area i { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .upload-area h3 { margin: 0 0 0.5rem 0; color: var(--text-main); }
+        .upload-area p { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+        
+        .documents-container { display: none; gap: 2rem; flex-direction: column; margin-top: 2rem; }
+        .document-box { background: white; color: black; padding: 3.5rem 4.5rem; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 297mm; max-width: 210mm; margin: 0 auto; width: 100%; box-sizing: border-box; line-height: 1.6; font-size: 11pt; font-family: 'Times New Roman', Times, serif; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: var(--surface); padding: 2.5rem; border-radius: var(--radius-lg); width: 90%; max-width: 400px; text-align: center; position: relative; border: 1px solid var(--border); }
+        #ai-loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        
+        @media (max-width: 768px) {
+            .header-title h1 { font-size: 1.3rem; }
+            .document-box { padding: 1.5rem; min-height: auto; }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <nav class="builder-nav">
+        <a href="index.html" class="builder-nav-brand"><i class="fa-solid fa-arrow-left"></i> CV PRO 500</a>
+    </nav>
+
+    <div class="container-main">
+        <div class="header-title">
+            <h1><i class="fa-solid fa-graduation-cap"></i> Générateur de Demande de Stage Officielle (IA)</h1>
+            <p>Obtenez une demande de stage académique ou professionnelle parfaitement rédigée selon les normes administratives au Sénégal.</p>
+        </div>
+        
+        <div class="form-card" id="input-section">
+            <form id="stage-form" onsubmit="event.preventDefault(); generateStageDocument(event);">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" id="input-prenom" class="form-control" required placeholder="Ex: Moussa">
+                    </div>
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" id="input-nom" class="form-control" required placeholder="Ex: Diop">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom de l'entreprise / structure</label>
+                        <input type="text" id="input-entreprise" class="form-control" required placeholder="Ex: Sonatel, Ministère, Banque BICIS...">
+                    </div>
+                    <div class="form-group">
+                        <label>Nom du destinataire (facultatif)</label>
+                        <input type="text" id="input-destinataire" class="form-control" placeholder="Ex: Monsieur le Directeur Général, Le DRH...">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Poste ou Domaine de stage recherché</label>
+                    <input type="text" id="input-domaine" class="form-control" required placeholder="Ex: Stage en Informatique & Réseaux, Stage en Comptabilité...">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date de début souhaitée</label>
+                        <input type="text" id="input-date-debut" class="form-control" required placeholder="Ex: 1er Octobre 2024, Dès que possible...">
+                    </div>
+                    <div class="form-group">
+                        <label>Durée du stage</label>
+                        <input type="text" id="input-duree" class="form-control" required placeholder="Ex: 3 mois, 6 mois...">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Motivation spécifique pour cette entreprise (facultatif)</label>
+                    <textarea id="input-motivation-note" class="form-control" rows="3" placeholder="Ex: Je souhaite développer mes compétences au sein de votre pôle réseau..."></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label>Ton CV (Format : PDF, PNG, JPG, Word)</label>
+                    <input type="file" id="input-cv" accept=".pdf,image/*,.doc,.docx,.txt" style="display: none;" onchange="handleFileSelect(event)" required>
+                    <div class="upload-area" onclick="document.getElementById('input-cv').click()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <h3 id="file-name-display">Clique pour insérer ton CV</h3>
+                        <p>L'IA va extraire tes compétences pour adapter la demande de stage.</p>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer; font-weight: bold;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Générer ma Demande de Stage
+                </button>
+            </form>
+        </div>
+
+        <div id="results-section" class="documents-container">
+            <div style="background: rgba(79, 70, 229, 0.1); border: 1px solid var(--primary); padding: 1.5rem; border-radius: var(--radius-md); text-align: center; margin-bottom: 1rem;">
+                <h3 style="margin-top: 0; color: var(--text-main);">Votre Demande de Stage est prête ! 🎉</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Vous pouvez cliquer directement sur le texte pour le modifier au besoin avant de télécharger le PDF.</p>
+                <button onclick="exportStagePDF()" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: bold; background: var(--grad-primary); border: none; color: white; border-radius: var(--radius-lg); cursor: pointer;">
+                    <i class="fa-solid fa-download"></i> Télécharger ma Demande de Stage (PDF)
+                </button>
+            </div>
+
+            <div>
+                <div class="section-title">
+                    <span><i class="fa-solid fa-file-lines"></i> Aperçu : Demande de Stage Officielle</span>
+                </div>
+                <div id="doc-stage" class="document-box" contenteditable="true"></div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem; margin-bottom: 4rem;">
+                <button onclick="exportStagePDF()" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: bold; background: var(--grad-primary); border: none; color: white; border-radius: var(--radius-lg); cursor: pointer;">
+                    <i class="fa-solid fa-download"></i> Télécharger ma Demande de Stage (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="ai-loading-overlay">
+        <i class="fa-solid fa-wand-magic-sparkles fa-spin" style="font-size: 3rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+        <h3 style="margin: 0; font-size: 1.3rem;">Rédaction de la Demande de Stage par l'IA...</h3>
+        <p style="color: #a5b4fc; margin-top: 0.5rem;">Veuillez patienter quelques secondes.</p>
+    </div>
+
+    <script src="stage-app.js"></script>
+</body>
+</html>
