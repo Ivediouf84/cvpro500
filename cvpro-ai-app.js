@@ -228,8 +228,10 @@ function renderParsedJsonToHtml(parsed) {
         <div class="cv-canva-left">
             <div class="cv-canva-left-accent"></div>
             
-            <div class="cv-canva-photo-container">
-                <img src="${scannedPhotoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400'}" class="cv-photo" alt="Photo du candidat">
+            <div class="cv-canva-photo-container" onclick="document.getElementById('photo-upload-input')?.click()" style="cursor: pointer;" title="Cliquez pour insérer votre photo">
+                ${scannedPhotoUrl ? 
+                  `<img src="${scannedPhotoUrl}" class="cv-photo" alt="Photo du candidat">` : 
+                  `<div style="width:110px; height:110px; border-radius:50%; border:2px dashed #800000; background:#f8fafc; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#800000; margin:0 auto; font-size:0.75rem; font-weight:bold;"><i class="fa-solid fa-camera" style="font-size:1.6rem; margin-bottom:4px;"></i><span>Votre Photo</span></div>`}
             </div>
 
             ${profileSummary ? `
@@ -645,7 +647,10 @@ function changeCvTemplate(templateClass) {
     if (!docEl) return;
 
     // Remove all old template classes
-    docEl.classList.remove('cv-template-modern', 'cv-template-classic', 'cv-template-creative', 'cv-template-executive');
+    docEl.classList.remove(
+        'cv-template-modern', 'cv-template-classic', 'cv-template-creative', 'cv-template-executive',
+        'cv-template-canva', 'cv-template-emerald', 'cv-template-navy', 'cv-template-mustard', 'cv-template-nude'
+    );
     docEl.classList.add(templateClass);
 
     updateCVStyles();
