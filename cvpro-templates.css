@@ -429,3 +429,130 @@
     font-size: 9pt;
     border-radius: 4px;
 }
+
+/* =========================================
+   TEMPLATE 5: MODÈLE CANVA / IBOU DIOUF (Bordeaux & Bleu)
+   ========================================= */
+.cv-template-canva {
+    display: flex !important;
+    flex-direction: row !important;
+    font-family: 'Open Sans', 'Arial', sans-serif !important;
+    color: #1a1a1a !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    min-height: 297mm;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.cv-template-canva .cv-canva-left {
+    width: 38% !important;
+    padding: 25px 20px !important;
+    background: #ffffff !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    z-index: 2;
+    border-right: 1px solid #f1f5f9;
+}
+
+.cv-template-canva .cv-canva-left-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 110px;
+    background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 50%, #800000 100%);
+    z-index: -1;
+}
+
+.cv-template-canva .cv-canva-photo-container {
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.cv-template-canva .cv-canva-photo-container img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #800000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.cv-template-canva .cv-canva-box-title {
+    background: #800000 !important;
+    color: #ffffff !important;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: 10.5pt;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    text-align: center;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    margin-top: 8px;
+}
+
+.cv-template-canva .cv-canva-presentation-title {
+    font-size: 15pt;
+    font-weight: 800;
+    color: #0d1b2a;
+    margin-bottom: 6px;
+    margin-top: 10px;
+}
+
+.cv-template-canva .cv-canva-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 9pt;
+    margin-bottom: 6px;
+}
+
+.cv-template-canva .cv-canva-contact-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0d1b2a;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8.5pt;
+    flex-shrink: 0;
+}
+
+.cv-template-canva .cv-canva-right {
+    width: 62% !important;
+    padding: 25px 25px 20px 20px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cv-template-canva .cv-canva-header-name h1 {
+    font-size: 26pt !important;
+    font-weight: 900 !important;
+    color: #0d1b2a !important;
+    margin: 0 !important;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+
+.cv-template-canva .cv-canva-header-title {
+    font-size: 13pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+.cv-template-canva .cv-canva-header-birth {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+}

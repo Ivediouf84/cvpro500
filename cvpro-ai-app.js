@@ -199,105 +199,122 @@ function renderParsedJsonToHtml(parsed) {
     const docEl = document.getElementById('cv-document');
     if (!docEl || !parsed) return;
 
+    // Set class to cv-template-canva (Modèle Canva / Ibou Diouf Bordeaux & Bleu)
+    docEl.className = "cv-page-container cv-template-canva";
+    const templateSelector = document.getElementById('style-template-selector');
+    if (templateSelector) templateSelector.value = "cv-template-canva";
+
     const p = {
-        firstName: parsed.personal?.firstName || parsed.firstName || 'Prénom',
-        lastName: parsed.personal?.lastName || parsed.lastName || 'Nom',
-        jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || 'Titre Professionnel',
-        email: parsed.personal?.email || parsed.email || '',
-        phone: parsed.personal?.phone || parsed.phone || '',
-        city: parsed.personal?.city || parsed.personal?.location || parsed.location || '',
-        linkedin: parsed.personal?.linkedin || parsed.linkedin || ''
+        firstName: parsed.personal?.firstName || parsed.firstName || 'IBOU',
+        lastName: parsed.personal?.lastName || parsed.lastName || 'DIOUF',
+        jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || 'Instituteur, Informaticien, Web designer',
+        email: parsed.personal?.email || parsed.email || 'ngalagne84@gmail.com',
+        phone: parsed.personal?.phone || parsed.phone || '782124456 / 782532353',
+        city: parsed.personal?.city || parsed.personal?.location || parsed.location || 'Ngalagne Diaraf, Ndk',
+        birth: parsed.personal?.birth || parsed.birth || 'Né le 17-06-1984 à Ngalagne Diaraf'
     };
-    const profileSummary = parsed.profile?.summary || parsed.summary || '';
+    
+    const profileSummary = parsed.profile?.summary || parsed.summary || 'Instituteur, informaticien, web designer, concepteur et gestionnaire de projet, entrepreneur digital.';
     const education = Array.isArray(parsed.education) ? parsed.education : [];
     const formations = Array.isArray(parsed.formations) ? parsed.formations : [];
     const experiences = Array.isArray(parsed.experiences) ? parsed.experiences : (Array.isArray(parsed.experience) ? parsed.experience : []);
     const skills = Array.isArray(parsed.skills) ? parsed.skills : [];
     const languages = Array.isArray(parsed.languages) ? parsed.languages : [];
     const interests = Array.isArray(parsed.interests) ? parsed.interests : [];
+    const scannedPhotoUrl = localStorage.getItem('scanned_cv_image_url') || '';
 
     const html = `
-        <div style="padding: 2rem; font-family: Arial, sans-serif; color: #000; line-height: 1.6;">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <h1 style="font-size: 24pt; margin: 0; color: #000;">${p.firstName} ${p.lastName}</h1>
-                <h2 style="font-size: 14pt; font-weight: normal; margin: 5px 0; color: #333;">${p.jobTitle}</h2>
-                <p style="font-size: 11pt; margin: 5px 0;">
-                    ${[p.email, p.phone, p.city, p.linkedin].filter(Boolean).join(' | ')}
-                </p>
-            </div>
+        <!-- Modèle Canva / Ibou Diouf (Bordeaux & Bleu) -->
+        <div class="cv-canva-left">
+            <div class="cv-canva-left-accent"></div>
             
+            <div class="cv-canva-photo-container">
+                <img src="${scannedPhotoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400'}" class="cv-photo" alt="Photo du candidat">
+            </div>
+
             ${profileSummary ? `
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Profil</h3>
-                <p style="font-size: 11pt; margin: 0;">${profileSummary}</p>
-            </div>` : ''}
+            <div class="cv-canva-presentation-title">Présentation</div>
+            <p style="font-size: 8.5pt; color: #333; line-height: 1.4; margin: 0 0 10px 0;">${profileSummary}</p>
+            ` : ''}
 
-            ${experiences.length > 0 ? `
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Expériences Professionnelles</h3>
-                ${experiences.map(e => `
-                    <div style="margin-bottom: 10px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 11pt; font-weight: bold;">
-                            <span>${e.title || 'Poste'} - ${e.company || 'Entreprise'}</span>
-                            <span>${e.startDate || ''} ${e.endDate ? '- ' + e.endDate : ''}</span>
-                        </div>
-                        <p style="font-size: 11pt; margin: 3px 0 0 0;">${e.description || ''}</p>
-                    </div>
-                `).join('')}
-            </div>` : ''}
+            <div>
+                ${p.phone ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-phone"></i></div> <span>${p.phone}</span></div>` : ''}
+                ${p.email ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-envelope"></i></div> <span>${p.email}</span></div>` : ''}
+                ${p.city ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-location-dot"></i></div> <span>${p.city}</span></div>` : ''}
+            </div>
 
-            ${education.length > 0 ? `
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Études et Diplômes</h3>
-                ${education.map(e => `
-                    <div style="margin-bottom: 5px; font-size: 11pt;">
-                        <strong style="color: #000;">${e.degree || e.studyType || 'Diplôme'}</strong> - ${e.school || 'Établissement'} 
-                        <span style="float: right;">${e.year || ''}</span>
-                    </div>
-                `).join('')}
-            </div>` : ''}
-
-            ${formations.length > 0 ? `
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Formations / Certifications</h3>
-                ${formations.map(f => `
-                    <div style="margin-bottom: 10px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 11pt; font-weight: bold;">
-                            <span>${f.title || 'Formation'} - ${f.institution || 'Institution'}</span>
-                            <span>${f.startDate || ''} ${f.endDate ? '- ' + f.endDate : ''}</span>
-                        </div>
-                        <p style="font-size: 11pt; margin: 3px 0 0 0;">${f.description || ''}</p>
-                    </div>
-                `).join('')}
+            ${languages.length > 0 ? `
+            <div>
+                <div class="cv-canva-box-title">Langues</div>
+                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.5; color: #333;">
+                    ${languages.map(l => `<li>${typeof l === 'string' ? l : (l.name + (l.level ? ' (' + l.level + ')' : ''))}</li>`).join('')}
+                </ul>
             </div>` : ''}
 
             ${skills.length > 0 ? `
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Compétences</h3>
-                <p style="font-size: 11pt; margin: 0;">
-                    ${skills.map(s => typeof s === 'string' ? s : s.name).filter(Boolean).join(' • ')}
-                </p>
-            </div>` : ''}
-
-            ${languages.length > 0 ? `
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Langues</h3>
-                <ul style="font-size: 11pt; margin: 0; padding-left: 20px;">
-                    ${languages.map(l => typeof l === 'string' ? `<li>${l}</li>` : `<li><strong>${l.name || ''}</strong> ${l.level ? '(' + l.level + ')' : ''}</li>`).join('')}
+            <div>
+                <div class="cv-canva-box-title">Compétences</div>
+                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.5; color: #333;">
+                    ${skills.map(s => `<li>${typeof s === 'string' ? s : s.name}</li>`).join('')}
                 </ul>
             </div>` : ''}
-            
+        </div>
+
+        <div class="cv-canva-right">
+            <div class="cv-canva-header-name">
+                <h1>${p.firstName} <span>${p.lastName}</span></h1>
+            </div>
+            <div class="cv-canva-header-title">${p.jobTitle}</div>
+            ${p.birth ? `<div class="cv-canva-header-birth">${p.birth}</div>` : ''}
+
+            ${education.length > 0 ? `
+            <div>
+                <div class="cv-canva-box-title">Études</div>
+                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.4; color: #333;">
+                    ${education.map(e => `
+                        <li style="margin-bottom: 4px;">
+                            <strong>${e.degree || e.studyType || 'Diplôme'}</strong> ${e.school ? ' - ' + e.school : ''} ${e.year ? '(' + e.year + ')' : ''}
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>` : ''}
+
+            ${formations.length > 0 ? `
+            <div>
+                <div class="cv-canva-box-title">Formations</div>
+                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.4; color: #333;">
+                    ${formations.map(f => `
+                        <li style="margin-bottom: 4px;">
+                            <strong>${typeof f === 'string' ? f : (f.title || f.name)}</strong> ${f.year ? '(' + f.year + ')' : ''}
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>` : ''}
+
+            ${experiences.length > 0 ? `
+            <div>
+                <div class="cv-canva-box-title">Expériences</div>
+                ${experiences.map(e => `
+                    <div style="margin-bottom: 6px; font-size: 8.5pt;">
+                        <strong style="color: #0d1b2a;">${e.title || 'Poste'}</strong> ${e.company ? '- ' + e.company : ''} 
+                        ${e.startDate ? `<span style="float: right; color: #64748b;">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</span>` : ''}
+                        ${e.description ? `<p style="margin: 2px 0 0 0; color: #333;">${e.description}</p>` : ''}
+                    </div>
+                `).join('')}
+            </div>` : ''}
+
             ${interests.length > 0 ? `
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 10px; color: #000; text-transform: uppercase;">Centres d'intérêt</h3>
-                <p style="font-size: 11pt; margin: 0;">
-                    ${interests.map(i => typeof i === 'string' ? i : i.name).filter(Boolean).join(' • ')}
-                </p>
+            <div>
+                <div class="cv-canva-box-title">Loisirs / Autres</div>
+                <ul style="padding-left: 15px; margin: 0; font-size: 8.5pt; line-height: 1.4; color: #333;">
+                    ${interests.map(i => `<li>${typeof i === 'string' ? i : i.name}</li>`).join('')}
+                </ul>
             </div>` : ''}
         </div>
     `;
 
     docEl.innerHTML = html;
+    updateCVStyles();
     triggerCloudSaveHtml(html);
 }
 
