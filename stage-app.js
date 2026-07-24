@@ -312,7 +312,27 @@ function buildPerfectAdministrativeDocument({ prenom, nom, email, phone, destina
     `;
 }
 
+function openStagePaymentModal() {
+    const modal = document.getElementById('stage-payment-modal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeStagePaymentModal() {
+    const modal = document.getElementById('stage-payment-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function processStagePayment() {
+    closeStagePaymentModal();
+    // Trigger PDF download directly after payment confirmation
+    generateStagePDFDirect();
+}
+
 function exportStagePDF() {
+    openStagePaymentModal();
+}
+
+function generateStagePDFDirect() {
     const originalDoc = document.getElementById('doc-stage');
     if (!originalDoc) return;
 

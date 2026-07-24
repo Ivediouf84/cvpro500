@@ -59,8 +59,7 @@ const initApp = async () => {
         } catch (e) {
             console.error("Error generating HTML from imported JSON", e);
         }
-            }
-        } else if (importedHtml && importedHtml.trim().length > 50) {
+    } else if (importedHtml && importedHtml.trim().length > 50) {
         if (docEl) docEl.innerHTML = importedHtml;
         triggerCloudSaveHtml(importedHtml);
     } else {
