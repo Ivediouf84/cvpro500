@@ -44,10 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-window.openAutorisationModal = function() {
+window.openAutorisationModal = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
     const modal = document.getElementById('autorisation-modal');
     if (modal) {
-        modal.style.display = 'flex';
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('opacity', '1', 'important');
+        modal.style.setProperty('visibility', 'visible', 'important');
+        modal.style.setProperty('z-index', '999999', 'important');
         document.body.style.overflow = 'hidden';
     } else {
         window.location.href = 'autorisation-generator.html';
@@ -57,7 +61,7 @@ window.openAutorisationModal = function() {
 window.closeAutorisationModal = function() {
     const modal = document.getElementById('autorisation-modal');
     if (modal) {
-        modal.style.display = 'none';
+        modal.style.setProperty('display', 'none', 'important');
         document.body.style.overflow = 'auto';
     }
 };
@@ -65,12 +69,17 @@ window.closeAutorisationModal = function() {
 window.openAutorisationPaymentModal = function(exportType = 'pdf') {
     window.pendingExportType = exportType;
     const modal = document.getElementById('autorisation-payment-modal');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('z-index', '999999', 'important');
+    }
 };
 
 window.closeAutorisationPaymentModal = function() {
     const modal = document.getElementById('autorisation-payment-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.setProperty('display', 'none', 'important');
+    }
 };
 
 async function processAutorisationPayment() {

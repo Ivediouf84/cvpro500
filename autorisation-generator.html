@@ -7,6 +7,26 @@
     <link rel="stylesheet" href="styles.css?v=auto1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        window.openAutorisationModal = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            var modal = document.getElementById('autorisation-modal');
+            if (modal) {
+                modal.style.setProperty('display', 'flex', 'important');
+                modal.style.setProperty('opacity', '1', 'important');
+                modal.style.setProperty('visibility', 'visible', 'important');
+                modal.style.setProperty('z-index', '999999', 'important');
+                document.body.style.overflow = 'hidden';
+            }
+        };
+        window.closeAutorisationModal = function() {
+            var modal = document.getElementById('autorisation-modal');
+            if (modal) {
+                modal.style.setProperty('display', 'none', 'important');
+                document.body.style.overflow = 'auto';
+            }
+        };
+    </script>
     <style>
         .btn-institutional {
             background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
@@ -36,9 +56,9 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(6, 9, 19, 0.85);
+            background: rgba(6, 9, 19, 0.92);
             backdrop-filter: blur(8px);
-            z-index: 9999;
+            z-index: 999999;
             justify-content: center;
             align-items: center;
             overflow-y: auto;
@@ -155,7 +175,7 @@
                 Conforme aux exigences administratives (Mairies, Préfets, Commissariats, Gendarmerie). Générez une lettre officielle de haute qualité, prête à imprimer ou éditer en 1 clic.
             </p>
             
-            <button onclick="openAutorisationModal()" class="btn-institutional" style="padding: 1.1rem 2.5rem; font-size: 1.2rem; border-radius: var(--radius-xl);">
+            <button onclick="openAutorisationModal(event)" class="btn-institutional" style="padding: 1.1rem 2.5rem; font-size: 1.2rem; border-radius: var(--radius-xl);">
                 <i class="fa-solid fa-file-lines"></i> Générer une demande d'autorisation
             </button>
         </div>
