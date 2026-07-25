@@ -195,6 +195,42 @@ function renderDefaultDemoCv() {
     `;
 }
 
+function renderListItemsVerbatim(list) {
+    if (!Array.isArray(list)) return '';
+    let result = '';
+    list.forEach(item => {
+        if (typeof item === 'string') {
+            result += `<li style="margin-bottom:5px; font-size:9.5pt; color:#1a1a1a;">${item}</li>`;
+        } else if (typeof item === 'object' && item !== null) {
+            const mainText = item.title || item.degree || item.name || item.text || item.heading || '';
+            const subText = item.school || item.institution || item.company || '';
+            const details = item.details || item.description || item.subItems || item.bullets || [];
+            const yearStr = item.year || item.startDate || item.dates ? ` (${item.year || item.startDate}${item.endDate ? ' - ' + item.endDate : ''})` : '';
+            const locationStr = item.location ? ` à ${item.location}` : '';
+
+            if (mainText) {
+                let line = `<strong style="color:#0b2545;">${mainText}</strong>`;
+                if (subText) line += ` - ${subText}`;
+                if (locationStr) line += locationStr;
+                if (yearStr) line += yearStr;
+                result += `<li style="margin-bottom:5px; font-size:9.5pt; color:#1a1a1a;">${line}</li>`;
+            }
+
+            if (Array.isArray(details)) {
+                details.forEach(d => {
+                    const dText = typeof d === 'string' ? d : (d.text || d.name || '');
+                    if (dText) {
+                        result += `<li style="margin-bottom:4px; font-size:9.5pt; margin-left:14px; color:#1a1a1a;">${dText}</li>`;
+                    }
+                });
+            } else if (typeof details === 'string' && details.trim().length > 0) {
+                result += `<li style="margin-bottom:4px; font-size:9.5pt; margin-left:14px; color:#334155;">${details}</li>`;
+            }
+        }
+    });
+    return result;
+}
+
 let lastParsedCvData = null;
 
 function renderParsedJsonToHtml(parsed) {
@@ -286,15 +322,7 @@ function renderParsedJsonToHtml(parsed) {
             <div>
                 <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">ÉTUDES</div>
                 <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
-                    ${education.map(e => {
-                        if (typeof e === 'string') return `<li style="margin-bottom:6px;">${e}</li>`;
-                        const title = e.degree || e.studyType || e.title || e.text || '';
-                        const schoolStr = e.school ? ` - ${e.school}` : '';
-                        const locationStr = e.location ? `, ${e.location}` : '';
-                        const yearStr = e.year || e.dates ? ` (${e.year || e.dates})` : '';
-                        const descStr = e.description ? `<p style="margin:2px 0 0 0; color:#334155;">${e.description}</p>` : '';
-                        return `<li style="margin-bottom:6px;"><strong style="color:#0b2545; font-size:10pt;">${title}</strong>${schoolStr}${locationStr}${yearStr}${descStr}</li>`;
-                    }).join('')}
+                    ${renderListItemsVerbatim(education)}
                 </ul>
             </div>` : ''}
 
@@ -302,15 +330,7 @@ function renderParsedJsonToHtml(parsed) {
             <div>
                 <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">FORMATIONS</div>
                 <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
-                    ${formations.map(f => {
-                        if (typeof f === 'string') return `<li style="margin-bottom:6px;">${f}</li>`;
-                        const title = f.title || f.name || f.degree || f.text || '';
-                        const schoolStr = f.school || f.institution ? ` - ${f.school || f.institution}` : '';
-                        const locationStr = f.location ? `, ${f.location}` : '';
-                        const yearStr = f.year || f.dates ? ` (${f.year || f.dates})` : '';
-                        const descStr = f.description ? `<p style="margin:2px 0 0 0; color:#334155;">${f.description}</p>` : '';
-                        return `<li style="margin-bottom:6px;"><strong style="color:#0b2545; font-size:10pt;">${title}</strong>${schoolStr}${locationStr}${yearStr}${descStr}</li>`;
-                    }).join('')}
+                    ${renderListItemsVerbatim(formations)}
                 </ul>
             </div>` : ''}
 
@@ -318,14 +338,7 @@ function renderParsedJsonToHtml(parsed) {
             <div>
                 <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">EXPÉRIENCES</div>
                 <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
-                ${experiences.map(e => `
-                    <li style="margin-bottom: 8px;">
-                        <strong style="color: #0b2545; font-size: 10.5pt;">${e.title || 'Poste'}</strong> 
-                        ${e.company ? '<span style="color:#334155; font-weight:600;"> - ' + e.company + '</span>' : ''} 
-                        ${e.startDate ? `<span style="float: right; color: #64748b; font-weight:600;">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</span>` : ''}
-                        ${e.description ? `<p style="margin: 3px 0 0 0; color: #334155; font-size: 9.5pt;">${e.description}</p>` : ''}
-                    </li>
-                `).join('')}
+                    ${renderListItemsVerbatim(experiences)}
                 </ul>
             </div>` : ''}
 
@@ -333,7 +346,7 @@ function renderParsedJsonToHtml(parsed) {
             <div>
                 <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">LOISIRS / AUTRES</div>
                 <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
-                    ${interests.map(i => `<li style="margin-bottom:3px;">${typeof i === 'string' ? i : i.name}</li>`).join('')}
+                    ${renderListItemsVerbatim(interests)}
                 </ul>
             </div>` : ''}
         </div>
