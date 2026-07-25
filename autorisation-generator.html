@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Demande d'Autorisation de Manifestation - CV PRO 500</title>
+    <link rel="stylesheet" href="styles.css?v=auto1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .btn-institutional {
+            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+            color: #ffffff !important;
+            border: 1px solid #3b82f6;
+            border-radius: var(--radius-lg);
+            padding: 0.85rem 1.6rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            cursor: pointer;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 4px 14px rgba(30, 64, 175, 0.4);
+            text-decoration: none;
+        }
+        .btn-institutional:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.55);
+        }
+        .btn-institutional:active {
+            transform: scale(0.97);
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 9, 19, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 1.5rem 1rem;
+        }
+        .modal-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            max-width: 920px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            position: relative;
+            padding: 2.2rem;
+            color: var(--text-main);
+        }
+        .modal-header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.2rem;
+            margin-bottom: 1.8rem;
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 0; right: 0;
+            background: rgba(255,255,255,0.08);
+            border: none;
+            color: var(--text-muted);
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-close-btn:hover {
+            background: #ef4444; color: white;
+        }
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #60a5fa;
+            margin: 1.8rem 0 1rem 0;
+            display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 0.4rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.2rem;
+        }
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+        .checkbox-group-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.6rem;
+            background: rgba(255,255,255,0.02);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+        .checkbox-label {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 0.9rem; color: var(--text-main); cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            width: 17px; height: 17px; accent-color: var(--primary); cursor: pointer;
+        }
+        .responsible-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.2rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+            <a href="index.html" class="logo" style="font-size: 1.4rem; font-weight: 800; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-file-signature" style="color: var(--primary);"></i> CV PRO 500
+            </a>
+            
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button onclick="openAutorisationModal()" class="btn-institutional">
+                    <i class="fa-solid fa-file-lines"></i> Générer une demande d'autorisation
+                </button>
+                <a href="index.html" class="btn btn-ghost" style="color: var(--text-muted); text-decoration: none;">Accueil</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container" style="padding: 3rem 1rem;">
+        
+        <!-- Landing Hero Section -->
+        <div id="autorisation-landing-section" style="text-align: center; max-width: 800px; margin: 2rem auto;">
+            <div style="display: inline-flex; padding: 12px 20px; border-radius: 50px; background: rgba(30,64,175,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; font-weight: 700; margin-bottom: 1.5rem; gap: 8px; align-items: center;">
+                <i class="fa-solid fa-building-shield"></i> Administration du Sénégal
+            </div>
+            
+            <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.2rem; line-height: 1.2;">
+                Générateur Intelligent de <br><span style="color: #60a5fa;">Demande d'Autorisation de Manifestation</span>
+            </h1>
+            
+            <p style="font-size: 1.15rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.6;">
+                Conforme aux exigences administratives (Mairies, Préfets, Commissariats, Gendarmerie). Générez une lettre officielle de haute qualité, prête à imprimer ou éditer en 1 clic.
+            </p>
+            
+            <button onclick="openAutorisationModal()" class="btn-institutional" style="padding: 1.1rem 2.5rem; font-size: 1.2rem; border-radius: var(--radius-xl);">
+                <i class="fa-solid fa-file-lines"></i> Générer une demande d'autorisation
+            </button>
+        </div>
+
+        <!-- Output Editor Section -->
+        <div id="autorisation-results-section" style="display: none; max-width: 900px; margin: 0 auto;">
+            <div style="background: rgba(30,64,175,0.1); border: 1px solid #3b82f6; padding: 1.5rem; border-radius: var(--radius-lg); text-align: center; margin-bottom: 2rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; align-items: center;">
+                <div style="flex: 1; text-align: left; min-width: 250px;">
+                    <h3 style="margin: 0; color: white; font-size: 1.2rem;">Votre Demande d'Autorisation est prête ! 🎉</h3>
+                    <p style="color: #93c5fd; margin: 4px 0 0 0; font-size: 0.9rem;">Vous pouvez modifier librement le texte directement sur la feuille ci-dessous avant d'exporter.</p>
+                </div>
+                
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <button onclick="exportAutorisationPDF()" class="btn btn-primary" style="padding: 0.85rem 1.4rem; font-weight: bold; background: #1e40af; border: none; color: white; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-file-pdf"></i> Télécharger PDF
+                    </button>
+                    <button onclick="exportAutorisationWord()" class="btn btn-ghost" style="padding: 0.85rem 1.4rem; font-weight: bold; border: 1px solid #3b82f6; color: #60a5fa; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; gap: 6px; background: transparent;">
+                        <i class="fa-solid fa-file-word"></i> Télécharger Word
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editable Document Box -->
+            <div style="background: #ffffff; border-radius: var(--radius-md); box-shadow: 0 20px 40px rgba(0,0,0,0.5); overflow: hidden; margin-bottom: 3rem;">
+                <div id="doc-autorisation-output" contenteditable="true" style="outline: none;"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DIALOG / MODAL DE FORMULAIRE (Prompt Spec Complète) -->
+    <div class="modal-overlay" id="autorisation-modal">
+        <div class="modal-container">
+            <button class="modal-close-btn" onclick="closeAutorisationModal()"><i class="fa-solid fa-xmark"></i></button>
+
+            <div class="modal-header">
+                <h2 style="margin: 0; font-size: 1.5rem; color: #60a5fa; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-file-signature"></i> Générateur intelligent de demande d'autorisation de manifestation
+                </h2>
+                <p style="margin: 6px 0 0 0; color: var(--text-muted); font-size: 0.95rem;">
+                    Remplissez le formulaire ci-dessous. L'IA générera automatiquement une demande officielle conforme aux usages administratifs du Sénégal.
+                </p>
+            </div>
+
+            <form onsubmit="generateAutorisationDocument(event)">
+                <!-- 1. Date et lieu -->
+                <div class="form-section-title"><i class="fa-solid fa-calendar-days"></i> 1. Date et lieu de rédaction</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date de rédaction</label>
+                        <input type="date" id="auto-date-redaction" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Lieu de rédaction</label>
+                        <input type="text" id="auto-lieu-redaction" class="form-control" required placeholder="Ex: Dakar, Thiès, Saint-Louis...">
+                    </div>
+                </div>
+
+                <!-- 2. Informations du demandeur -->
+                <div class="form-section-title"><i class="fa-solid fa-user"></i> 2. Informations du demandeur</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" id="auto-nom" class="form-control" required placeholder="Nom de famille">
+                    </div>
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" id="auto-prenom" class="form-control" required placeholder="Prénom(s)">
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label>Adresse complète</label>
+                        <input type="text" id="auto-adresse" class="form-control" required placeholder="Adresse, Rue, Quartier, Ville">
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="tel" id="auto-tel" class="form-control" required placeholder="Ex: +221 77 000 00 00">
+                    </div>
+                    <div class="form-group">
+                        <label>Email (facultatif)</label>
+                        <input type="email" id="auto-email" class="form-control" placeholder="exemple@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Profession</label>
+                        <select id="auto-profession" class="form-control" required>
+                            <option value="Étudiant">Étudiant</option>
+                            <option value="Enseignant">Enseignant</option>
+                            <option value="Fonctionnaire">Fonctionnaire</option>
+                            <option value="Commerçant">Commerçant</option>
+                            <option value="Entrepreneur">Entrepreneur</option>
+                            <option value="Artisan">Artisan</option>
+                            <option value="Agriculteur">Agriculteur</option>
+                            <option value="Éleveur">Éleveur</option>
+                            <option value="Pêcheur">Pêcheur</option>
+                            <option value="Salarié">Salarié</option>
+                            <option value="Sans emploi">Sans emploi</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 3. Qualité du demandeur -->
+                <div class="form-section-title"><i class="fa-solid fa-id-card"></i> 3. Qualité du demandeur</div>
+                <div class="form-grid">
+                    <div class="form-group form-group-full">
+                        <label>Qualité / Rôle</label>
+                        <select id="auto-qualite" class="form-control" required>
+                            <option value="En mon nom personnel">En mon nom personnel</option>
+                            <option value="Président d'association">Président d'association</option>
+                            <option value="Président de comité">Président de comité</option>
+                            <option value="Coordinateur">Coordinateur</option>
+                            <option value="Chef de village">Chef de village</option>
+                            <option value="Délégué de quartier">Délégué de quartier</option>
+                            <option value="Directeur">Directeur</option>
+                            <option value="Gérant">Gérant</option>
+                            <option value="Organisateur">Organisateur</option>
+                            <option value="Secrétaire général">Secrétaire général</option>
+                            <option value="Trésorier">Trésorier</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 4. Logo -->
+                <div class="form-section-title"><i class="fa-solid fa-image"></i> 4. Logo de l'association ou de l'organisation</div>
+                <div class="form-group form-group-full">
+                    <label>Téléverser un logo (PNG, JPG, JPEG, SVG)</label>
+                    <input type="file" id="auto-logo-file" accept="image/png, image/jpeg, image/jpg, image/svg+xml" onchange="handleLogoUpload(event)" style="display: none;">
+                    <div onclick="document.getElementById('auto-logo-file').click()" style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); transition: var(--transition);">
+                        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: #60a5fa; margin-bottom: 0.5rem;"></i>
+                        <div style="font-weight: 600; color: white;">Cliquez pour insérer votre logo</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">Sera placé automatiquement en haut à gauche sans déformation</div>
+                    </div>
+
+                    <div id="auto-logo-preview-container" style="display: none; margin-top: 1rem; text-align: center; position: relative;">
+                        <img id="auto-logo-preview" src="" style="max-height: 80px; max-width: 150px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border); padding: 4px; background: white;">
+                        <button type="button" onclick="removeUploadedLogo()" style="margin-left: 10px; background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">Supprimer</button>
+                    </div>
+                </div>
+
+                <!-- 5. Responsables (Jusqu'à 3) -->
+                <div class="form-section-title"><i class="fa-solid fa-users-gear"></i> 5. Responsables de l'événement</div>
+                
+                <!-- Responsable 1 -->
+                <div class="responsible-card">
+                    <div style="font-weight: bold; color: #93c5fd; margin-bottom: 0.8rem;">Responsable 1 (Principal)</div>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Nom</label><input type="text" id="auto-r1-nom" class="form-control" placeholder="Nom"></div>
+                        <div class="form-group"><label>Prénom</label><input type="text" id="auto-r1-prenom" class="form-control" placeholder="Prénom"></div>
+                        <div class="form-group">
+                            <label>Fonction</label>
+                            <select id="auto-r1-fonction" class="form-control">
+                                <option value="Président">Président</option>
+                                <option value="Vice-président">Vice-président</option>
+                                <option value="Coordinateur">Coordinateur</option>
+                                <option value="Secrétaire Général">Secrétaire Général</option>
+                                <option value="Secrétaire Administratif">Secrétaire Administratif</option>
+                                <option value="Trésorier">Trésorier</option>
+                                <option value="Organisateur">Organisateur</option>
+                                <option value="Responsable logistique">Responsable logistique</option>
+                                <option value="Responsable sécurité">Responsable sécurité</option>
+                                <option value="Chef de village">Chef de village</option>
+                                <option value="Délégué">Délégué</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Téléphone</label><input type="tel" id="auto-r1-tel" class="form-control" placeholder="Téléphone"></div>
+                        <div class="form-group form-group-full"><label>Adresse</label><input type="text" id="auto-r1-adresse" class="form-control" placeholder="Adresse"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button type="button" id="btn-toggle-resp-2" onclick="toggleResponsibleField(2)" class="btn btn-ghost" style="font-size: 0.9rem; color: #60a5fa; border: 1px dashed #3b82f6; padding: 0.5rem 1rem;">
+                        <i class="fa-solid fa-plus"></i> Ajouter un responsable 2 (Facultatif)
+                    </button>
+                    <button type="button" id="btn-toggle-resp-3" onclick="toggleResponsibleField(3)" class="btn btn-ghost" style="font-size: 0.9rem; color: #60a5fa; border: 1px dashed #3b82f6; padding: 0.5rem 1rem; margin-left: 0.5rem;">
+                        <i class="fa-solid fa-plus"></i> Ajouter un responsable 3 (Facultatif)
+                    </button>
+                </div>
+
+                <!-- Responsable 2 -->
+                <div id="responsible-box-2" class="responsible-card" style="display: none;">
+                    <div style="font-weight: bold; color: #93c5fd; margin-bottom: 0.8rem;">Responsable 2 (Facultatif)</div>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Nom</label><input type="text" id="auto-r2-nom" class="form-control" placeholder="Nom"></div>
+                        <div class="form-group"><label>Prénom</label><input type="text" id="auto-r2-prenom" class="form-control" placeholder="Prénom"></div>
+                        <div class="form-group">
+                            <label>Fonction</label>
+                            <select id="auto-r2-fonction" class="form-control">
+                                <option value="Vice-président">Vice-président</option>
+                                <option value="Coordinateur">Coordinateur</option>
+                                <option value="Secrétaire Général">Secrétaire Général</option>
+                                <option value="Organisateur">Organisateur</option>
+                                <option value="Responsable sécurité">Responsable sécurité</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Téléphone</label><input type="tel" id="auto-r2-tel" class="form-control" placeholder="Téléphone"></div>
+                        <div class="form-group form-group-full"><label>Adresse</label><input type="text" id="auto-r2-adresse" class="form-control" placeholder="Adresse"></div>
+                    </div>
+                </div>
+
+                <!-- Responsable 3 -->
+                <div id="responsible-box-3" class="responsible-card" style="display: none;">
+                    <div style="font-weight: bold; color: #93c5fd; margin-bottom: 0.8rem;">Responsable 3 (Facultatif)</div>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Nom</label><input type="text" id="auto-r3-nom" class="form-control" placeholder="Nom"></div>
+                        <div class="form-group"><label>Prénom</label><input type="text" id="auto-r3-prenom" class="form-control" placeholder="Prénom"></div>
+                        <div class="form-group">
+                            <label>Fonction</label>
+                            <select id="auto-r3-fonction" class="form-control">
+                                <option value="Responsable logistique">Responsable logistique</option>
+                                <option value="Responsable sécurité">Responsable sécurité</option>
+                                <option value="Trésorier">Trésorier</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Téléphone</label><input type="tel" id="auto-r3-tel" class="form-control" placeholder="Téléphone"></div>
+                        <div class="form-group form-group-full"><label>Adresse</label><input type="text" id="auto-r3-adresse" class="form-control" placeholder="Adresse"></div>
+                    </div>
+                </div>
+
+                <!-- 6. Autorité destinataire -->
+                <div class="form-section-title"><i class="fa-solid fa-land-mine-on"></i> 6. Autorité destinataire</div>
+                <div class="form-group">
+                    <select id="auto-autorite" class="form-control" required>
+                        <option value="Monsieur le Maire">Monsieur le Maire</option>
+                        <option value="Monsieur le Sous-préfet">Monsieur le Sous-préfet</option>
+                        <option value="Monsieur le Préfet" selected>Monsieur le Préfet</option>
+                        <option value="Monsieur le Gouverneur">Monsieur le Gouverneur</option>
+                        <option value="Monsieur le Commissaire de Police">Monsieur le Commissaire de Police</option>
+                        <option value="Monsieur le Commandant de Brigade de Gendarmerie">Monsieur le Commandant de Brigade de Gendarmerie</option>
+                    </select>
+                </div>
+
+                <!-- 7. Type de manifestation -->
+                <div class="form-section-title"><i class="fa-solid fa-icons"></i> 7. Type de manifestation</div>
+                <div class="form-group">
+                    <select id="auto-type-manifestation" class="form-control" required>
+                        <option value="Mariage">Mariage</option>
+                        <option value="Baptême">Baptême</option>
+                        <option value="Anniversaire">Anniversaire</option>
+                        <option value="Soirée culturelle" selected>Soirée culturelle</option>
+                        <option value="Festival">Festival</option>
+                        <option value="Concert">Concert</option>
+                        <option value="Kermesse">Kermesse</option>
+                        <option value="Manifestation religieuse">Manifestation religieuse</option>
+                        <option value="Conférence">Conférence</option>
+                        <option value="Séminaire">Séminaire</option>
+                        <option value="Meeting politique">Meeting politique</option>
+                        <option value="Sitting (Sit-in)">Sitting (Sit-in)</option>
+                        <option value="Assemblée générale">Assemblée générale</option>
+                        <option value="Journée culturelle">Journée culturelle</option>
+                        <option value="Journée portes ouvertes">Journée portes ouvertes</option>
+                        <option value="Tournoi sportif">Tournoi sportif</option>
+                        <option value="Finale de football">Finale de football</option>
+                        <option value="Cérémonie officielle">Cérémonie officielle</option>
+                        <option value="Inauguration">Inauguration</option>
+                        <option value="Foire">Foire</option>
+                        <option value="Exposition">Exposition</option>
+                        <option value="Animation commerciale">Animation commerciale</option>
+                        <option value="Défilé">Défilé</option>
+                        <option value="Caravane">Caravane</option>
+                        <option value="Campagne de sensibilisation">Campagne de sensibilisation</option>
+                        <option value="Projection publique">Projection publique</option>
+                        <option value="Gala">Gala</option>
+                        <option value="Remise de diplômes">Remise de diplômes</option>
+                        <option value="Remise de prix">Remise de prix</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+
+                <!-- 8. Nature de la manifestation -->
+                <div class="form-section-title"><i class="fa-solid fa-tag"></i> 8. Nature de la manifestation</div>
+                <div class="form-group">
+                    <select id="auto-nature-manifestation" class="form-control" required>
+                        <option value="Privée">Privée</option>
+                        <option value="Publique" selected>Publique</option>
+                        <option value="Culturelle">Culturelle</option>
+                        <option value="Religieuse">Religieuse</option>
+                        <option value="Politique">Politique</option>
+                        <option value="Sportive">Sportive</option>
+                        <option value="Commerciale">Commerciale</option>
+                        <option value="Institutionnelle">Institutionnelle</option>
+                        <option value="Associative">Associative</option>
+                        <option value="Communautaire">Communautaire</option>
+                        <option value="Scolaire">Scolaire</option>
+                        <option value="Universitaire">Universitaire</option>
+                    </select>
+                </div>
+
+                <!-- 9. Objet -->
+                <div class="form-section-title"><i class="fa-solid fa-heading"></i> 9. Objet</div>
+                <div class="form-group form-group-full">
+                    <input type="text" id="auto-objet" class="form-control" required placeholder="Ex: Demande d'autorisation d'organisation d'une soirée culturelle et musicale">
+                </div>
+
+                <!-- 10. Lieu de la manifestation -->
+                <div class="form-section-title"><i class="fa-solid fa-location-dot"></i> 10. Lieu de la manifestation</div>
+                <div class="form-grid">
+                    <div class="form-group"><label>Région</label><input type="text" id="auto-region" class="form-control" placeholder="Ex: Dakar"></div>
+                    <div class="form-group"><label>Département</label><input type="text" id="auto-departement" class="form-control" placeholder="Ex: Dakar"></div>
+                    <div class="form-group"><label>Arrondissement</label><input type="text" id="auto-arrondissement" class="form-control" placeholder="Ex: Grand Dakar"></div>
+                    <div class="form-group"><label>Commune</label><input type="text" id="auto-commune" class="form-control" placeholder="Ex: Biscuiterie"></div>
+                    <div class="form-group"><label>Quartier/Village</label><input type="text" id="auto-quartier" class="form-control" placeholder="Ex: HLM 4"></div>
+                    <div class="form-group form-group-full"><label>Adresse précise du site</label><input type="text" id="auto-adresse-precise" class="form-control" required placeholder="Ex: Place publique du terrain de basket HLM 4"></div>
+                </div>
+
+                <!-- 11. Date et Horaires -->
+                <div class="form-section-title"><i class="fa-solid fa-clock"></i> 11. Date et Horaires</div>
+                <div class="form-grid">
+                    <div class="form-group"><label>Date de l'événement</label><input type="date" id="auto-date-manif" class="form-control" required></div>
+                    <div class="form-group"><label>Heure de début</label><input type="time" id="auto-heure-debut" class="form-control" required value="16:00"></div>
+                    <div class="form-group"><label>Heure de fin</label><input type="time" id="auto-heure-fin" class="form-control" required value="23:30"></div>
+                </div>
+
+                <!-- 12. Nombre de participants -->
+                <div class="form-section-title"><i class="fa-solid fa-people-group"></i> 12. Nombre de participants</div>
+                <div class="form-group">
+                    <select id="auto-nb-participants" class="form-control" required>
+                        <option value="Moins de 50">Moins de 50</option>
+                        <option value="50 à 100" selected>50 à 100</option>
+                        <option value="101 à 200">101 à 200</option>
+                        <option value="201 à 500">201 à 500</option>
+                        <option value="Plus de 500">Plus de 500</option>
+                    </select>
+                </div>
+
+                <!-- 13. Animation sonore -->
+                <div class="form-section-title"><i class="fa-solid fa-volume-high"></i> 13. Animation sonore</div>
+                <div class="form-group">
+                    <select id="auto-animation-sonore" class="form-control" required>
+                        <option value="DJ">DJ</option>
+                        <option value="Orchestre">Orchestre</option>
+                        <option value="Groupe musical">Groupe musical</option>
+                        <option value="Sonorisation simple" selected>Sonorisation simple</option>
+                        <option value="Animation traditionnelle">Animation traditionnelle</option>
+                        <option value="Karaoké">Karaoké</option>
+                        <option value="Mixte">Mixte</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+
+                <!-- 14. Matériel utilisé -->
+                <div class="form-section-title"><i class="fa-solid fa-plug"></i> 14. Matériel utilisé</div>
+                <div class="checkbox-group-grid">
+                    <label class="checkbox-label"><input type="checkbox" name="materiel" value="Haut-parleurs" checked> Haut-parleurs</label>
+                    <label class="checkbox-label"><input type="checkbox" name="materiel" value="Baffles" checked> Baffles</label>
+                    <label class="checkbox-label"><input type="checkbox" name="materiel" value="Caissons de basses"> Caissons de basses</label>
+                    <label class="checkbox-label"><input type="checkbox" name="materiel" value="Micros" checked> Micros</label>
+                    <label class="checkbox-label"><input type="checkbox" name="materiel" value="Table de mixage"> Table de mixage</label>
+                    <label class="checkbox-label"><input type="checkbox" name="materiel" value="Groupe électrogène"> Groupe électrogène</label>
+                    <label class="checkbox-label"><input type="checkbox" name="materiel" value="Éclairage"> Éclairage</label>
+                    <label class="checkbox-label"><input type="checkbox" name="materiel" value="Écran géant"> Écran géant</label>
+                    <label class="checkbox-label"><input type="checkbox" name="materiel" value="Autre"> Autre</label>
+                </div>
+
+                <!-- 15. Mesures de sécurité -->
+                <div class="form-section-title"><i class="fa-solid fa-shield-halved"></i> 15. Mesures de sécurité</div>
+                <div class="checkbox-group-grid">
+                    <label class="checkbox-label"><input type="checkbox" name="securite" value="Service d'ordre" checked> Service d'ordre</label>
+                    <label class="checkbox-label"><input type="checkbox" name="securite" value="Vigiles"> Vigiles</label>
+                    <label class="checkbox-label"><input type="checkbox" name="securite" value="Police"> Police</label>
+                    <label class="checkbox-label"><input type="checkbox" name="securite" value="Gendarmerie"> Gendarmerie</label>
+                    <label class="checkbox-label"><input type="checkbox" name="securite" value="Protection Civile"> Protection Civile</label>
+                    <label class="checkbox-label"><input type="checkbox" name="securite" value="Sapeurs-pompiers"> Sapeurs-pompiers</label>
+                    <label class="checkbox-label"><input type="checkbox" name="securite" value="Poste de secours"> Poste de secours</label>
+                </div>
+
+                <!-- 16. Engagement -->
+                <div class="form-section-title"><i class="fa-solid fa-handshake-angle"></i> 16. Engagements des organisateurs</div>
+                <div class="checkbox-group-grid">
+                    <label class="checkbox-label"><input type="checkbox" name="engagements" value="Respect des horaires" checked> ☑ Respect des horaires</label>
+                    <label class="checkbox-label"><input type="checkbox" name="engagements" value="Respect de la réglementation" checked> ☑ Respect de la réglementation</label>
+                    <label class="checkbox-label"><input type="checkbox" name="engagements" value="Respect des nuisances sonores" checked> ☑ Respect des nuisances sonores</label>
+                    <label class="checkbox-label"><input type="checkbox" name="engagements" value="Nettoyage des lieux" checked> ☑ Nettoyage des lieux</label>
+                    <label class="checkbox-label"><input type="checkbox" name="engagements" value="Respect des décisions des autorités" checked> ☑ Respect des décisions des autorités</label>
+                </div>
+
+                <!-- 17. Pièces jointes -->
+                <div class="form-section-title"><i class="fa-solid fa-paperclip"></i> 17. Pièces jointes</div>
+                <div class="checkbox-group-grid">
+                    <label class="checkbox-label"><input type="checkbox" name="pieces_jointes" value="Photocopie CNI" checked> CNI</label>
+                    <label class="checkbox-label"><input type="checkbox" name="pieces_jointes" value="Plan de masse"> Plan</label>
+                    <label class="checkbox-label"><input type="checkbox" name="pieces_jointes" value="Programme détaillé" checked> Programme</label>
+                    <label class="checkbox-label"><input type="checkbox" name="pieces_jointes" value="Autorisation du propriétaire du site"> Autorisation du propriétaire</label>
+                    <label class="checkbox-label"><input type="checkbox" name="pieces_jointes" value="Statuts de l'association"> Statuts</label>
+                    <label class="checkbox-label"><input type="checkbox" name="pieces_jointes" value="Récépissé de déclaration"> Récépissé</label>
+                    <label class="checkbox-label"><input type="checkbox" name="pieces_jointes" value="Autre"> Autre</label>
+                </div>
+
+                <!-- Submit Button -->
+                <div style="margin-top: 2.5rem; text-align: center;">
+                    <button type="submit" class="btn-institutional" style="width: 100%; justify-content: center; padding: 1.1rem; font-size: 1.2rem; border-radius: var(--radius-lg);">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Générer la demande
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Loading Overlay -->
+    <div id="auto-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(6,9,19,0.9); backdrop-filter: blur(10px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; color: white;">
+        <i class="fa-solid fa-wand-magic-sparkles fa-spin" style="font-size: 3.5rem; color: #60a5fa; margin-bottom: 1.5rem;"></i>
+        <h3 style="margin: 0; font-size: 1.4rem;">Rédaction de la Demande d'Autorisation par l'IA...</h3>
+        <p style="color: #93c5fd; margin-top: 0.5rem;">Conformité administrative sénégalaise en cours de structuration.</p>
+    </div>
+
+    <script src="autorisation-app.js"></script>
+</body>
+</html>
