@@ -286,13 +286,15 @@ function renderParsedJsonToHtml(parsed) {
             <div>
                 <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">ÉTUDES</div>
                 <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
-                    ${education.map(e => `
-                        <li style="margin-bottom: 6px;">
-                            <strong style="color: #0b2545; font-size: 10pt;">${e.degree || e.studyType || 'Diplôme'}</strong> 
-                            ${e.school ? '<span style="color:#334155;"> - ' + e.school + '</span>' : ''} 
-                            ${e.year ? '<span style="color:#64748b; font-weight:600;">(' + e.year + ')</span>' : ''}
-                        </li>
-                    `).join('')}
+                    ${education.map(e => {
+                        if (typeof e === 'string') return `<li style="margin-bottom:6px;">${e}</li>`;
+                        const title = e.degree || e.studyType || e.title || e.text || '';
+                        const schoolStr = e.school ? ` - ${e.school}` : '';
+                        const locationStr = e.location ? `, ${e.location}` : '';
+                        const yearStr = e.year || e.dates ? ` (${e.year || e.dates})` : '';
+                        const descStr = e.description ? `<p style="margin:2px 0 0 0; color:#334155;">${e.description}</p>` : '';
+                        return `<li style="margin-bottom:6px;"><strong style="color:#0b2545; font-size:10pt;">${title}</strong>${schoolStr}${locationStr}${yearStr}${descStr}</li>`;
+                    }).join('')}
                 </ul>
             </div>` : ''}
 
@@ -300,12 +302,15 @@ function renderParsedJsonToHtml(parsed) {
             <div>
                 <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">FORMATIONS</div>
                 <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
-                    ${formations.map(f => `
-                        <li style="margin-bottom: 6px;">
-                            <strong style="color: #0b2545; font-size: 10pt;">${typeof f === 'string' ? f : (f.title || f.name)}</strong> 
-                            ${f.year ? '<span style="color:#64748b; font-weight:600;">(' + f.year + ')</span>' : ''}
-                        </li>
-                    `).join('')}
+                    ${formations.map(f => {
+                        if (typeof f === 'string') return `<li style="margin-bottom:6px;">${f}</li>`;
+                        const title = f.title || f.name || f.degree || f.text || '';
+                        const schoolStr = f.school || f.institution ? ` - ${f.school || f.institution}` : '';
+                        const locationStr = f.location ? `, ${f.location}` : '';
+                        const yearStr = f.year || f.dates ? ` (${f.year || f.dates})` : '';
+                        const descStr = f.description ? `<p style="margin:2px 0 0 0; color:#334155;">${f.description}</p>` : '';
+                        return `<li style="margin-bottom:6px;"><strong style="color:#0b2545; font-size:10pt;">${title}</strong>${schoolStr}${locationStr}${yearStr}${descStr}</li>`;
+                    }).join('')}
                 </ul>
             </div>` : ''}
 
@@ -989,7 +994,8 @@ async function handleAiCvUploadInAiBuilder(e) {
                 'Authorization': `Bearer ${SUPABASE_KEY}`
             },
             body: JSON.stringify({
-                rawText: rawTextExtracted
+                rawText: rawTextExtracted,
+                prompt: "EXTRACTION VERBATIM ABSOLUE SANS AUCUN RÉSUMÉ : Ne résume rien. Conserve tous les mots, diplômes, lieux, dates précises, écoles et descriptions complètes exactement comme rédigés par l'utilisateur."
             })
         });
 
