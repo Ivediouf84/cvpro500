@@ -353,22 +353,8 @@
                 </button>
             </div>
     </nav>
-       <!-- Horizontal Top Editor Toolbar (Word-Style) -->
+       <!-- Horizontal Top Editor Toolbar (Purifiée) -->
     <div class="horizontal-editor-toolbar">
-        <!-- Modèle -->
-        <div class="toolbar-group">
-            <label><i class="fa-solid fa-layer-group"></i> Modèle</label>
-            <select id="style-template-selector" onchange="changeCvTemplate(this.value)" class="toolbar-select">
-                <option value="cv-template-canva" selected>🎨 Modèle Officiel Canva (Bordeaux & Bleu)</option>
-                <option value="cv-template-modern">🟦 Modèle Moderne</option>
-                <option value="cv-template-classic">🏛️ Modèle Classique</option>
-                <option value="cv-template-creative">🎨 Modèle Créatif</option>
-                <option value="cv-template-executive">👔 Modèle Exécutif</option>
-            </select>
-        </div>
-
-        <div class="toolbar-divider"></div>
-
         <!-- Police & Taille -->
         <div class="toolbar-group">
             <label><i class="fa-solid fa-font"></i> Police & Taille</label>
@@ -380,7 +366,6 @@
                     <option value="'Open Sans', sans-serif">Open Sans</option>
                     <option value="Arial, sans-serif">Arial</option>
                     <option value="'Times New Roman', serif">Times New Roman</option>
-                    <option value="'Courier New', monospace">Courier New</option>
                 </select>
 
                 <!-- Size Buttons -->
@@ -402,7 +387,6 @@
                 <button class="toolbar-btn" onmousedown="event.preventDefault(); document.execCommand('underline', false, null); triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);" title="Souligné"><i class="fa-solid fa-underline"></i></button>
                 
                 <input type="color" id="style-text-color" value="#1a1a1a" class="toolbar-color" title="Couleur du texte principal">
-                <input type="color" id="style-header-color" value="#4f46e5" class="toolbar-color" title="Couleur de l'en-tête / Sidebar">
             </div>
         </div>
 
@@ -422,22 +406,14 @@
 
         <div class="toolbar-divider"></div>
 
-        <!-- Insertion Photo & Déplacement libre -->
+        <!-- Insertion Photo -->
         <div class="toolbar-group">
-            <label><i class="fa-solid fa-image"></i> Photo & Éléments</label>
+            <label><i class="fa-solid fa-image"></i> Photo</label>
             <div style="display: flex; align-items: center; gap: 0.4rem;">
                 <button class="toolbar-btn-action" onclick="document.getElementById('photo-upload-input')?.click()" title="Insérer une photo de profil">
                     <i class="fa-solid fa-camera"></i> Insérer Photo
                 </button>
                 <input type="file" id="photo-upload-input" accept="image/*" style="display: none;" onchange="handlePhotoUploadInCv(event)">
-
-                <button class="toolbar-btn-action" onclick="toggleScannedCvImageOverlay()" title="Afficher / Masquer l'image originale du CV scanné en fidélité 100%">
-                    <i class="fa-solid fa-file-image"></i> 🖼️ CV Original HD
-                </button>
-
-                <button id="btn-free-move" class="toolbar-btn-action" title="Déplacement libre des photos et icônes">
-                    <i class="fa-solid fa-arrows-up-down-left-right"></i> Déplacement Libre
-                </button>
             </div>
         </div>
 
