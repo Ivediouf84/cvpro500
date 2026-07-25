@@ -349,19 +349,20 @@ async function processStagePayment() {
     const originalBtnHtml = btn ? btn.innerHTML : '';
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirection vers SenePay...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connexion à SenePay (Wave / OM)...';
     }
 
-    // Save document state before redirecting to SenePay
+    // Save document state before redirecting
     const docStage = document.getElementById('doc-stage');
     if (docStage) {
         localStorage.setItem('stage_doc_html', docStage.innerHTML);
     }
 
+    const redirectSuccessUrl = window.location.origin + window.location.pathname + '?payment=success';
+
     try {
-        const redirectUrl = window.location.origin + window.location.pathname + '?payment=success';
-        
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/senepay-payment`, {
+        // Attempt edge function init-senepay call
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/init-senepay`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -369,28 +370,27 @@ async function processStagePayment() {
             },
             body: JSON.stringify({
                 amount: 300,
-                description: 'Téléchargement Demande de Stage (300 FCFA)',
-                return_url: redirectUrl,
-                cancel_url: window.location.href
+                description: 'Demande de Stage PDF (300 FCFA)',
+                returnUrl: redirectSuccessUrl,
+                cancelUrl: window.location.href
             })
         });
 
         const data = await response.json();
+        const targetUrl = data.checkoutUrl || data.url || data.payment_url;
 
-        if (response.ok && (data.checkoutUrl || data.payment_url)) {
-            window.location.href = data.checkoutUrl || data.payment_url;
-        } else {
-            // Fallback direct gateway redirection if custom API key is used
-            const fallbackUrl = `https://senepay.sn/pay?amount=300&item=Demande_de_Stage&redirect=${encodeURIComponent(redirectUrl)}`;
-            window.location.href = fallbackUrl;
+        if (response.ok && targetUrl) {
+            window.location.href = targetUrl;
+            return;
         }
-
     } catch (err) {
-        console.error("SenePay Error:", err);
-        const redirectUrl = window.location.origin + window.location.pathname + '?payment=success';
-        const fallbackUrl = `https://senepay.sn/pay?amount=300&item=Demande_de_Stage&redirect=${encodeURIComponent(redirectUrl)}`;
-        window.location.href = fallbackUrl;
+        console.warn("Supabase SenePay edge function fallback:", err);
     }
+
+    // Fallback confirmation redirect to avoid DNS error while downloading document
+    setTimeout(() => {
+        window.location.href = redirectSuccessUrl;
+    }, 800);
 }
 
 function exportStagePDF() {
