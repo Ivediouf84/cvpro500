@@ -6,6 +6,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.supabase) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
+
+    // Check for SenePay payment success redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment') === 'success' || urlParams.get('payment_success') === 'stage') {
+        alert("✅ Paiement de 300 FCFA réussi avec SenePay ! Votre Demande de Stage va être téléchargée.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Restore document from local storage if page reloaded
+        const savedStageDoc = localStorage.getItem('stage_doc_html');
+        if (savedStageDoc) {
+            const docStage = document.getElementById('doc-stage');
+            if (docStage) docStage.innerHTML = savedStageDoc;
+            const inputSec = document.getElementById('input-section');
+            const resSec = document.getElementById('results-section');
+            if (inputSec) inputSec.style.display = 'none';
+            if (resSec) resSec.style.display = 'block';
+        }
+        
+        setTimeout(() => {
+            generateStagePDFDirect();
+        }, 800);
+    }
 });
 
 function handleFileSelect(event) {
@@ -322,10 +344,53 @@ function closeStagePaymentModal() {
     if (modal) modal.style.display = 'none';
 }
 
-function processStagePayment() {
-    closeStagePaymentModal();
-    // Trigger PDF download directly after payment confirmation
-    generateStagePDFDirect();
+async function processStagePayment() {
+    const btn = document.querySelector('#stage-payment-modal .btn-primary');
+    const originalBtnHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirection vers SenePay...';
+    }
+
+    // Save document state before redirecting to SenePay
+    const docStage = document.getElementById('doc-stage');
+    if (docStage) {
+        localStorage.setItem('stage_doc_html', docStage.innerHTML);
+    }
+
+    try {
+        const redirectUrl = window.location.origin + window.location.pathname + '?payment=success';
+        
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/senepay-payment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            },
+            body: JSON.stringify({
+                amount: 300,
+                description: 'Téléchargement Demande de Stage (300 FCFA)',
+                return_url: redirectUrl,
+                cancel_url: window.location.href
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && (data.checkoutUrl || data.payment_url)) {
+            window.location.href = data.checkoutUrl || data.payment_url;
+        } else {
+            // Fallback direct gateway redirection if custom API key is used
+            const fallbackUrl = `https://senepay.sn/pay?amount=300&item=Demande_de_Stage&redirect=${encodeURIComponent(redirectUrl)}`;
+            window.location.href = fallbackUrl;
+        }
+
+    } catch (err) {
+        console.error("SenePay Error:", err);
+        const redirectUrl = window.location.origin + window.location.pathname + '?payment=success';
+        const fallbackUrl = `https://senepay.sn/pay?amount=300&item=Demande_de_Stage&redirect=${encodeURIComponent(redirectUrl)}`;
+        window.location.href = fallbackUrl;
+    }
 }
 
 function exportStagePDF() {
