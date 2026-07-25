@@ -19,8 +19,7 @@
 .cv-canva-left, .cv-canva-right,
 .cv-emerald-left, .cv-emerald-right,
 .cv-navy-left, .cv-navy-right,
-.cv-nude-left, .cv-nude-right,
-.cv-template-modern .cv-body {
+.cv-nude-left, .cv-nude-right {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -36,12 +35,13 @@
 .cv-template-modern {
     display: flex;
     flex-direction: column;
+    min-height: 297mm;
 }
 
 .cv-template-modern .cv-header {
     background: var(--primary, #4F46E5);
     color: #ffffff;
-    padding: 40px;
+    padding: 30px 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -49,9 +49,9 @@
 
 .cv-template-modern .cv-header-name h1 {
     font-family: 'Outfit', sans-serif;
-    font-size: 36pt;
+    font-size: 32pt;
     font-weight: 700;
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     line-height: 1.1;
     color: #ffffff;
 }
@@ -61,7 +61,7 @@
 }
 
 .cv-template-modern .cv-header-name h2 {
-    font-size: 16pt;
+    font-size: 14pt;
     font-weight: 400;
     margin: 0;
     opacity: 0.9;
@@ -77,20 +77,25 @@
 }
 
 .cv-template-modern .cv-body {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
     flex: 1;
+    width: 100%;
+    align-items: stretch;
 }
 
 .cv-template-modern .cv-sidebar {
-    width: 30%;
+    width: 32% !important;
     background: #f8fafc;
-    padding: 30px;
+    padding: 25px 20px;
     border-right: 1px solid #e2e8f0;
+    box-sizing: border-box;
 }
 
 .cv-template-modern .cv-main {
-    width: 70%;
-    padding: 30px 40px;
+    width: 68% !important;
+    padding: 25px 25px;
+    box-sizing: border-box;
 }
 
 .cv-template-modern .cv-section {

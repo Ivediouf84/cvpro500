@@ -433,14 +433,25 @@ function setupPhotoUploader() {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                const placeholders = document.querySelectorAll('.cv-photo-placeholder, img[alt*="Profil" i], img[alt*="Photo" i], .cv-profile-pic img, img');
-                if (placeholders.length > 0) {
-                    placeholders.forEach(img => {
-                        img.src = e.target.result;
+            reader.onload = (ev) => {
+                const photoDataUrl = ev.target.result;
+                localStorage.setItem('scanned_cv_image_url', photoDataUrl);
+
+                // Target photo containers specifically to keep photo strictly inside the circle
+                const photoContainers = document.querySelectorAll('.cv-canva-photo-container, .cv-photo-placeholder, .cv-photo-container');
+                if (photoContainers.length > 0) {
+                    photoContainers.forEach(container => {
+                        container.innerHTML = `<img src="${photoDataUrl}" class="cv-photo" alt="Photo du candidat" style="width:125px; height:125px; border-radius:50%; border:3px solid #800000; object-fit:cover; display:block; margin:0 auto; box-shadow:0 4px 12px rgba(0,0,0,0.15);">`;
                     });
                 }
-                triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);
+
+                const photoImgs = document.querySelectorAll('img.cv-photo, img.cv-profile-pic');
+                photoImgs.forEach(img => {
+                    img.src = photoDataUrl;
+                });
+
+                const docEl = document.getElementById('cv-document');
+                if (docEl) triggerCloudSaveHtml(docEl.innerHTML);
             };
             reader.readAsDataURL(file);
         }
