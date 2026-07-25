@@ -293,9 +293,12 @@ function renderParsedJsonToHtml(parsed) {
     const languages = parsed.languages || parsed.langues || [];
     const interests = parsed.interests || parsed.loisirs || parsed.autres || parsed.hobbies || parsed.activites || [];
     
-    // DEFINED scannedPhotoUrl safely
+    // Photo from phone scan or camera upload
     const scannedPhotoUrl = localStorage.getItem('scanned_cv_image_url') || '';
-    // Render any additional dynamic sections (e.g. AUTRES, EXPÉRIENCES POLITIQUES)
+    const themeColor = document.getElementById('style-text-color')?.value || '#0f172a';
+    const accentColor = '#800000';
+
+    // Render any additional dynamic sections (e.g. AUTRES, EXPÉRIENCES POLITIQUES, PROJETS)
     let extraSectionsHtml = '';
     const knownKeys = ['personal', 'firstname', 'lastname', 'jobtitle', 'email', 'phone', 'city', 'location', 'birth', 'datenaissance', 'profile', 'summary', 'presentation', 'profil', 'education', 'etudes', 'studies', 'cursus', 'diplomes', 'formation_scolaire', 'formations', 'training', 'certifications', 'stages', 'experiences', 'experience', 'postes', 'jobs', 'parcours_professionnel', 'skills', 'competences', 'competence', 'savoir_faire', 'languages', 'langues', 'interests', 'loisirs', 'autres', 'hobbies', 'activites'];
     
@@ -306,9 +309,11 @@ function renderParsedJsonToHtml(parsed) {
             const renderedList = renderListItemsVerbatim(val);
             if (renderedList) {
                 extraSectionsHtml += `
-                    <div>
-                        <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">${sectionTitle}</div>
-                        <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
+                    <div class="cv-section-block" style="margin-bottom: 16px;">
+                        <div class="cv-canva-box-title" style="background:${accentColor}; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 14px; text-align:left; border-radius:4px; margin:12px 0 8px 0; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-bookmark" style="font-size:0.85rem;"></i> ${sectionTitle}
+                        </div>
+                        <ul style="padding-left: 20px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1e293b; list-style-type: disc;">
                             ${renderedList}
                         </ul>
                     </div>
@@ -318,82 +323,90 @@ function renderParsedJsonToHtml(parsed) {
     });
 
     const html = `
-        <!-- Modèle Officiel Canva (Bordeaux & Bleu) - Restitution 1:1 Dynamique Sans Dummy Data -->
-        <div class="cv-canva-left">
-            <div class="cv-canva-left-accent"></div>
-            
-            <div class="cv-canva-photo-container" onclick="document.getElementById('photo-upload-input')?.click()" style="cursor: pointer;" title="Cliquez pour insérer votre photo">
+        <!-- Modèle Canva Moderne IA Auto-Adaptatif (Photo Téléphone, PDF, Word) -->
+        <div class="cv-canva-left" style="width: 36%; padding: 25px 18px; background: #fafafa; border-right: 1px solid #e2e8f0;">
+            <div class="cv-canva-photo-container" onclick="document.getElementById('photo-upload-input')?.click()" style="cursor: pointer; text-align: center; margin-bottom: 18px;" title="Cliquez pour insérer votre photo prise avec le téléphone">
                 ${scannedPhotoUrl ? 
-                  `<img src="${scannedPhotoUrl}" class="cv-photo" alt="Photo du candidat" style="width:120px; height:120px; border-radius:50%; border:4px solid #800000; object-fit:cover; display:block; margin:0 auto;">` : 
-                  `<div style="width:120px; height:120px; border-radius:50%; border:4px solid #800000; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#800000; margin:0 auto; font-size:0.8rem; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><i class="fa-solid fa-camera" style="font-size:1.8rem; margin-bottom:4px;"></i><span>Votre Photo</span></div>`}
+                  `<img src="${scannedPhotoUrl}" class="cv-photo" alt="Photo du candidat" style="width:130px; height:130px; border-radius:50%; border:4px solid ${accentColor}; object-fit:cover; display:block; margin:0 auto; box-shadow:0 6px 16px rgba(0,0,0,0.12);">` : 
+                  `<div style="width:125px; height:125px; border-radius:50%; border:3px dashed ${accentColor}; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; color:${accentColor}; margin:0 auto; font-size:0.8rem; font-weight:bold; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s;"><i class="fa-solid fa-camera" style="font-size:2rem; margin-bottom:4px;"></i><span>Photo / Scan</span></div>`}
             </div>
 
             ${profileSummary ? `
-            <div class="cv-canva-presentation-title" style="font-size:15pt; font-weight:800; color:#0b2545; margin-top:10px; margin-bottom:6px;">Présentation</div>
-            <p style="font-size: 9.5pt; color: #222222; line-height: 1.5; margin: 0 0 12px 0;">${profileSummary}</p>
-            ` : ''}
+            <div class="cv-section-block" style="margin-bottom: 16px;">
+                <div style="font-size:12pt; font-weight:800; color:${themeColor}; margin-bottom:6px; border-bottom:2px solid ${accentColor}; padding-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Profil / Présentation</div>
+                <p style="font-size: 9.5pt; color: #334155; line-height: 1.5; margin: 0 0 10px 0;">${profileSummary}</p>
+            </div>` : ''}
 
-            <div style="margin-top: 5px;">
-                ${p.phone ? `<div class="cv-canva-contact-item" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><div class="cv-canva-contact-icon" style="width:24px; height:24px; border-radius:50%; background:#0b2545; color:white; display:flex; align-items:center; justify-content:center; font-size:8.5pt;"><i class="fa-solid fa-phone"></i></div> <span style="font-weight:600; color:#1a1a1a; font-size:9pt;">${p.phone}</span></div>` : ''}
-                ${p.email ? `<div class="cv-canva-contact-item" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><div class="cv-canva-contact-icon" style="width:24px; height:24px; border-radius:50%; background:#0b2545; color:white; display:flex; align-items:center; justify-content:center; font-size:8.5pt;"><i class="fa-solid fa-envelope"></i></div> <span style="font-weight:600; color:#1a1a1a; font-size:9pt;">${p.email}</span></div>` : ''}
-                ${p.city ? `<div class="cv-canva-contact-item" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><div class="cv-canva-contact-icon" style="width:24px; height:24px; border-radius:50%; background:#0b2545; color:white; display:flex; align-items:center; justify-content:center; font-size:8.5pt;"><i class="fa-solid fa-location-dot"></i></div> <span style="font-weight:600; color:#1a1a1a; font-size:9pt;">${p.city}</span></div>` : ''}
+            <div class="cv-section-block" style="margin-bottom: 16px;">
+                <div style="font-size:12pt; font-weight:800; color:${themeColor}; margin-bottom:8px; border-bottom:2px solid ${accentColor}; padding-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Contact</div>
+                ${p.phone ? `<div class="cv-canva-contact-item" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><div style="width:24px; height:24px; border-radius:50%; background:${themeColor}; color:white; display:flex; align-items:center; justify-content:center; font-size:8pt; flex-shrink:0;"><i class="fa-solid fa-phone"></i></div> <span style="font-weight:600; color:#1e293b; font-size:9pt;">${p.phone}</span></div>` : ''}
+                ${p.email ? `<div class="cv-canva-contact-item" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><div style="width:24px; height:24px; border-radius:50%; background:${themeColor}; color:white; display:flex; align-items:center; justify-content:center; font-size:8pt; flex-shrink:0;"><i class="fa-solid fa-envelope"></i></div> <span style="font-weight:600; color:#1e293b; font-size:9pt; word-break:break-all;">${p.email}</span></div>` : ''}
+                ${p.city ? `<div class="cv-canva-contact-item" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><div style="width:24px; height:24px; border-radius:50%; background:${themeColor}; color:white; display:flex; align-items:center; justify-content:center; font-size:8pt; flex-shrink:0;"><i class="fa-solid fa-location-dot"></i></div> <span style="font-weight:600; color:#1e293b; font-size:9pt;">${p.city}</span></div>` : ''}
             </div>
 
             ${languages.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">LANGUES</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1a1a1a; list-style-type: disc;">
-                    ${languages.map(l => `<li style="margin-bottom:3px;"><strong>${typeof l === 'string' ? l : l.name}</strong> ${l.level ? '<span style="color:#64748b;">(' + l.level + ')</span>' : ''}</li>`).join('')}
+            <div class="cv-section-block" style="margin-bottom: 16px;">
+                <div class="cv-canva-box-title" style="background:${accentColor}; color:white; text-transform:uppercase; font-weight:800; font-size:10pt; letter-spacing:1px; padding:5px 10px; border-radius:4px; margin-bottom:8px;">LANGUES</div>
+                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1e293b; list-style-type: disc;">
+                    ${renderListItemsVerbatim(languages)}
                 </ul>
             </div>` : ''}
 
             ${skills.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">COMPÉTENCES</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1a1a1a; list-style-type: disc;">
-                    ${skills.map(s => `<li style="margin-bottom:3px;"><strong>${typeof s === 'string' ? s : s.name}</strong></li>`).join('')}
+            <div class="cv-section-block" style="margin-bottom: 16px;">
+                <div class="cv-canva-box-title" style="background:${accentColor}; color:white; text-transform:uppercase; font-weight:800; font-size:10pt; letter-spacing:1px; padding:5px 10px; border-radius:4px; margin-bottom:8px;">COMPÉTENCES</div>
+                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1e293b; list-style-type: disc;">
+                    ${renderListItemsVerbatim(skills)}
                 </ul>
             </div>` : ''}
         </div>
 
-        <div class="cv-canva-right">
+        <div class="cv-canva-right" style="width: 64%; padding: 25px 22px;">
             ${(p.firstName || p.lastName) ? `
-            <div class="cv-canva-header-name">
-                <h1 style="font-size: 28pt; font-weight: 900; color: #0b2545; margin: 0; line-height: 1.1; text-transform: uppercase;">${p.firstName} <span style="color:#003566;">${p.lastName}</span></h1>
+            <div class="cv-canva-header-name" style="margin-bottom: 6px;">
+                <h1 style="font-size: 26pt; font-weight: 900; color: ${themeColor}; margin: 0; line-height: 1.1; text-transform: uppercase;">${p.firstName} <span style="color:#2563eb;">${p.lastName}</span></h1>
             </div>` : ''}
             
-            ${p.jobTitle ? `<div class="cv-canva-header-title" style="font-size: 14pt; font-weight: 800; color: #0b2545; margin-top: 4px;">${p.jobTitle}</div>` : ''}
+            ${p.jobTitle ? `<div class="cv-canva-header-title" style="font-size: 13.5pt; font-weight: 700; color: #475569; margin-bottom: 6px;">${p.jobTitle}</div>` : ''}
             
-            ${p.birth ? `<div class="cv-canva-header-birth" style="font-size: 10pt; font-weight: 700; color: #1a1a1a; margin-top: 4px; margin-bottom: 14px;">${p.birth}</div>` : ''}
+            ${p.birth ? `<div class="cv-canva-header-birth" style="font-size: 9.5pt; font-weight: 700; color: #64748b; margin-bottom: 16px; display:inline-block; background:#f1f5f9; padding:3px 10px; border-radius:12px;"><i class="fa-solid fa-cake-candles"></i> ${p.birth}</div>` : ''}
 
             ${education.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">ÉTUDES</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
+            <div class="cv-section-block" style="margin-bottom: 16px;">
+                <div class="cv-canva-box-title" style="background:${accentColor}; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 14px; text-align:left; border-radius:4px; margin:10px 0 8px 0; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-graduation-cap" style="font-size:0.9rem;"></i> ÉTUDES / DIPLÔMES
+                </div>
+                <ul style="padding-left: 20px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
                     ${renderListItemsVerbatim(education)}
                 </ul>
             </div>` : ''}
 
             ${formations.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">FORMATIONS</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
+            <div class="cv-section-block" style="margin-bottom: 16px;">
+                <div class="cv-canva-box-title" style="background:${accentColor}; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 14px; text-align:left; border-radius:4px; margin:10px 0 8px 0; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-certificate" style="font-size:0.9rem;"></i> FORMATIONS
+                </div>
+                <ul style="padding-left: 20px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
                     ${renderListItemsVerbatim(formations)}
                 </ul>
             </div>` : ''}
 
             ${experiences.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">EXPÉRIENCES</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
+            <div class="cv-section-block" style="margin-bottom: 16px;">
+                <div class="cv-canva-box-title" style="background:${accentColor}; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 14px; text-align:left; border-radius:4px; margin:10px 0 8px 0; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-briefcase" style="font-size:0.9rem;"></i> EXPÉRIENCES
+                </div>
+                <ul style="padding-left: 20px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
                     ${renderListItemsVerbatim(experiences)}
                 </ul>
             </div>` : ''}
 
             ${interests.length > 0 ? `
-            <div>
-                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">LOISIRS / AUTRES</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
+            <div class="cv-section-block" style="margin-bottom: 16px;">
+                <div class="cv-canva-box-title" style="background:${accentColor}; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 14px; text-align:left; border-radius:4px; margin:10px 0 8px 0; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-heart" style="font-size:0.9rem;"></i> LOISIRS / AUTRES
+                </div>
+                <ul style="padding-left: 20px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
                     ${renderListItemsVerbatim(interests)}
                 </ul>
             </div>` : ''}
