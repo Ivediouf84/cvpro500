@@ -227,42 +227,42 @@ function renderParsedJsonToHtml(parsed) {
     const skills = Array.isArray(parsed.skills) ? parsed.skills : [];
     const languages = Array.isArray(parsed.languages) ? parsed.languages : [];
     const interests = Array.isArray(parsed.interests) ? parsed.interests : [];
-    const scannedPhotoUrl = localStorage.getItem('scanned_cv_image_url') || '';
+    const headerColor = document.getElementById('style-header-color')?.value || '#800000';
 
     const html = `
-        <!-- Modèle Officiel Canva (Bordeaux & Bleu) - Restitution 1:1 Fidèle -->
+        <!-- Modèle Officiel Canva (Bordeaux & Bleu) - Restitution Millimétrée 1:1 -->
         <div class="cv-canva-left">
             <div class="cv-canva-left-accent"></div>
             
             <div class="cv-canva-photo-container" onclick="document.getElementById('photo-upload-input')?.click()" style="cursor: pointer;" title="Cliquez pour insérer votre photo">
                 ${scannedPhotoUrl ? 
-                  `<img src="${scannedPhotoUrl}" class="cv-photo" alt="Photo du candidat">` : 
-                  `<div style="width:120px; height:120px; border-radius:50%; border:3px dashed #800000; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#800000; margin:0 auto; font-size:0.8rem; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><i class="fa-solid fa-camera" style="font-size:1.8rem; margin-bottom:4px;"></i><span>Votre Photo</span></div>`}
+                  `<img src="${scannedPhotoUrl}" class="cv-photo" alt="Photo du candidat" style="width:120px; height:120px; border-radius:50%; border:4px solid #800000; object-fit:cover; display:block; margin:0 auto;">` : 
+                  `<div style="width:120px; height:120px; border-radius:50%; border:4px solid #800000; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#800000; margin:0 auto; font-size:0.8rem; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><i class="fa-solid fa-camera" style="font-size:1.8rem; margin-bottom:4px;"></i><span>Votre Photo</span></div>`}
             </div>
 
             ${profileSummary ? `
-            <div class="cv-canva-presentation-title">Présentation</div>
+            <div class="cv-canva-presentation-title" style="font-size:15pt; font-weight:800; color:#0b2545; margin-top:10px; margin-bottom:6px;">Présentation</div>
             <p style="font-size: 9.5pt; color: #222222; line-height: 1.5; margin: 0 0 12px 0;">${profileSummary}</p>
             ` : ''}
 
             <div style="margin-top: 5px;">
-                ${p.phone ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-phone"></i></div> <span style="font-weight:600; color:#1a1a1a;">${p.phone}</span></div>` : ''}
-                ${p.email ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-envelope"></i></div> <span style="font-weight:600; color:#1a1a1a;">${p.email}</span></div>` : ''}
-                ${p.city ? `<div class="cv-canva-contact-item"><div class="cv-canva-contact-icon"><i class="fa-solid fa-location-dot"></i></div> <span style="font-weight:600; color:#1a1a1a;">${p.city}</span></div>` : ''}
+                ${p.phone ? `<div class="cv-canva-contact-item" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><div class="cv-canva-contact-icon" style="width:24px; height:24px; border-radius:50%; background:#0b2545; color:white; display:flex; align-items:center; justify-content:center; font-size:8.5pt;"><i class="fa-solid fa-phone"></i></div> <span style="font-weight:600; color:#1a1a1a; font-size:9pt;">${p.phone}</span></div>` : ''}
+                ${p.email ? `<div class="cv-canva-contact-item" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><div class="cv-canva-contact-icon" style="width:24px; height:24px; border-radius:50%; background:#0b2545; color:white; display:flex; align-items:center; justify-content:center; font-size:8.5pt;"><i class="fa-solid fa-envelope"></i></div> <span style="font-weight:600; color:#1a1a1a; font-size:9pt;">${p.email}</span></div>` : ''}
+                ${p.city ? `<div class="cv-canva-contact-item" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><div class="cv-canva-contact-icon" style="width:24px; height:24px; border-radius:50%; background:#0b2545; color:white; display:flex; align-items:center; justify-content:center; font-size:8.5pt;"><i class="fa-solid fa-location-dot"></i></div> <span style="font-weight:600; color:#1a1a1a; font-size:9pt;">${p.city}</span></div>` : ''}
             </div>
 
             ${languages.length > 0 ? `
             <div>
-                <div class="cv-canva-box-title">LANGUES</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1a1a1a;">
+                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">LANGUES</div>
+                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1a1a1a; list-style-type: disc;">
                     ${languages.map(l => `<li style="margin-bottom:3px;"><strong>${typeof l === 'string' ? l : l.name}</strong> ${l.level ? '<span style="color:#64748b;">(' + l.level + ')</span>' : ''}</li>`).join('')}
                 </ul>
             </div>` : ''}
 
             ${skills.length > 0 ? `
             <div>
-                <div class="cv-canva-box-title">COMPÉTENCES</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1a1a1a;">
+                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">COMPÉTENCES</div>
+                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.6; color: #1a1a1a; list-style-type: disc;">
                     ${skills.map(s => `<li style="margin-bottom:3px;"><strong>${typeof s === 'string' ? s : s.name}</strong></li>`).join('')}
                 </ul>
             </div>` : ''}
@@ -270,19 +270,19 @@ function renderParsedJsonToHtml(parsed) {
 
         <div class="cv-canva-right">
             <div class="cv-canva-header-name">
-                <h1 style="font-size: 28pt; font-weight: 900; color: #0d1b2a; margin: 0; line-height: 1.1; text-transform: uppercase;">${p.firstName} <span style="color:#0d1b2a;">${p.lastName}</span></h1>
+                <h1 style="font-size: 28pt; font-weight: 900; color: #0b2545; margin: 0; line-height: 1.1; text-transform: uppercase;">${p.firstName} <span style="color:#003566;">${p.lastName}</span></h1>
             </div>
-            <div class="cv-canva-header-title" style="font-size: 13pt; font-weight: 700; color: #1e293b; margin-top: 4px;">${p.jobTitle}</div>
-            ${p.birth ? `<div class="cv-canva-header-birth" style="font-size: 10pt; font-weight: 700; color: #334155; margin-top: 4px; margin-bottom: 12px;">${p.birth}</div>` : ''}
+            <div class="cv-canva-header-title" style="font-size: 14pt; font-weight: 800; color: #0b2545; margin-top: 4px;">${p.jobTitle}</div>
+            ${p.birth ? `<div class="cv-canva-header-birth" style="font-size: 10pt; font-weight: 700; color: #1a1a1a; margin-top: 4px; margin-bottom: 14px;">${p.birth}</div>` : ''}
 
             ${education.length > 0 ? `
             <div>
-                <div class="cv-canva-box-title">ÉTUDES</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a;">
+                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">ÉTUDES</div>
+                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
                     ${education.map(e => `
                         <li style="margin-bottom: 6px;">
-                            <strong style="color: #0d1b2a; font-size: 10pt;">${e.degree || e.studyType || 'Diplôme'}</strong> 
-                            ${e.school ? '<span style="color:#475569;"> - ' + e.school + '</span>' : ''} 
+                            <strong style="color: #0b2545; font-size: 10pt;">${e.degree || e.studyType || 'Diplôme'}</strong> 
+                            ${e.school ? '<span style="color:#334155;"> - ' + e.school + '</span>' : ''} 
                             ${e.year ? '<span style="color:#64748b; font-weight:600;">(' + e.year + ')</span>' : ''}
                         </li>
                     `).join('')}
@@ -291,11 +291,11 @@ function renderParsedJsonToHtml(parsed) {
 
             ${formations.length > 0 ? `
             <div>
-                <div class="cv-canva-box-title">FORMATIONS</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a;">
+                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">FORMATIONS</div>
+                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
                     ${formations.map(f => `
                         <li style="margin-bottom: 6px;">
-                            <strong style="color: #0d1b2a; font-size: 10pt;">${typeof f === 'string' ? f : (f.title || f.name)}</strong> 
+                            <strong style="color: #0b2545; font-size: 10pt;">${typeof f === 'string' ? f : (f.title || f.name)}</strong> 
                             ${f.year ? '<span style="color:#64748b; font-weight:600;">(' + f.year + ')</span>' : ''}
                         </li>
                     `).join('')}
@@ -304,21 +304,23 @@ function renderParsedJsonToHtml(parsed) {
 
             ${experiences.length > 0 ? `
             <div>
-                <div class="cv-canva-box-title">EXPÉRIENCES</div>
+                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">EXPÉRIENCES</div>
+                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
                 ${experiences.map(e => `
-                    <div style="margin-bottom: 8px; font-size: 9.5pt; line-height: 1.5;">
-                        <strong style="color: #0d1b2a; font-size: 10.5pt;">${e.title || 'Poste'}</strong> 
-                        ${e.company ? '<span style="color:#475569; font-weight:600;"> - ' + e.company + '</span>' : ''} 
+                    <li style="margin-bottom: 8px;">
+                        <strong style="color: #0b2545; font-size: 10.5pt;">${e.title || 'Poste'}</strong> 
+                        ${e.company ? '<span style="color:#334155; font-weight:600;"> - ' + e.company + '</span>' : ''} 
                         ${e.startDate ? `<span style="float: right; color: #64748b; font-weight:600;">${e.startDate} ${e.endDate ? '- ' + e.endDate : ''}</span>` : ''}
                         ${e.description ? `<p style="margin: 3px 0 0 0; color: #334155; font-size: 9.5pt;">${e.description}</p>` : ''}
-                    </div>
+                    </li>
                 `).join('')}
+                </ul>
             </div>` : ''}
 
             ${interests.length > 0 ? `
             <div>
-                <div class="cv-canva-box-title">LOISIRS / AUTRES</div>
-                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a;">
+                <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">LOISIRS / AUTRES</div>
+                <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
                     ${interests.map(i => `<li style="margin-bottom:3px;">${typeof i === 'string' ? i : i.name}</li>`).join('')}
                 </ul>
             </div>` : ''}
