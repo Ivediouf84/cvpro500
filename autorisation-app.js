@@ -10,9 +10,20 @@ document.addEventListener('DOMContentLoaded', () => {
         dateInput.value = new Date().toISOString().split('T')[0];
     }
 
-    // Check for SenePay payment success redirect
+    // Auto-open modal when navigating to autorisation generator
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('payment') === 'success' || urlParams.get('payment_success') === 'autorisation') {
+    const isPaymentSuccess = urlParams.get('payment') === 'success' || urlParams.get('payment_success') === 'autorisation';
+    
+    if (!isPaymentSuccess) {
+        setTimeout(() => {
+            const modal = document.getElementById('autorisation-modal');
+            const resSec = document.getElementById('autorisation-results-section');
+            if (modal && (!resSec || resSec.style.display !== 'block')) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }, 100);
+    } else {
         alert("✅ Paiement de 500 FCFA réussi avec SenePay ! Votre Demande d'Autorisation va être téléchargée.");
         window.history.replaceState({}, document.title, window.location.pathname);
         
@@ -33,16 +44,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function openAutorisationPaymentModal(exportType = 'pdf') {
+window.openAutorisationModal = function() {
+    const modal = document.getElementById('autorisation-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    } else {
+        window.location.href = 'autorisation-generator.html';
+    }
+};
+
+window.closeAutorisationModal = function() {
+    const modal = document.getElementById('autorisation-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+};
+
+window.openAutorisationPaymentModal = function(exportType = 'pdf') {
     window.pendingExportType = exportType;
     const modal = document.getElementById('autorisation-payment-modal');
     if (modal) modal.style.display = 'flex';
-}
+};
 
-function closeAutorisationPaymentModal() {
+window.closeAutorisationPaymentModal = function() {
     const modal = document.getElementById('autorisation-payment-modal');
     if (modal) modal.style.display = 'none';
-}
+};
 
 async function processAutorisationPayment() {
     const btn = document.querySelector('#autorisation-payment-modal .btn-primary');
