@@ -295,7 +295,27 @@ function renderParsedJsonToHtml(parsed) {
     
     // DEFINED scannedPhotoUrl safely
     const scannedPhotoUrl = localStorage.getItem('scanned_cv_image_url') || '';
-    const headerColor = document.getElementById('style-header-color')?.value || '#800000';
+    // Render any additional dynamic sections (e.g. AUTRES, EXPÉRIENCES POLITIQUES)
+    let extraSectionsHtml = '';
+    const knownKeys = ['personal', 'firstname', 'lastname', 'jobtitle', 'email', 'phone', 'city', 'location', 'birth', 'datenaissance', 'profile', 'summary', 'presentation', 'profil', 'education', 'etudes', 'studies', 'cursus', 'diplomes', 'formation_scolaire', 'formations', 'training', 'certifications', 'stages', 'experiences', 'experience', 'postes', 'jobs', 'parcours_professionnel', 'skills', 'competences', 'competence', 'savoir_faire', 'languages', 'langues', 'interests', 'loisirs', 'autres', 'hobbies', 'activites'];
+    
+    Object.keys(parsed).forEach(key => {
+        if (!knownKeys.includes(key.toLowerCase()) && parsed[key]) {
+            const val = parsed[key];
+            const sectionTitle = key.replace(/_/g, ' ').toUpperCase();
+            const renderedList = renderListItemsVerbatim(val);
+            if (renderedList) {
+                extraSectionsHtml += `
+                    <div>
+                        <div class="cv-canva-box-title" style="background:#800000; color:white; text-transform:uppercase; font-weight:800; font-size:10.5pt; letter-spacing:1px; padding:6px 12px; text-align:center; border-radius:2px; margin:10px 0 8px 0;">${sectionTitle}</div>
+                        <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1a1a1a; list-style-type: disc;">
+                            ${renderedList}
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+    });
 
     const html = `
         <!-- Modèle Officiel Canva (Bordeaux & Bleu) - Restitution 1:1 Dynamique Sans Dummy Data -->
@@ -377,6 +397,8 @@ function renderParsedJsonToHtml(parsed) {
                     ${renderListItemsVerbatim(interests)}
                 </ul>
             </div>` : ''}
+
+            ${extraSectionsHtml}
         </div>
     `;
 
