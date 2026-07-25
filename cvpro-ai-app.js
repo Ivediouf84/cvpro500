@@ -196,35 +196,63 @@ function renderDefaultDemoCv() {
 }
 
 function renderListItemsVerbatim(list) {
+    if (!list) return '';
+    
+    // If it's a string, split by lines and render each line as bullet
+    if (typeof list === 'string') {
+        const lines = list.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        return lines.map(line => {
+            const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+            return `<li style="margin-bottom:5px; font-size:9.5pt; color:#1a1a1a;">${cleanLine}</li>`;
+        }).join('');
+    }
+
     if (!Array.isArray(list)) return '';
+
     let result = '';
     list.forEach(item => {
         if (typeof item === 'string') {
-            result += `<li style="margin-bottom:5px; font-size:9.5pt; color:#1a1a1a;">${item}</li>`;
+            const clean = item.replace(/^[•\-\*]\s*/, '').trim();
+            if (clean) {
+                result += `<li style="margin-bottom:5px; font-size:9.5pt; color:#1a1a1a;">${clean}</li>`;
+            }
         } else if (typeof item === 'object' && item !== null) {
-            const mainText = item.title || item.degree || item.name || item.text || item.heading || '';
-            const subText = item.school || item.institution || item.company || '';
-            const details = item.details || item.description || item.subItems || item.bullets || [];
-            const yearStr = item.year || item.startDate || item.dates ? ` (${item.year || item.startDate}${item.endDate ? ' - ' + item.endDate : ''})` : '';
-            const locationStr = item.location ? ` à ${item.location}` : '';
+            const mainText = (item.title || item.degree || item.name || item.heading || item.text || '').trim();
+            const subText = (item.school || item.institution || item.company || '').trim();
+            const yearStr = (item.year || item.startDate || item.dates || '').trim();
+            const locationStr = (item.location || '').trim();
+            const details = item.details || item.description || item.subItems || item.bullets || item.items || [];
 
+            let lineContent = '';
             if (mainText) {
-                let line = `<strong style="color:#0b2545;">${mainText}</strong>`;
-                if (subText) line += ` - ${subText}`;
-                if (locationStr) line += locationStr;
-                if (yearStr) line += yearStr;
-                result += `<li style="margin-bottom:5px; font-size:9.5pt; color:#1a1a1a;">${line}</li>`;
+                lineContent += `<strong style="color:#0b2545;">${mainText}</strong>`;
+            }
+            if (subText && subText.toLowerCase() !== mainText.toLowerCase()) {
+                lineContent += lineContent ? ` - ${subText}` : `<strong style="color:#0b2545;">${subText}</strong>`;
+            }
+            if (locationStr) {
+                lineContent += ` à ${locationStr}`;
+            }
+            if (yearStr) {
+                lineContent += ` (${yearStr})`;
+            }
+
+            if (lineContent) {
+                result += `<li style="margin-bottom:5px; font-size:9.5pt; color:#1a1a1a;">${lineContent}</li>`;
             }
 
             if (Array.isArray(details)) {
                 details.forEach(d => {
-                    const dText = typeof d === 'string' ? d : (d.text || d.name || '');
-                    if (dText) {
+                    const dText = typeof d === 'string' ? d.replace(/^[•\-\*]\s*/, '').trim() : (d.text || d.name || '').trim();
+                    if (dText && dText.toLowerCase() !== mainText.toLowerCase()) {
                         result += `<li style="margin-bottom:4px; font-size:9.5pt; margin-left:14px; color:#1a1a1a;">${dText}</li>`;
                     }
                 });
-            } else if (typeof details === 'string' && details.trim().length > 0) {
-                result += `<li style="margin-bottom:4px; font-size:9.5pt; margin-left:14px; color:#334155;">${details}</li>`;
+            } else if (typeof details === 'string' && details.trim().length > 0 && details.trim().toLowerCase() !== mainText.toLowerCase()) {
+                const detailLines = details.split('\n').map(l => l.replace(/^[•\-\*]\s*/, '').trim()).filter(l => l.length > 0);
+                detailLines.forEach(dLine => {
+                    result += `<li style="margin-bottom:4px; font-size:9.5pt; margin-left:14px; color:#334155;">${dLine}</li>`;
+                });
             }
         }
     });
@@ -246,24 +274,24 @@ function renderParsedJsonToHtml(parsed) {
     lastParsedCvData = parsed;
     docEl.className = "cv-page-container cv-template-canva";
 
-    // Dynamic extraction - NO HARDCODED FALLBACKS
+    // Dynamic extraction - Universal Key Mapping
     const p = {
-        firstName: parsed.personal?.firstName || parsed.firstName || '',
-        lastName: parsed.personal?.lastName || parsed.lastName || '',
-        jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || '',
+        firstName: parsed.personal?.firstName || parsed.firstName || parsed.prenom || (parsed.name ? parsed.name.split(' ')[0] : '') || '',
+        lastName: parsed.personal?.lastName || parsed.lastName || parsed.nom || (parsed.name ? parsed.name.split(' ').slice(1).join(' ') : '') || '',
+        jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || parsed.titre || parsed.profession || '',
         email: parsed.personal?.email || parsed.email || '',
-        phone: parsed.personal?.phone || parsed.phone || '',
-        city: parsed.personal?.city || parsed.personal?.location || parsed.location || '',
-        birth: parsed.personal?.birth || parsed.birth || ''
+        phone: parsed.personal?.phone || parsed.phone || parsed.telephone || '',
+        city: parsed.personal?.city || parsed.personal?.location || parsed.location || parsed.adresse || '',
+        birth: parsed.personal?.birth || parsed.birth || parsed.dateNaissance || ''
     };
     
-    const profileSummary = parsed.profile?.summary || parsed.summary || '';
-    const education = Array.isArray(parsed.education) ? parsed.education : [];
-    const formations = Array.isArray(parsed.formations) ? parsed.formations : [];
-    const experiences = Array.isArray(parsed.experiences) ? parsed.experiences : (Array.isArray(parsed.experience) ? parsed.experience : []);
-    const skills = Array.isArray(parsed.skills) ? parsed.skills : [];
-    const languages = Array.isArray(parsed.languages) ? parsed.languages : [];
-    const interests = Array.isArray(parsed.interests) ? parsed.interests : [];
+    const profileSummary = parsed.profile?.summary || parsed.summary || parsed.presentation || parsed.profil || '';
+    const education = parsed.education || parsed.etudes || parsed.studies || parsed.cursus || parsed.diplomes || parsed.formation_scolaire || [];
+    const formations = parsed.formations || parsed.training || parsed.certifications || parsed.stages || [];
+    const experiences = parsed.experiences || parsed.experience || parsed.postes || parsed.jobs || parsed.parcours_professionnel || [];
+    const skills = parsed.skills || parsed.competences || parsed.competence || parsed.savoir_faire || [];
+    const languages = parsed.languages || parsed.langues || [];
+    const interests = parsed.interests || parsed.loisirs || parsed.autres || parsed.hobbies || parsed.activites || [];
     
     // DEFINED scannedPhotoUrl safely
     const scannedPhotoUrl = localStorage.getItem('scanned_cv_image_url') || '';
@@ -674,7 +702,6 @@ function updateCVStyles() {
         #cv-document .cv-header,
         #cv-document .cv-classic-header,
         #cv-document .cv-sidebar,
-        #cv-document .cv-canva-box-title,
         #cv-document .cv-mustard-pill-title {
             background-color: ${headerColor} !important;
         }
