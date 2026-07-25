@@ -151,6 +151,31 @@ function getSelectedCheckboxes(name) {
     return Array.from(checkboxes).map(cb => cb.value);
 }
 
+function getSenegalAutoriteHeader(autorite, { region, departement, arrondissement, commune, quartier }) {
+    let headerText = `<strong>À ${autorite}</strong>`;
+    
+    if (autorite.includes('Sous-préfet')) {
+        const place = arrondissement || commune || departement;
+        headerText = `<strong>À Monsieur le Sous-préfet</strong><br>de l'Arrondissement de <strong>${place || '......'}</strong>`;
+    } else if (autorite.includes('Préfet')) {
+        const place = departement || commune || region;
+        headerText = `<strong>À Monsieur le Préfet</strong><br>du Département de <strong>${place || '......'}</strong>`;
+    } else if (autorite.includes('Gouverneur')) {
+        const place = region || departement;
+        headerText = `<strong>À Monsieur le Gouverneur</strong><br>de la Région de <strong>${place || '......'}</strong>`;
+    } else if (autorite.includes('Maire')) {
+        const place = commune || quartier;
+        headerText = `<strong>À Monsieur le Maire</strong><br>de la Commune de <strong>${place || '......'}</strong>`;
+    } else if (autorite.includes('Chef de village') || autorite.includes('Délégué')) {
+        const place = quartier || commune;
+        headerText = `<strong>À Monsieur le Chef de Village / Délégué de Quartier</strong><br>de <strong>${place || '......'}</strong>`;
+    } else if (autorite.includes('Commissaire') || autorite.includes('Commandant')) {
+        const place = commune || departement;
+        headerText = `<strong>À ${autorite}</strong><br>Circonscription / Brigade de <strong>${place || '......'}</strong>`;
+    }
+    return headerText;
+}
+
 async function generateAutorisationDocument(event) {
     if (event) event.preventDefault();
 
@@ -160,6 +185,7 @@ async function generateAutorisationDocument(event) {
     // Demandeur
     const demandeurNom = document.getElementById('auto-nom')?.value.trim() || '';
     const demandeurPrenom = document.getElementById('auto-prenom')?.value.trim() || '';
+    const demandeurCni = document.getElementById('auto-cni')?.value.trim() || '';
     const demandeurAdresse = document.getElementById('auto-adresse')?.value.trim() || '';
     const demandeurTel = document.getElementById('auto-tel')?.value.trim() || '';
     const demandeurEmail = document.getElementById('auto-email')?.value.trim() || '';
@@ -169,18 +195,21 @@ async function generateAutorisationDocument(event) {
     // Responsables
     const r1Nom = document.getElementById('auto-r1-nom')?.value.trim() || '';
     const r1Prenom = document.getElementById('auto-r1-prenom')?.value.trim() || '';
+    const r1Cni = document.getElementById('auto-r1-cni')?.value.trim() || '';
     const r1Fonction = document.getElementById('auto-r1-fonction')?.value || 'Président';
     const r1Tel = document.getElementById('auto-r1-tel')?.value.trim() || '';
     const r1Adresse = document.getElementById('auto-r1-adresse')?.value.trim() || '';
 
     const r2Nom = document.getElementById('auto-r2-nom')?.value.trim() || '';
     const r2Prenom = document.getElementById('auto-r2-prenom')?.value.trim() || '';
+    const r2Cni = document.getElementById('auto-r2-cni')?.value.trim() || '';
     const r2Fonction = document.getElementById('auto-r2-fonction')?.value || '';
     const r2Tel = document.getElementById('auto-r2-tel')?.value.trim() || '';
     const r2Adresse = document.getElementById('auto-r2-adresse')?.value.trim() || '';
 
     const r3Nom = document.getElementById('auto-r3-nom')?.value.trim() || '';
     const r3Prenom = document.getElementById('auto-r3-prenom')?.value.trim() || '';
+    const r3Cni = document.getElementById('auto-r3-cni')?.value.trim() || '';
     const r3Fonction = document.getElementById('auto-r3-fonction')?.value || '';
     const r3Tel = document.getElementById('auto-r3-tel')?.value.trim() || '';
     const r3Adresse = document.getElementById('auto-r3-adresse')?.value.trim() || '';
@@ -221,11 +250,11 @@ async function generateAutorisationDocument(event) {
 Veuillez rédiger une lettre officielle de demande d'autorisation de manifestation conforme au style administratif du Sénégal.
 DÉTAILS DU FORMULAIRE :
 - Date de rédaction : ${dateRedaction} à ${lieuRedaction}
-- Demandeur : ${demandeurPrenom} ${demandeurNom}, ${demandeurProfession}, Qualité : ${demandeurQualite}. Adresse: ${demandeurAdresse}, Tél: ${demandeurTel}, Email: ${demandeurEmail}
+- Demandeur : ${demandeurPrenom} ${demandeurNom} (CNI N°: ${demandeurCni}), ${demandeurProfession}, Qualité : ${demandeurQualite}. Adresse: ${demandeurAdresse}, Tél: ${demandeurTel}, Email: ${demandeurEmail}
 - Responsables associés :
-  1. ${r1Prenom} ${r1Nom} (${r1Fonction}), Tél: ${r1Tel}, Adresse: ${r1Adresse}
-  ${r2Nom ? `2. ${r2Prenom} ${r2Nom} (${r2Fonction}), Tél: ${r2Tel}, Adresse: ${r2Adresse}` : ''}
-  ${r3Nom ? `3. ${r3Prenom} ${r3Nom} (${r3Fonction}), Tél: ${r3Tel}, Adresse: ${r3Adresse}` : ''}
+  1. ${r1Prenom} ${r1Nom} (CNI N°: ${r1Cni}, Fonction: ${r1Fonction}), Tél: ${r1Tel}, Adresse: ${r1Adresse}
+  ${r2Nom ? `2. ${r2Prenom} ${r2Nom} (CNI N°: ${r2Cni}, Fonction: ${r2Fonction}), Tél: ${r2Tel}, Adresse: ${r2Adresse}` : ''}
+  ${r3Nom ? `3. ${r3Prenom} ${r3Nom} (CNI N°: ${r3Cni}, Fonction: ${r3Fonction}), Tél: ${r3Tel}, Adresse: ${r3Adresse}` : ''}
 - Autorité destinataire : ${autorite}
 - Type de manifestation : ${typeManifestation} (Nature : ${natureManifestation})
 - Objet : ${objetCustom}
@@ -237,12 +266,6 @@ DÉTAILS DU FORMULAIRE :
 - Dispositif de sécurité : ${securite.join(', ')}
 - Engagements pris : ${engagements.join(', ')}
 - Pièces jointes fournies : ${piecesJointes.join(', ')}
-
-CONSIGNES DE RÉDACTION :
-- Style administratif sénégalais irréprochable et très respectueux.
-- Inclure l'objet en gras.
-- Mentionner clairement les horaires, la sécurité, l'animation sonore et l'engagement d'assainissement du site.
-- Rédiger des paragraphes fluides, professionnels et convaincants.
         `;
 
         let generatedBody = '';
@@ -266,7 +289,6 @@ CONSIGNES DE RÉDACTION :
             console.warn("IA API fallback to local template:", e);
         }
 
-        // Fallback local template if API call fails or is offline
         if (!generatedBody || generatedBody.length < 50) {
             generatedBody = generateLocalAutorisationBody({
                 demandeurPrenom, demandeurNom, demandeurQualite, demandeurAdresse, demandeurTel,
@@ -276,33 +298,34 @@ CONSIGNES DE RÉDACTION :
             });
         }
 
-        // Format Date to French
         const formattedDateRedaction = formatDateFR(dateRedaction);
         const formattedDateManif = formatDateFR(dateManif);
+
+        // Senegal Territorial Authority Header format
+        const autoriteHeaderFormatted = getSenegalAutoriteHeader(autorite, { region, departement, arrondissement, commune, quartier });
 
         // Construct HTML Letter
         const htmlDoc = `
         <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000000; line-height: 1.6; padding: 2.5rem 3rem; background: #ffffff; min-height: 297mm; box-sizing: border-box;">
             <!-- En-tête : Logo à gauche / Date & Lieu à droite -->
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
-                <div style="max-width: 45%;">
+                <div style="max-width: 48%;">
                     ${uploadedLogoDataUrl ? `<img src="${uploadedLogoDataUrl}" style="max-height: 90px; max-width: 180px; object-fit: contain; display: block; margin-bottom: 8px;">` : ''}
                     <div style="font-weight: bold; font-size: 11pt; text-transform: uppercase;">${demandeurPrenom} ${demandeurNom}</div>
-                    <div style="font-size: 10.5pt; color: #333333;">${demandeurQualite}</div>
-                    <div style="font-size: 10pt; color: #444444;">${demandeurAdresse}</div>
-                    <div style="font-size: 10pt; color: #444444;">Tél : ${demandeurTel}</div>
-                    ${demandeurEmail ? `<div style="font-size: 10pt; color: #444444;">Email : ${demandeurEmail}</div>` : ''}
+                    <div style="font-size: 10pt; color: #222222;">${demandeurQualite}</div>
+                    ${demandeurCni ? `<div style="font-size: 9.5pt; color: #333333;"><strong>CNI N° :</strong> ${demandeurCni}</div>` : ''}
+                    <div style="font-size: 9.5pt; color: #444444;">${demandeurAdresse}</div>
+                    <div style="font-size: 9.5pt; color: #444444;">Tél : ${demandeurTel}</div>
+                    ${demandeurEmail ? `<div style="font-size: 9.5pt; color: #444444;">Email : ${demandeurEmail}</div>` : ''}
                 </div>
                 <div style="text-align: right; font-size: 11pt;">
                     <strong>Fait à ${lieuRedaction}, le ${formattedDateRedaction}</strong>
                 </div>
             </div>
 
-            <!-- Destinataire -->
-            <div style="margin-left: 50%; margin-bottom: 2.5rem; font-size: 12pt; line-height: 1.4;">
-                <strong>À ${autorite}</strong><br>
-                ${commune ? `de la Commune de ${commune}<br>` : ''}
-                ${departement ? `du Département de ${departement}` : ''}
+            <!-- Destinataire (Hiérarchie Administrative du Sénégal) -->
+            <div style="margin-left: 45%; margin-bottom: 2.5rem; font-size: 12pt; line-height: 1.5;">
+                ${autoriteHeaderFormatted}
             </div>
 
             <!-- Objet -->
@@ -332,6 +355,16 @@ CONSIGNES DE RÉDACTION :
                 ${securite.length > 0 ? `<div style="margin-top:2px;"><strong>• Sécurité :</strong> ${securite.join(', ')}</div>` : ''}
             </div>
 
+            <!-- Identité des Responsables -->
+            <div style="margin-bottom: 1.5rem; font-size: 10.5pt; font-family: Arial, sans-serif; background: #fafafa; border: 1px solid #e2e8f0; padding: 0.8rem; border-radius: 6px;">
+                <strong><u>Responsable(s) de la Manifestation :</u></strong>
+                <div style="margin-top: 4px;">
+                    • <strong>1. ${r1Prenom} ${r1Nom}</strong> (${r1Fonction}) - ${r1Cni ? 'CNI N° : ' + r1Cni + ' - ' : ''}Tél : ${r1Tel || demandeurTel}
+                    ${r2Nom ? `<br>• <strong>2. ${r2Prenom} ${r2Nom}</strong> (${r2Fonction}) - ${r2Cni ? 'CNI N° : ' + r2Cni + ' - ' : ''}Tél : ${r2Tel}` : ''}
+                    ${r3Nom ? `<br>• <strong>3. ${r3Prenom} ${r3Nom}</strong> (${r3Fonction}) - ${r3Cni ? 'CNI N° : ' + r3Cni + ' - ' : ''}Tél : ${r3Tel}` : ''}
+                </div>
+            </div>
+
             <!-- Engagement solennel -->
             <div style="margin-bottom: 1.5rem;">
                 <p>En tant qu'organisateur(s), nous nous engageons fermement à :</p>
@@ -345,25 +378,43 @@ CONSIGNES DE RÉDACTION :
                 Restant à votre entière disposition pour toute information complémentaire ou visite de conformité des lieux, je vous prie d'agréer, <strong>${autorite}</strong>, l'assurance de notre considération la plus distinguée et de notre profond respect.
             </div>
 
-            <!-- Bloc Signatures -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 3rem; page-break-inside: avoid;">
-                <div style="width: 45%;">
-                    ${r1Nom ? `
-                    <div style="font-size: 10.5pt;">
-                        <strong><u>Le Co-Responsable :</u></strong><br>
-                        ${r1Prenom} ${r1Nom}<br>
-                        <em>${r1Fonction}</em><br>
-                        <span style="font-size:9.5pt; color:#555;">Tél : ${r1Tel}</span>
-                    </div>` : ''}
-                </div>
-                <div style="width: 45%; text-align: right;">
+            <!-- Bloc Signatures : EXPÉDITEUR À GAUCHE / AUTORITÉ À DROITE -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 3.5rem; page-break-inside: avoid;">
+                <!-- Signature Expéditeur (À GAUCHE) -->
+                <div style="width: 45%; text-align: left;">
                     <div style="font-size: 11pt;">
-                        <strong><u>Le Demandeur / Organisateur :</u></strong><br><br><br>
+                        <strong><u>L'Expéditeur / Le Demandeur :</u></strong><br>
+                        <span style="font-size:10pt; color:#333;">(Signature de l'organisateur)</span><br><br><br>
                         <strong>${demandeurPrenom} ${demandeurNom}</strong><br>
-                        <em>${demandeurQualite}</em>
+                        <em>${demandeurQualite}</em><br>
+                        ${demandeurCni ? `<span style="font-size:9pt; color:#555;">CNI N° : ${demandeurCni}</span>` : ''}
+                    </div>
+                </div>
+
+                <!-- Signature & Visa Autorité (À DROITE) -->
+                <div style="width: 48%; text-align: center; border: 1.5px dashed #64748b; padding: 1rem; border-radius: 6px; background: #f8fafc;">
+                    <div style="font-size: 10.5pt; font-weight: bold; color: #1e293b; text-transform: uppercase;">
+                        Réservé à l'Autorité Administrative
+                    </div>
+                    <div style="font-size: 9.5pt; color: #475569; margin-top: 4px;">
+                        Visa / Cachet de ${autorite}
+                    </div>
+                    <div style="margin-top: 15px; font-size: 9pt; color: #334155; display: flex; justify-content: center; gap: 15px;">
+                        <span>[ &nbsp; ] Accordé</span>
+                        <span>[ &nbsp; ] Refusé</span>
+                    </div>
+                    <div style="margin-top: 2.5rem; font-size: 8.5pt; color: #94a3b8;">
+                        Date et Signature de l'Autorité
                     </div>
                 </div>
             </div>
+
+            ${piecesJointes.length > 0 ? `
+            <div style="margin-top: 2rem; border-top: 1px dashed #cccccc; padding-top: 8px; font-size: 9.5pt; color: #444;">
+                <strong><u>Pièces Jointes annexées :</u></strong> ${piecesJointes.join(' ; ')}
+            </div>` : ''}
+        </div>
+        `;
 
             ${piecesJointes.length > 0 ? `
             <div style="margin-top: 2rem; border-top: 1px dashed #cccccc; padding-top: 8px; font-size: 9.5pt; color: #444;">
