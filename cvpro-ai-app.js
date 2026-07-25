@@ -1018,6 +1018,67 @@ async function extractRawText_AIBuilder(file) {
     }
 }
 
+function parseRawTextVerbatimIntoSections(rawText) {
+    if (!rawText || typeof rawText !== 'string') return {};
+    
+    const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const result = {
+        education: [],
+        formations: [],
+        experiences: [],
+        skills: [],
+        languages: [],
+        interests: []
+    };
+
+    let currentSection = null;
+    const knownSectionKeywords = {
+        'présentation': 'presentation',
+        'profil': 'presentation',
+        'études': 'education',
+        'etudes': 'education',
+        'formation': 'formations',
+        'formations': 'formations',
+        'expérience': 'experiences',
+        'expériences': 'experiences',
+        'expérience professionnelle': 'experiences',
+        'expériences professionnelles': 'experiences',
+        'expérience politique': 'expériences_politiques',
+        'expériences politiques': 'expériences_politiques',
+        'compétence': 'skills',
+        'compétences': 'skills',
+        'langue': 'languages',
+        'langues': 'languages',
+        'loisir': 'interests',
+        'loisirs': 'interests',
+        'autre': 'autres',
+        'autres': 'autres'
+    };
+
+    lines.forEach(line => {
+        const cleanLine = line.replace(/^[•\-\*]\s*/, '').trim();
+        const lower = cleanLine.toLowerCase();
+
+        if (knownSectionKeywords[lower]) {
+            currentSection = knownSectionKeywords[lower];
+            if (!result[currentSection]) result[currentSection] = [];
+            return;
+        }
+
+        if (line.toUpperCase() === line && line.length < 35 && !line.includes('@') && !/\d/.test(line)) {
+            currentSection = line.toLowerCase().replace(/\s+/g, '_');
+            if (!result[currentSection]) result[currentSection] = [];
+            return;
+        }
+
+        if (currentSection && Array.isArray(result[currentSection])) {
+            result[currentSection].push(line);
+        }
+    });
+
+    return result;
+}
+
 async function handleAiCvUploadInAiBuilder(e) {
     const file = e.target?.files?.[0];
     if (!file) return;
@@ -1049,6 +1110,8 @@ async function handleAiCvUploadInAiBuilder(e) {
 
         if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reconstitution par l\'IA...';
 
+        const verbatimParsed = parseRawTextVerbatimIntoSections(rawTextExtracted);
+
         const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
             method: 'POST',
             headers: {
@@ -1072,36 +1135,47 @@ async function handleAiCvUploadInAiBuilder(e) {
             }
             parsed = JSON.parse(cleanJson);
         } catch(err) {
-            throw new Error("Erreur de format de réponse de l'IA : " + rawText.substring(0, 100));
+            parsed = {};
         }
 
-        if (response.ok && parsed) {
-            renderParsedJsonToHtml(parsed);
-
-            // Inject uploaded photo/image if present
-            if (uploadedImageUrl) {
-                const docEl = document.getElementById('cv-document');
-                if (docEl) {
-                    let photoImg = docEl.querySelector('.cv-photo, img');
-                    if (photoImg) {
-                        photoImg.src = uploadedImageUrl;
-                    }
+        // Merge verbatim parsed section lines if AI summarized them
+        Object.keys(verbatimParsed).forEach(sec => {
+            if (verbatimParsed[sec] && verbatimParsed[sec].length > 0) {
+                if (!parsed[sec] || (Array.isArray(parsed[sec]) && parsed[sec].length < verbatimParsed[sec].length)) {
+                    parsed[sec] = verbatimParsed[sec];
                 }
             }
+        });
 
-            alert("✨ Votre CV a été analysé et restitué avec une haute fidélité par l'IA !");
-        } else {
-            throw new Error(parsed.error || rawText);
+        renderParsedJsonToHtml(parsed);
+
+        // Inject uploaded photo/image if present
+        if (uploadedImageUrl) {
+            const docEl = document.getElementById('cv-document');
+            if (docEl) {
+                let photoImg = docEl.querySelector('.cv-photo, img');
+                if (photoImg) {
+                    photoImg.src = uploadedImageUrl;
+                }
+            }
+        }
+
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> CV Importé !';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 3000);
         }
 
     } catch(err) {
-        console.error("AI Import Error:", err);
+        console.error(err);
         alert("Erreur d'importation : " + err.message);
-    } finally {
         if (btn) {
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
+    } finally {
         if (e.target) e.target.value = '';
     }
 }
