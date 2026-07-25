@@ -201,6 +201,12 @@ function renderParsedJsonToHtml(parsed, requestedTemplate) {
     const docEl = document.getElementById('cv-document');
     if (!docEl || !parsed) return;
 
+    // Show A4 canvas wrapper and hide empty upload card
+    const emptyCard = document.getElementById('cv-empty-upload-card');
+    const scaleWrapper = document.getElementById('cv-scale-wrapper');
+    if (emptyCard) emptyCard.style.display = 'none';
+    if (scaleWrapper) scaleWrapper.style.display = 'block';
+
     lastParsedCvData = parsed;
     const templateClass = requestedTemplate || document.getElementById('style-template-selector')?.value || 'cv-template-canva';
     
