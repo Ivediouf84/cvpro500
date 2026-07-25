@@ -210,27 +210,31 @@ function renderParsedJsonToHtml(parsed) {
     lastParsedCvData = parsed;
     docEl.className = "cv-page-container cv-template-canva";
 
+    // Dynamic extraction - NO HARDCODED FALLBACKS
     const p = {
-        firstName: parsed.personal?.firstName || parsed.firstName || 'IBOU',
-        lastName: parsed.personal?.lastName || parsed.lastName || 'DIOUF',
-        jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || 'Instituteur, Informaticien, Web designer',
-        email: parsed.personal?.email || parsed.email || 'ngalagne84@gmail.com',
-        phone: parsed.personal?.phone || parsed.phone || '782124456 / 782532353',
-        city: parsed.personal?.city || parsed.personal?.location || parsed.location || 'Ngalagne Diaraf, Ndk',
-        birth: parsed.personal?.birth || parsed.birth || 'Né le 17-06-1984 à Ngalagne Diaraf'
+        firstName: parsed.personal?.firstName || parsed.firstName || '',
+        lastName: parsed.personal?.lastName || parsed.lastName || '',
+        jobTitle: parsed.personal?.jobTitle || parsed.jobTitle || '',
+        email: parsed.personal?.email || parsed.email || '',
+        phone: parsed.personal?.phone || parsed.phone || '',
+        city: parsed.personal?.city || parsed.personal?.location || parsed.location || '',
+        birth: parsed.personal?.birth || parsed.birth || ''
     };
     
-    const profileSummary = parsed.profile?.summary || parsed.summary || 'Instituteur, informaticien, web designer, concepteur et gestionnaire de projet, entrepreneur digital.';
+    const profileSummary = parsed.profile?.summary || parsed.summary || '';
     const education = Array.isArray(parsed.education) ? parsed.education : [];
     const formations = Array.isArray(parsed.formations) ? parsed.formations : [];
     const experiences = Array.isArray(parsed.experiences) ? parsed.experiences : (Array.isArray(parsed.experience) ? parsed.experience : []);
     const skills = Array.isArray(parsed.skills) ? parsed.skills : [];
     const languages = Array.isArray(parsed.languages) ? parsed.languages : [];
     const interests = Array.isArray(parsed.interests) ? parsed.interests : [];
+    
+    // DEFINED scannedPhotoUrl safely
+    const scannedPhotoUrl = localStorage.getItem('scanned_cv_image_url') || '';
     const headerColor = document.getElementById('style-header-color')?.value || '#800000';
 
     const html = `
-        <!-- Modèle Officiel Canva (Bordeaux & Bleu) - Restitution Millimétrée 1:1 -->
+        <!-- Modèle Officiel Canva (Bordeaux & Bleu) - Restitution 1:1 Dynamique Sans Dummy Data -->
         <div class="cv-canva-left">
             <div class="cv-canva-left-accent"></div>
             
@@ -269,10 +273,13 @@ function renderParsedJsonToHtml(parsed) {
         </div>
 
         <div class="cv-canva-right">
+            ${(p.firstName || p.lastName) ? `
             <div class="cv-canva-header-name">
                 <h1 style="font-size: 28pt; font-weight: 900; color: #0b2545; margin: 0; line-height: 1.1; text-transform: uppercase;">${p.firstName} <span style="color:#003566;">${p.lastName}</span></h1>
-            </div>
-            <div class="cv-canva-header-title" style="font-size: 14pt; font-weight: 800; color: #0b2545; margin-top: 4px;">${p.jobTitle}</div>
+            </div>` : ''}
+            
+            ${p.jobTitle ? `<div class="cv-canva-header-title" style="font-size: 14pt; font-weight: 800; color: #0b2545; margin-top: 4px;">${p.jobTitle}</div>` : ''}
+            
             ${p.birth ? `<div class="cv-canva-header-birth" style="font-size: 10pt; font-weight: 700; color: #1a1a1a; margin-top: 4px; margin-bottom: 14px;">${p.birth}</div>` : ''}
 
             ${education.length > 0 ? `
