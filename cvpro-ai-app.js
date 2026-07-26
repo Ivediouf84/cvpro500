@@ -1173,17 +1173,6 @@ async function handleAiCvUploadInAiBuilder(e) {
 
         renderParsedJsonToHtml(parsed);
 
-        // Inject uploaded photo/image if present
-        if (uploadedImageUrl) {
-            const docEl = document.getElementById('cv-document');
-            if (docEl) {
-                let photoImg = docEl.querySelector('.cv-photo, img');
-                if (photoImg) {
-                    photoImg.src = uploadedImageUrl;
-                }
-            }
-        }
-
         if (btn) {
             btn.innerHTML = '<i class="fa-solid fa-check"></i> CV Importé !';
             setTimeout(() => {
