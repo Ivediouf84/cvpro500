@@ -156,11 +156,17 @@
     <script>
         window.isLoggedIn = false;
         window.handleHeroAction = (action) => {
+            if (!window.isLoggedIn) {
+                // Redirige directement vers le formulaire d'inscription avec la page cible en paramètre
+                window.location.href = `auth.html?mode=signup&redirect=${encodeURIComponent(action)}`;
+                return false;
+            }
             if (action === 'scanner') {
                 openScannerModal();
             } else {
                 window.location.href = action;
             }
+            return false;
         };
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -199,17 +205,17 @@
             <h1>Créez tous vos documents <span>professionnels</span> avec NovaDoc</h1>
             <p>CV, Renouvelez ancien CV, Lettre de motivation, Demande de stage, Demande d'autorisation, Document administratif. Générez des documents professionnels en quelques minutes grâce à l'IA</p>
             <div class="btn-group">
-                <a href="#" onclick="handleHeroAction('cvpro-builder.html'); return false;" class="btn btn-primary btn-hero-main hero-btn" style="border-radius: var(--radius-lg); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; box-shadow: var(--shadow-glow);"><i class="fa-solid fa-wand-magic-sparkles"></i> Créer mon CV maintenant</a>
-                <a href="cvpro-ai-builder.html" class="btn btn-ghost hero-btn" style="border-radius: var(--radius-lg); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border); color: var(--text-main); margin: 0; background: transparent; text-decoration: none;">
+                <a href="#" onclick="return handleHeroAction('cvpro-builder.html');" class="btn btn-primary btn-hero-main hero-btn" style="border-radius: var(--radius-lg); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; box-shadow: var(--shadow-glow);"><i class="fa-solid fa-wand-magic-sparkles"></i> Créer mon CV maintenant</a>
+                <a href="#" onclick="return handleHeroAction('cvpro-ai-builder.html');" class="btn btn-ghost hero-btn" style="border-radius: var(--radius-lg); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border); color: var(--text-main); margin: 0; background: transparent; text-decoration: none;">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Scanner CV (IA)
                 </a>
-                <button onclick="window.location.href='motivation-generator.html'" class="btn btn-ghost hero-btn" style="border-radius: var(--radius-lg); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--secondary); color: var(--secondary); margin: 0; background: transparent;">
+                <button onclick="handleHeroAction('motivation-generator.html')" class="btn btn-ghost hero-btn" style="border-radius: var(--radius-lg); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--secondary); color: var(--secondary); margin: 0; background: transparent;">
                     <i class="fa-solid fa-file-signature"></i> Lettre & Demande
                 </button>
-                <button onclick="window.location.href='stage-generator.html'" class="btn btn-ghost hero-btn" style="border-radius: var(--radius-lg); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--primary); color: var(--primary); margin: 0; background: transparent;">
+                <button onclick="handleHeroAction('stage-generator.html')" class="btn btn-ghost hero-btn" style="border-radius: var(--radius-lg); cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid var(--primary); color: var(--primary); margin: 0; background: transparent;">
                     <i class="fa-solid fa-graduation-cap"></i> Demande Stage (IA)
                 </button>
-                <a href="autorisation-generator.html" class="btn hero-btn" style="border-radius: var(--radius-lg); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%); border: 1px solid #3b82f6; color: white; margin: 0; text-decoration: none; font-weight: 700; box-shadow: 0 4px 14px rgba(30, 64, 175, 0.4);">
+                <a href="#" onclick="return handleHeroAction('autorisation-generator.html');" class="btn hero-btn" style="border-radius: var(--radius-lg); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%); border: 1px solid #3b82f6; color: white; margin: 0; text-decoration: none; font-weight: 700; box-shadow: 0 4px 14px rgba(30, 64, 175, 0.4);">
                     <i class="fa-regular fa-file-lines"></i> Autorisation
                 </a>
             </div>

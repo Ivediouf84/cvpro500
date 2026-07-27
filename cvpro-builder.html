@@ -218,8 +218,11 @@
             .builder-nav-brand { font-size: 1rem; }
         }
     </style>
+    <!-- Supabase JS & Auth Guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth-guard.js"></script>
 </head>
-<body class="dark-theme">
+<body class="dark-theme" data-require-auth="true">
 
     <nav class="builder-nav">
         <a href="index.html" class="builder-nav-brand" title="Retour à l'accueil"><i class="fa-solid fa-arrow-left"></i> <span class="hide-mobile">NovaDoc</span></a>

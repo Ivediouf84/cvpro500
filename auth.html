@@ -257,17 +257,16 @@
                     });
                     if (error) throw error;
                     
+                    const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
                     if (data.session) {
                         // Supabase auto-logged the user in (email confirmations disabled)
-                        window.location.href = "index.html";
+                        window.location.href = redirectTarget;
                     } else {
                         // Needs login or email confirmation
                         document.getElementById('auth-form').reset();
                         showAlert("Compte créé avec succès ! Vous pouvez maintenant vous connecter.", false);
                         isSignUp = false;
                         updateUI();
-                        // Clear the ?mode=signup from URL so it doesn't stick
-                        window.history.replaceState({}, document.title, window.location.pathname);
                     }
                 } else {
                     const { data, error } = await supabase.auth.signInWithPassword({
@@ -276,8 +275,8 @@
                     });
                     if (error) throw error;
                     
-                    // Redirect to home dashboard
-                    window.location.href = "index.html";
+                    const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
+                    window.location.href = redirectTarget;
                 }
             } catch (err) {
                 console.error("Auth error:", err);
@@ -316,7 +315,8 @@
             // Redirect if already logged in
             const { data } = await supabase.auth.getSession();
             if (data.session) {
-                window.location.href = "index.html";
+                const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
+                window.location.href = redirectTarget;
             }
         });
     </script>
