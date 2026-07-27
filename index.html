@@ -92,23 +92,25 @@
             .cv-hero .btn-group {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
-                gap: 0.45rem !important;
+                row-gap: 0.75rem !important; /* Espace vertical entre la 2ème et 3ème ligne */
+                column-gap: 0.65rem !important; /* Espace horizontal entre les 2 colonnes */
                 width: 100% !important;
                 max-width: 480px !important;
                 margin: 0 auto !important;
             }
             .cv-hero .btn-group .btn-hero-main {
                 grid-column: 1 / -1 !important; /* Bouton principal prend toute la largeur */
-                padding: 0.65rem 0.8rem !important;
-                font-size: 0.88rem !important;
+                padding: 0.75rem 1rem !important;
+                font-size: 0.9rem !important;
+                margin-bottom: 0.35rem !important; /* Espace net après le premier grand bouton */
             }
             .cv-hero .btn-group .hero-btn {
-                padding: 0.5rem 0.35rem !important;
-                font-size: 0.75rem !important;
-                border-radius: var(--radius-md) !important;
+                padding: 0.65rem 0.5rem !important;
+                font-size: 0.78rem !important;
+                border-radius: 12px !important;
                 justify-content: center !important;
                 text-align: center !important;
-                gap: 0.3rem !important;
+                gap: 0.4rem !important;
                 white-space: nowrap !important;
                 overflow: hidden !important;
                 text-overflow: ellipsis !important;
@@ -117,7 +119,7 @@
                 margin: 0 !important;
             }
             .cv-hero .btn-group .hero-btn i {
-                font-size: 0.8rem !important;
+                font-size: 0.85rem !important;
             }
         }
     </style>
