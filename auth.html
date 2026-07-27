@@ -13,19 +13,19 @@
             background: var(--body-bg);
             min-height: 100vh;
             margin: 0;
-            padding: 4rem 1rem;
+            padding: 3rem 1rem;
             color: var(--text-main);
             display: block;
             text-align: center;
         }
         .cvpro-login-card {
             background: var(--surface);
-            padding: 2.5rem;
+            padding: 2.2rem 2rem;
             border-radius: var(--radius-lg);
             border: 1px solid var(--border);
             width: 100%;
             max-width: 460px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
             text-align: center;
             margin: 0 auto;
             display: block;
@@ -33,17 +33,50 @@
         .cvpro-login-card * {
             box-sizing: border-box;
         }
+        
+        /* Auth Tabs */
+        .auth-tabs-nav {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            margin-bottom: 1.5rem;
+            gap: 4px;
+        }
+        .auth-tab-btn {
+            flex: 1;
+            padding: 0.65rem 0.5rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+        .auth-tab-btn.active {
+            background: var(--grad-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+        }
+
         .cvpro-login-card h2 {
             margin-top: 0;
-            margin-bottom: 0.5rem;
-            font-size: 1.75rem;
+            margin-bottom: 0.3rem;
+            font-size: 1.6rem;
             color: var(--text-main);
             display: block;
         }
         .cvpro-login-card p.subtitle {
             color: var(--text-muted);
-            margin-bottom: 1.8rem;
-            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
             line-height: 1.4;
             display: block;
         }
@@ -56,7 +89,7 @@
         .form-group label {
             display: block;
             margin-bottom: 0.4rem;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -65,12 +98,12 @@
         .form-control {
             display: block;
             width: 100%;
-            padding: 0.75rem;
+            padding: 0.75rem 0.85rem;
             border-radius: var(--radius-md);
             border: 1px solid var(--border);
             background: var(--background);
             color: var(--text-main);
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: var(--transition);
         }
         .form-control:focus {
@@ -107,8 +140,8 @@
         }
         .toggle-text {
             display: block;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
+            margin-top: 1.4rem;
+            font-size: 0.88rem;
             color: var(--text-muted);
         }
         .toggle-text a, .forgot-link {
@@ -144,9 +177,20 @@
 <body class="dark-theme auth-body">
 
     <div class="cvpro-login-card">
-        <a href="index.html" style="text-decoration: none; display: inline-block; margin-bottom: 1rem;">
-            <i class="fa-solid fa-file-signature" style="color: var(--primary); font-size: 2.5rem;"></i>
+        <a href="index.html" style="text-decoration: none; display: inline-block; margin-bottom: 0.8rem;">
+            <i class="fa-solid fa-file-signature" style="color: var(--primary); font-size: 2.4rem;"></i>
         </a>
+        
+        <!-- Tab Switcher -->
+        <div class="auth-tabs-nav" id="auth-tabs-container">
+            <button class="auth-tab-btn active" id="tab-btn-login" onclick="window.switchTab('login')">
+                <i class="fa-solid fa-right-to-bracket"></i> Connexion
+            </button>
+            <button class="auth-tab-btn" id="tab-btn-signup" onclick="window.switchTab('signup')">
+                <i class="fa-solid fa-user-plus"></i> Inscription
+            </button>
+        </div>
+
         <h2 id="auth-title">Connexion</h2>
         <p class="subtitle" id="auth-subtitle">Accédez à votre espace NovaDoc</p>
         
@@ -205,6 +249,10 @@
         // Mode state: 'login' | 'signup' | 'forgot' | 'reset'
         let currentMode = 'login';
 
+        window.switchTab = function(mode) {
+            setAuthMode(mode);
+        };
+
         function setAuthMode(mode) {
             currentMode = mode;
             hideAlert();
@@ -221,14 +269,22 @@
             const passwordGroup = document.getElementById('password-group');
             const passwordLabel = document.getElementById('password-label');
             const linkForgot = document.getElementById('link-forgot');
+            const tabLoginBtn = document.getElementById('tab-btn-login');
+            const tabSignupBtn = document.getElementById('tab-btn-signup');
+            const tabsNav = document.getElementById('auth-tabs-container');
+
             const prenomInput = document.getElementById('prenom');
             const nomInput = document.getElementById('nom');
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
 
             if (currentMode === 'signup') {
+                tabsNav.style.display = 'flex';
+                tabLoginBtn.classList.remove('active');
+                tabSignupBtn.classList.add('active');
+
                 titleEl.innerText = "Créer un compte";
-                subtitleEl.innerText = "Rejoignez NovaDoc pour créer tous vos documents";
+                subtitleEl.innerText = "Rejoignez NovaDoc pour générer tous vos documents";
                 btnEl.innerHTML = '<i class="fa-solid fa-user-plus"></i> S\'inscrire';
                 toggleContainerEl.innerHTML = 'Déjà un compte ? <a href="#" id="link-toggle">Se connecter</a>';
                 
@@ -243,8 +299,10 @@
                 emailInput.required = true;
                 passwordInput.required = true;
             } else if (currentMode === 'forgot') {
+                tabsNav.style.display = 'none';
+
                 titleEl.innerText = "Mot de passe oublié";
-                subtitleEl.innerText = "Saisissez votre e-mail pour recevoir les instructions de réinitialisation";
+                subtitleEl.innerText = "Saisissez votre adresse e-mail pour recevoir les instructions";
                 btnEl.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Envoyer le lien';
                 toggleContainerEl.innerHTML = 'Retour à la <a href="#" id="link-toggle">Connexion</a>';
                 
@@ -257,8 +315,10 @@
                 emailInput.required = true;
                 passwordInput.required = false;
             } else if (currentMode === 'reset') {
+                tabsNav.style.display = 'none';
+
                 titleEl.innerText = "Nouveau mot de passe";
-                subtitleEl.innerText = "Choisissez un nouveau mot de passe pour votre compte";
+                subtitleEl.innerText = "Saisissez votre nouveau mot de passe ci-dessous";
                 btnEl.innerHTML = '<i class="fa-solid fa-key"></i> Enregistrer le mot de passe';
                 toggleContainerEl.innerHTML = '<a href="#" id="link-toggle">Retour à la connexion</a>';
                 
@@ -274,6 +334,10 @@
                 passwordInput.required = true;
             } else {
                 // Login mode
+                tabsNav.style.display = 'flex';
+                tabLoginBtn.classList.add('active');
+                tabSignupBtn.classList.remove('active');
+
                 titleEl.innerText = "Connexion";
                 subtitleEl.innerText = "Accédez à votre espace NovaDoc";
                 btnEl.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Se connecter';
@@ -310,6 +374,15 @@
             alertEl.style.display = 'block';
             alertEl.innerHTML = msg;
             alertEl.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
+            
+            // Re-bind inner alert links if present
+            const alertForgotLink = document.getElementById('alert-link-forgot');
+            if (alertForgotLink) {
+                alertForgotLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    setAuthMode('forgot');
+                });
+            }
         }
 
         function hideAlert() {
@@ -324,14 +397,14 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Traitement...';
             btn.disabled = true;
 
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
 
             try {
                 if (currentMode === 'signup') {
-                    const prenom = document.getElementById('prenom').value;
-                    const nom = document.getElementById('nom').value;
+                    const prenom = document.getElementById('prenom').value.trim();
+                    const nom = document.getElementById('nom').value.trim();
 
                     const redirectUrl = window.location.origin + window.location.pathname + `?redirect=${encodeURIComponent(redirectTarget)}`;
 
@@ -348,13 +421,19 @@
                     });
                     if (error) throw error;
                     
+                    // Check if user ALREADY EXISTS in Supabase (Identities array is empty)
+                    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+                        showAlert(`<strong>❌ E-mail déjà utilisé !</strong><br>Un compte NovaDoc existe déjà avec l'adresse <strong>${email}</strong>.<br><br>👉 Veuillez vous connecter avec cet e-mail ou cliquer sur <strong>Mot de passe oublié</strong>.`, true);
+                        return;
+                    }
+
                     if (data.session) {
-                        // Auto-logged in by Supabase (if email confirmation is disabled)
+                        // Instant session created
                         window.location.href = redirectTarget;
                     } else {
                         // Email confirmation is required by Supabase project settings
                         document.getElementById('auth-form').reset();
-                        showAlert(`<strong>Inscription réussie ! ✉️</strong><br>Un e-mail de confirmation a été envoyé à <strong>${email}</strong>.<br>Veuillez ouvrir votre boîte de réception (et vos spams) et <strong>cliquer sur le lien de confirmation</strong> pour valider votre compte avant de vous connecter.`, false);
+                        showAlert(`<strong>Inscription réussie ! ✉️</strong><br>Un e-mail de validation a été envoyé à <strong>${email}</strong>.<br><br>💡 <strong>REMARQUE IMPORTANTE :</strong> Veuillez ouvrir votre messagerie et vérifier attentivement votre dossier <strong>Spam / Courriers indésirables</strong>. Cliquez sur le lien pour valider votre compte.`, false);
                         setAuthMode('login');
                     }
                 } else if (currentMode === 'forgot') {
@@ -363,7 +442,7 @@
                         redirectTo: resetRedirectUrl
                     });
                     if (error) throw error;
-                    showAlert(`<strong>Lien envoyé ! ✉️</strong><br>Un e-mail contenant les instructions de réinitialisation a été envoyé à <strong>${email}</strong>.<br>Veuillez ouvrir votre messagerie et cliquer sur le lien pour choisir un nouveau mot de passe.`, false);
+                    showAlert(`<strong>Lien envoyé ! ✉️</strong><br>Un e-mail contenant les instructions a été envoyé à <strong>${email}</strong>.<br><br>Veuillez consulter votre boîte de réception (et vos spams) puis cliquer sur le lien pour créer votre nouveau mot de passe.`, false);
                 } else if (currentMode === 'reset') {
                     const { error } = await supabase.auth.updateUser({ password: password });
                     if (error) throw error;
@@ -385,11 +464,11 @@
                 console.error("Auth error:", err);
                 let msg = err.message || "Une erreur est survenue lors de l'authentification.";
                 if (msg.includes("Invalid login credentials")) {
-                    msg = "Email ou mot de passe incorrect.<br><small style='opacity:0.9;'>Si vous venez de créer votre compte, veuillez vérifier que vous avez validé le lien reçu par e-mail.</small>";
+                    msg = "<strong>❌ Email ou mot de passe incorrect.</strong><br><br>• Si vous venez de vous inscrire, vérifiez que vous avez validé le lien reçu par e-mail (regardez vos <strong>spams</strong>).<br>• Si vous avez oublié votre mot de passe, <a href='#' id='alert-link-forgot' style='color:var(--primary); font-weight:bold;'>cliquez ici pour le réinitialiser</a>.";
                 } else if (msg.includes("Email not confirmed")) {
-                    msg = "Votre compte n'est pas encore validé. Veuillez consulter vos e-mails et cliquer sur le lien de confirmation.";
+                    msg = "<strong>❌ Compte non confirmé.</strong><br>Veuillez ouvrir vos e-mails (et spams) et cliquer sur le lien d'activation.";
                 } else if (msg.includes("User already registered") || msg.includes("already registered")) {
-                    msg = "Un compte existe déjà avec cet adresse e-mail. Veuillez vous connecter ou utiliser 'Mot de passe oublié'.";
+                    msg = "<strong>❌ Cet e-mail est déjà utilisé.</strong><br>Un compte existe déjà avec cette adresse. Veuillez vous connecter ou réinitialiser votre mot de passe.";
                 }
                 showAlert(msg, true);
             } finally {
