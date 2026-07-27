@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion / Inscription - CV PRO 500</title>
+    <title>Connexion / Inscription - NovaDoc</title>
     <link rel="stylesheet" href="styles.css?v=cvpro1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase JS -->
@@ -145,7 +145,7 @@
             <i class="fa-solid fa-file-signature" style="color: var(--primary); font-size: 2.5rem;"></i>
         </a>
         <h2 id="auth-title">Connexion</h2>
-        <p class="subtitle" id="auth-subtitle">Accédez à votre espace CV PRO</p>
+        <p class="subtitle" id="auth-subtitle">Accédez à votre espace NovaDoc</p>
         
         <div id="auth-alert" class="alert"></div>
 
@@ -202,7 +202,7 @@
 
         function updateUI() {
             document.getElementById('auth-title').innerText = isSignUp ? "Créer un compte" : "Connexion";
-            document.getElementById('auth-subtitle').innerText = isSignUp ? "Commencez à créer votre CV pro gratuit" : "Accédez à votre espace CV PRO";
+            document.getElementById('auth-subtitle').innerText = isSignUp ? "Commencez à créer votre CV pro gratuit" : "Accédez à votre espace NovaDoc";
             document.getElementById('btn-submit').innerHTML = isSignUp ? '<i class="fa-solid fa-user-plus"></i> S\'inscrire' : '<i class="fa-solid fa-right-to-bracket"></i> Se connecter';
             document.getElementById('toggle-container').innerHTML = isSignUp 
                 ? 'Déjà un compte ? <a href="#" id="link-toggle">Se connecter</a>'
