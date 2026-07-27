@@ -9,14 +9,13 @@
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Override global body to prevent flex issues */
         body.auth-body {
             background: var(--body-bg);
             min-height: 100vh;
             margin: 0;
-            padding: 5rem 1rem;
+            padding: 4rem 1rem;
             color: var(--text-main);
-            display: block; /* Force block */
+            display: block;
             text-align: center;
         }
         .cvpro-login-card {
@@ -25,11 +24,11 @@
             border-radius: var(--radius-lg);
             border: 1px solid var(--border);
             width: 100%;
-            max-width: 450px;
+            max-width: 460px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             text-align: center;
-            margin: 0 auto; /* Center horizontally */
-            display: block; /* Force block */
+            margin: 0 auto;
+            display: block;
         }
         .cvpro-login-card * {
             box-sizing: border-box;
@@ -43,23 +42,25 @@
         }
         .cvpro-login-card p.subtitle {
             color: var(--text-muted);
-            margin-bottom: 2rem;
+            margin-bottom: 1.8rem;
             font-size: 0.95rem;
+            line-height: 1.4;
             display: block;
         }
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.1rem;
             text-align: left;
             display: block;
-            position: relative; /* For absolute positioning of eye icon */
+            position: relative;
         }
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
             font-size: 0.85rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            font-weight: 600;
         }
         .form-control {
             display: block;
@@ -90,7 +91,7 @@
         .btn-auth {
             display: block;
             width: 100%;
-            padding: 0.8rem;
+            padding: 0.85rem;
             background: var(--grad-primary);
             color: white;
             border: none;
@@ -98,7 +99,7 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 1rem;
+            margin-top: 1.2rem;
             transition: var(--transition);
         }
         .btn-auth:hover {
@@ -110,31 +111,33 @@
             font-size: 0.9rem;
             color: var(--text-muted);
         }
-        .toggle-text a {
+        .toggle-text a, .forgot-link {
             color: var(--primary);
             text-decoration: none;
             font-weight: 600;
             cursor: pointer;
         }
-        .toggle-text a:hover {
+        .toggle-text a:hover, .forgot-link:hover {
             text-decoration: underline;
         }
         .alert {
             display: none;
-            padding: 0.75rem;
+            padding: 0.85rem;
             border-radius: var(--radius-md);
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
+            margin-bottom: 1.2rem;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            text-align: left;
         }
         .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
         .alert-success {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
     </style>
 </head>
@@ -160,15 +163,23 @@
                     <input type="text" id="nom" class="form-control" placeholder="Votre nom">
                 </div>
             </div>
-            <div class="form-group">
+            
+            <div class="form-group" id="email-group">
                 <label for="email">Adresse E-mail</label>
                 <input type="email" id="email" class="form-control" placeholder="nom@exemple.com" required>
             </div>
-            <div class="form-group">
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" class="form-control" placeholder="••••••••" required>
-                <i class="fa-regular fa-eye password-toggle" id="toggle-password"></i>
+            
+            <div class="form-group" id="password-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <label for="password" id="password-label" style="margin-bottom: 0;">Mot de passe</label>
+                    <a href="#" id="link-forgot" class="forgot-link" style="font-size: 0.8rem;">Mot de passe oublié ?</a>
+                </div>
+                <div style="position: relative;">
+                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                    <i class="fa-regular fa-eye password-toggle" id="toggle-password"></i>
+                </div>
             </div>
+            
             <button type="submit" class="btn-auth" id="btn-submit">
                 <i class="fa-solid fa-right-to-bracket"></i> Se connecter
             </button>
@@ -191,37 +202,113 @@
 
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        let isSignUp = false;
+        // Mode state: 'login' | 'signup' | 'forgot' | 'reset'
+        let currentMode = 'login';
 
-        function toggleAuthMode(e) {
-            if (e) e.preventDefault();
-            isSignUp = !isSignUp;
-            updateUI();
+        function setAuthMode(mode) {
+            currentMode = mode;
             hideAlert();
+            updateUI();
         }
 
         function updateUI() {
-            document.getElementById('auth-title').innerText = isSignUp ? "Créer un compte" : "Connexion";
-            document.getElementById('auth-subtitle').innerText = isSignUp ? "Commencez à créer votre CV pro gratuit" : "Accédez à votre espace NovaDoc";
-            document.getElementById('btn-submit').innerHTML = isSignUp ? '<i class="fa-solid fa-user-plus"></i> S\'inscrire' : '<i class="fa-solid fa-right-to-bracket"></i> Se connecter';
-            document.getElementById('toggle-container').innerHTML = isSignUp 
-                ? 'Déjà un compte ? <a href="#" id="link-toggle">Se connecter</a>'
-                : 'Pas encore de compte ? <a href="#" id="link-toggle">S\'inscrire</a>';
-            
-            // Re-attach listener to the new link
-            document.getElementById('link-toggle').addEventListener('click', toggleAuthMode);
-            
-            // Toggle Extra Fields
+            const titleEl = document.getElementById('auth-title');
+            const subtitleEl = document.getElementById('auth-subtitle');
+            const btnEl = document.getElementById('btn-submit');
+            const toggleContainerEl = document.getElementById('toggle-container');
             const signupFields = document.getElementById('signup-fields');
-            signupFields.style.display = isSignUp ? 'block' : 'none';
-            document.getElementById('prenom').required = isSignUp;
-            document.getElementById('nom').required = isSignUp;
+            const emailGroup = document.getElementById('email-group');
+            const passwordGroup = document.getElementById('password-group');
+            const passwordLabel = document.getElementById('password-label');
+            const linkForgot = document.getElementById('link-forgot');
+            const prenomInput = document.getElementById('prenom');
+            const nomInput = document.getElementById('nom');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+
+            if (currentMode === 'signup') {
+                titleEl.innerText = "Créer un compte";
+                subtitleEl.innerText = "Rejoignez NovaDoc pour créer tous vos documents";
+                btnEl.innerHTML = '<i class="fa-solid fa-user-plus"></i> S\'inscrire';
+                toggleContainerEl.innerHTML = 'Déjà un compte ? <a href="#" id="link-toggle">Se connecter</a>';
+                
+                signupFields.style.display = 'block';
+                emailGroup.style.display = 'block';
+                passwordGroup.style.display = 'block';
+                linkForgot.style.display = 'none';
+                passwordLabel.innerText = "Mot de passe";
+                
+                prenomInput.required = true;
+                nomInput.required = true;
+                emailInput.required = true;
+                passwordInput.required = true;
+            } else if (currentMode === 'forgot') {
+                titleEl.innerText = "Mot de passe oublié";
+                subtitleEl.innerText = "Saisissez votre e-mail pour recevoir les instructions de réinitialisation";
+                btnEl.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Envoyer le lien';
+                toggleContainerEl.innerHTML = 'Retour à la <a href="#" id="link-toggle">Connexion</a>';
+                
+                signupFields.style.display = 'none';
+                emailGroup.style.display = 'block';
+                passwordGroup.style.display = 'none';
+                
+                prenomInput.required = false;
+                nomInput.required = false;
+                emailInput.required = true;
+                passwordInput.required = false;
+            } else if (currentMode === 'reset') {
+                titleEl.innerText = "Nouveau mot de passe";
+                subtitleEl.innerText = "Choisissez un nouveau mot de passe pour votre compte";
+                btnEl.innerHTML = '<i class="fa-solid fa-key"></i> Enregistrer le mot de passe';
+                toggleContainerEl.innerHTML = '<a href="#" id="link-toggle">Retour à la connexion</a>';
+                
+                signupFields.style.display = 'none';
+                emailGroup.style.display = 'none';
+                passwordGroup.style.display = 'block';
+                linkForgot.style.display = 'none';
+                passwordLabel.innerText = "Nouveau mot de passe";
+                
+                prenomInput.required = false;
+                nomInput.required = false;
+                emailInput.required = false;
+                passwordInput.required = true;
+            } else {
+                // Login mode
+                titleEl.innerText = "Connexion";
+                subtitleEl.innerText = "Accédez à votre espace NovaDoc";
+                btnEl.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Se connecter';
+                toggleContainerEl.innerHTML = 'Pas encore de compte ? <a href="#" id="link-toggle">S\'inscrire</a>';
+                
+                signupFields.style.display = 'none';
+                emailGroup.style.display = 'block';
+                passwordGroup.style.display = 'block';
+                linkForgot.style.display = 'inline';
+                passwordLabel.innerText = "Mot de passe";
+                
+                prenomInput.required = false;
+                nomInput.required = false;
+                emailInput.required = true;
+                passwordInput.required = true;
+            }
+
+            // Attach event listener to dynamic link
+            const toggleLink = document.getElementById('link-toggle');
+            if (toggleLink) {
+                toggleLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (currentMode === 'signup' || currentMode === 'forgot' || currentMode === 'reset') {
+                        setAuthMode('login');
+                    } else {
+                        setAuthMode('signup');
+                    }
+                });
+            }
         }
 
         function showAlert(msg, isError = true) {
             const alertEl = document.getElementById('auth-alert');
             alertEl.style.display = 'block';
-            alertEl.innerText = msg;
+            alertEl.innerHTML = msg;
             alertEl.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
         }
 
@@ -234,16 +321,19 @@
             hideAlert();
             const btn = document.getElementById('btn-submit');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Chargement...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Traitement...';
             btn.disabled = true;
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
 
             try {
-                if (isSignUp) {
+                if (currentMode === 'signup') {
                     const prenom = document.getElementById('prenom').value;
                     const nom = document.getElementById('nom').value;
+
+                    const redirectUrl = window.location.origin + window.location.pathname + `?redirect=${encodeURIComponent(redirectTarget)}`;
 
                     const { data, error } = await supabase.auth.signUp({
                         email: email,
@@ -252,37 +342,55 @@
                             data: {
                                 first_name: prenom,
                                 last_name: nom
-                            }
+                            },
+                            emailRedirectTo: redirectUrl
                         }
                     });
                     if (error) throw error;
                     
-                    const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
                     if (data.session) {
-                        // Supabase auto-logged the user in (email confirmations disabled)
+                        // Auto-logged in by Supabase (if email confirmation is disabled)
                         window.location.href = redirectTarget;
                     } else {
-                        // Needs login or email confirmation
+                        // Email confirmation is required by Supabase project settings
                         document.getElementById('auth-form').reset();
-                        showAlert("Compte créé avec succès ! Vous pouvez maintenant vous connecter.", false);
-                        isSignUp = false;
-                        updateUI();
+                        showAlert(`<strong>Inscription réussie ! ✉️</strong><br>Un e-mail de confirmation a été envoyé à <strong>${email}</strong>.<br>Veuillez ouvrir votre boîte de réception (et vos spams) et <strong>cliquer sur le lien de confirmation</strong> pour valider votre compte avant de vous connecter.`, false);
+                        setAuthMode('login');
                     }
+                } else if (currentMode === 'forgot') {
+                    const resetRedirectUrl = window.location.origin + window.location.pathname + '?mode=reset';
+                    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                        redirectTo: resetRedirectUrl
+                    });
+                    if (error) throw error;
+                    showAlert(`<strong>Lien envoyé ! ✉️</strong><br>Un e-mail contenant les instructions de réinitialisation a été envoyé à <strong>${email}</strong>.<br>Veuillez ouvrir votre messagerie et cliquer sur le lien pour choisir un nouveau mot de passe.`, false);
+                } else if (currentMode === 'reset') {
+                    const { error } = await supabase.auth.updateUser({ password: password });
+                    if (error) throw error;
+                    showAlert("<strong>Mot de passe mis à jour ! 🔑</strong><br>Votre mot de passe a été modifié avec succès. Redirection...", false);
+                    setTimeout(() => {
+                        window.location.href = redirectTarget;
+                    }, 1500);
                 } else {
+                    // Login mode
                     const { data, error } = await supabase.auth.signInWithPassword({
                         email: email,
                         password: password,
                     });
                     if (error) throw error;
                     
-                    const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
                     window.location.href = redirectTarget;
                 }
             } catch (err) {
                 console.error("Auth error:", err);
-                let msg = err.message;
-                if (msg.includes("Invalid login credentials")) msg = "Email ou mot de passe incorrect.";
-                if (msg.includes("User already registered") || msg.includes("already registered")) msg = "Un compte existe déjà avec cet email.";
+                let msg = err.message || "Une erreur est survenue lors de l'authentification.";
+                if (msg.includes("Invalid login credentials")) {
+                    msg = "Email ou mot de passe incorrect.<br><small style='opacity:0.9;'>Si vous venez de créer votre compte, veuillez vérifier que vous avez validé le lien reçu par e-mail.</small>";
+                } else if (msg.includes("Email not confirmed")) {
+                    msg = "Votre compte n'est pas encore validé. Veuillez consulter vos e-mails et cliquer sur le lien de confirmation.";
+                } else if (msg.includes("User already registered") || msg.includes("already registered")) {
+                    msg = "Un compte existe déjà avec cet adresse e-mail. Veuillez vous connecter ou utiliser 'Mot de passe oublié'.";
+                }
                 showAlert(msg, true);
             } finally {
                 btn.innerHTML = originalHtml;
@@ -292,11 +400,10 @@
 
         // Initialize Page
         document.addEventListener('DOMContentLoaded', async () => {
-            // Attach event listeners
+            // Attach form submission listener
             document.getElementById('auth-form').addEventListener('submit', handleAuth);
-            document.getElementById('link-toggle').addEventListener('click', toggleAuthMode);
             
-            // Toggle Password Visibility
+            // Password Visibility Toggle
             document.getElementById('toggle-password').addEventListener('click', function() {
                 const passwordInput = document.getElementById('password');
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -305,18 +412,42 @@
                 this.classList.toggle('fa-eye-slash');
             });
 
-            // Check URL for mode=signup
+            // Link "Mot de passe oublié"
+            document.getElementById('link-forgot').addEventListener('click', (e) => {
+                e.preventDefault();
+                setAuthMode('forgot');
+            });
+
+            // Handle URL Parameters (mode & hash tokens)
             const urlParams = new URLSearchParams(window.location.search);
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            
             if (urlParams.get('mode') === 'signup') {
-                isSignUp = true;
-                updateUI();
+                setAuthMode('signup');
+            } else if (urlParams.get('mode') === 'forgot') {
+                setAuthMode('forgot');
+            } else if (urlParams.get('mode') === 'reset' || hashParams.get('type') === 'recovery') {
+                setAuthMode('reset');
+                showAlert("Veuillez saisir votre nouveau mot de passe ci-dessous.", false);
+            } else {
+                setAuthMode('login');
             }
 
-            // Redirect if already logged in
-            const { data } = await supabase.auth.getSession();
-            if (data.session) {
-                const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
-                window.location.href = redirectTarget;
+            // Supabase auth state change listener (e.g. for recovery links)
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    setAuthMode('reset');
+                    showAlert("Veuillez saisir votre nouveau mot de passe ci-dessous.", false);
+                }
+            });
+
+            // If user is already logged in (and not in reset mode), redirect to target page
+            if (urlParams.get('mode') !== 'reset') {
+                const { data } = await supabase.auth.getSession();
+                if (data.session) {
+                    const redirectTarget = urlParams.get('redirect') || "index.html";
+                    window.location.href = redirectTarget;
+                }
             }
         });
     </script>
