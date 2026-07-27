@@ -120,10 +120,10 @@ function renderDefaultDemoCv() {
     docEl.innerHTML = `
         <div class="cv-header" style="background: var(--primary, #4F46E5); padding: 1.5rem; color: white; border-radius: 8px; display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;">
             <div class="cv-header-name" style="flex: 1;">
-                <h1 style="font-size: 2rem; margin: 0; color: white;">Ibou <span style="color: #fef08a;">Diouf</span></h1>
-                <h2 style="font-size: 1.1rem; margin-top: 0.3rem; font-weight: 400; color: #e0e7ff;">Chef de Projet Commercial & Marketing Digital</h2>
+                <h1 style="font-size: 2.5rem; font-weight: 800; font-family: 'Outfit', sans-serif; margin: 0; color: white; line-height: 1.1;">Ibou <span style="color: #a5b4fc;">Diouf</span></h1>
+                <h2 style="font-size: 1.25rem; margin-top: 0.4rem; font-weight: 600; color: #f8fafc !important; opacity: 0.96; letter-spacing: 0.5px;">Chef de Projet Commercial & Marketing Digital</h2>
             </div>
-            <div class="cv-header-contact" style="font-size: 0.85rem; line-height: 1.5;">
+            <div class="cv-header-contact" style="font-size: 0.85rem; line-height: 1.5; color: #f1f5f9;">
                 <div><i class="fa-solid fa-envelope"></i> ibou.diouf@example.com</div>
                 <div><i class="fa-solid fa-phone"></i> +221 77 654 32 10</div>
                 <div><i class="fa-solid fa-location-dot"></i> Dakar, Sénégal</div>
@@ -721,11 +721,8 @@ function updateCVStyles() {
     }
 
     styleTag.innerHTML = `
-        #cv-document,
-        #cv-document p,
-        #cv-document li,
-        #cv-document span,
-        #cv-document div:not(.cv-header):not(.cv-header-name):not(.cv-header-contact),
+        #cv-document p:not(.cv-header *):not(.cv-classic-header *):not(.cv-elegant-header *),
+        #cv-document li:not(.cv-header *):not(.cv-classic-header *):not(.cv-elegant-header *),
         #cv-document .cv-summary,
         #cv-document .cv-item-title,
         #cv-document .cv-item-company,
@@ -742,9 +739,39 @@ function updateCVStyles() {
         #cv-document h1, #cv-document h2, #cv-document h3, #cv-document h4, #cv-document h5, #cv-document h6 {
             font-family: ${fontFamily} !important;
         }
-        #cv-document p, #cv-document ul, #cv-document div, #cv-document span {
-            margin-bottom: ${spacing}rem;
+
+        /* Garantie absolue de contraste pour le Nom (H1) et le Titre du Poste (H2) sur tout fond de couleur */
+        #cv-document .cv-header h1,
+        #cv-document .cv-header-name h1,
+        #cv-document .cv-classic-header h1,
+        #cv-document .cv-elegant-header h1,
+        #cv-document .cv-emerald-header-box h1 {
+            color: #ffffff !important;
+            font-size: 34pt !important;
+            font-weight: 800 !important;
+            font-family: 'Outfit', 'Inter', sans-serif !important;
         }
+
+        #cv-document .cv-header h2,
+        #cv-document .cv-header-name h2,
+        #cv-document .cv-canva-header-title,
+        #cv-document .cv-classic-header h2,
+        #cv-document .cv-elegant-header h2,
+        #cv-document .cv-emerald-header-box h2,
+        #cv-document .job-title {
+            color: #f8fafc !important; /* Texte blanc lumineux garanti lisible sur tout fond de couleur */
+            font-size: 14.5pt !important;
+            font-weight: 600 !important;
+            opacity: 0.96 !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        #cv-document .cv-header-contact,
+        #cv-document .cv-header-contact div,
+        #cv-document .cv-header-contact span {
+            color: #f1f5f9 !important;
+        }
+
         #cv-document .cv-header,
         #cv-document .cv-classic-header,
         #cv-document .cv-sidebar,

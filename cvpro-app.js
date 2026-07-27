@@ -566,10 +566,10 @@ function renderCV() {
             <div class="cv-header">
                 ${p.photo ? `<div class="cv-profile-pic" style="margin-right: 25px;"><img src="${p.photo}" alt="Profil" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>` : ''}
                 <div class="cv-header-name" style="flex: 1;">
-                    <h1>${p.firstName || 'Prénom'} <span class="text-primary">${p.lastName || 'Nom'}</span></h1>
-                    <h2>${p.jobTitle || 'Titre Professionnel'}</h2>
+                    <h1 style="font-size: 34pt !important; font-weight: 800 !important; color: #ffffff !important; font-family: 'Outfit', sans-serif; margin-bottom: 6px;">${p.firstName || 'Prénom'} <span class="text-primary" style="color: #a5b4fc !important;">${p.lastName || 'Nom'}</span></h1>
+                    <h2 style="font-size: 14.5pt !important; font-weight: 600 !important; color: #f8fafc !important; opacity: 0.96; margin: 0;">${p.jobTitle || 'Titre Professionnel'}</h2>
                 </div>
-                <div class="cv-header-contact">
+                <div class="cv-header-contact" style="color: #f1f5f9 !important;">
                     ${p.email ? `<div><i class="fa-solid fa-envelope"></i> ${p.email}</div>` : ''}
                     ${p.phone ? `<div><i class="fa-solid fa-phone"></i> ${p.phone}</div>` : ''}
                     ${p.city ? `<div><i class="fa-solid fa-location-dot"></i> ${p.city}</div>` : ''}

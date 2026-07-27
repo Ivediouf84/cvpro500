@@ -48,28 +48,31 @@
 }
 
 .cv-template-modern .cv-header-name h1 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 32pt;
-    font-weight: 700;
-    margin: 0 0 8px 0;
-    line-height: 1.1;
-    color: #ffffff;
+    font-family: 'Outfit', 'Inter', sans-serif !important;
+    font-size: 34pt !important;
+    font-weight: 800 !important;
+    margin: 0 0 6px 0 !important;
+    line-height: 1.1 !important;
+    color: #ffffff !important;
+    letter-spacing: -0.02em;
 }
 
 .cv-template-modern .cv-header-name h1 .text-primary {
-    color: #a5b4fc; /* Light indigo */
+    color: #a5b4fc !important; /* Accent lumineux sur le nom */
 }
 
 .cv-template-modern .cv-header-name h2 {
-    font-size: 14pt;
-    font-weight: 400;
-    margin: 0;
-    opacity: 0.9;
-    letter-spacing: 1px;
+    font-size: 14.5pt !important;
+    font-weight: 600 !important;
+    margin: 0 0 4px 0 !important;
+    color: #f8fafc !important; /* Blanc lumineux - parfaitement lisible sur toutes les couleurs de thème */
+    opacity: 0.95 !important;
+    letter-spacing: 0.5px;
 }
 
 .cv-template-modern .cv-header-contact {
-    font-size: 10pt;
+    font-size: 10pt !important;
+    color: #f1f5f9 !important;
     display: flex;
     flex-direction: column;
     gap: 8px;
