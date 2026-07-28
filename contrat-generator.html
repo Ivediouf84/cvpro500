@@ -918,16 +918,19 @@
 
                 <p>Les deux parties reconnaissent expressément avoir lu, compris et accepté l'ensemble des clauses et conditions du présent contrat.</p>
 
-                <div class="signature-block-grid">
-                    <div class="signature-box-left">
-                        <strong>Signature du Propriétaire (Bailleur)</strong><br><br><br><br>
-                        <span style="font-size: 8.5pt; color: #475569;">(Lu et approuvé)</span>
-                    </div>
-                    <div class="signature-box-right">
-                        <strong>Signature du Locataire (Preneur)</strong><br><br><br><br>
-                        <span style="font-size: 8.5pt; color: #475569;">(Lu et approuvé)</span>
-                    </div>
-                </div>
+                <table width="100%" border="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-top: 1.8rem; border: none; background: transparent;">
+                    <tr>
+                        <td width="48%" align="left" valign="top" style="width: 48%; text-align: left; vertical-align: top; border-top: 1px dashed #64748b; padding-top: 0.4rem; border-left: none; border-right: none; border-bottom: none;">
+                            <strong style="font-size: 9.5pt; color: #0f172a;">Signature du Propriétaire (Bailleur)</strong><br><br><br><br>
+                            <span style="font-size: 8.5pt; color: #475569;">(Lu et approuvé)</span>
+                        </td>
+                        <td width="4%" style="width: 4%; border: none;"></td>
+                        <td width="48%" align="right" valign="top" style="width: 48%; text-align: right; vertical-align: top; border-top: 1px dashed #64748b; padding-top: 0.4rem; border-left: none; border-right: none; border-bottom: none;">
+                            <strong style="font-size: 9.5pt; color: #0f172a;">Signature du Locataire (Preneur)</strong><br><br><br><br>
+                            <span style="font-size: 8.5pt; color: #475569;">(Lu et approuvé)</span>
+                        </td>
+                    </tr>
+                </table>
 
                 <p style="margin-top: 1.8rem; text-align: center; font-size: 9pt;">Fait à <strong>${faitA}</strong>, le <strong>${faitDate}</strong> en deux exemplaires originaux.</p>
             `;
@@ -943,17 +946,40 @@
             }, 750);
         }
 
-        // Export PDF using html2pdf.js
+        // Export PDF using html2pdf.js with off-screen container clone
         function exportPDF() {
-            const element = document.getElementById('contrat-paper');
+            const paper = document.getElementById('contrat-paper');
+            
+            const clone = document.createElement('div');
+            clone.style.position = 'absolute';
+            clone.style.left = '-9999px';
+            clone.style.top = '0';
+            clone.style.width = '750px';
+            clone.style.background = '#ffffff';
+            clone.style.color = '#1e293b';
+            clone.style.padding = '30px 25px';
+            clone.style.fontFamily = "'Times New Roman', Times, serif";
+            clone.style.fontSize = '9.5pt';
+            clone.style.lineHeight = '1.45';
+            clone.innerHTML = paper.innerHTML;
+            document.body.appendChild(clone);
+
             const opt = {
-                margin:       [0.5, 0.5, 0.5, 0.5],
+                margin:       [0.4, 0.4, 0.4, 0.4],
                 filename:     'Contrat_de_Location_NovaDoc.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+
+            html2pdf().set(opt).from(clone).save().then(() => {
+                document.body.removeChild(clone);
+            }).catch(err => {
+                console.error("PDF generation error:", err);
+                if (document.body.contains(clone)) {
+                    document.body.removeChild(clone);
+                }
+            });
         }
 
         // Export Word (.docx / .doc blob)
