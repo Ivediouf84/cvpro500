@@ -282,54 +282,63 @@
         .document-paper {
             background: #ffffff;
             color: #1e293b;
-            padding: 3rem 2.5rem;
+            padding: 2.5rem 2rem;
             border-radius: var(--radius-md);
             min-height: 700px;
             max-height: 800px;
             overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             font-family: 'Times New Roman', Times, serif;
-            font-size: 11pt;
-            line-height: 1.6;
+            font-size: 9.5pt;
+            line-height: 1.45;
             outline: none;
         }
         .document-paper h1 {
             text-align: center;
-            font-size: 16pt;
+            font-size: 13pt;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 2rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.2rem;
             text-decoration: underline;
             color: #0f172a;
         }
         .document-paper h2 {
-            font-size: 12pt;
+            font-size: 10pt;
+            font-weight: 700;
             text-transform: uppercase;
             border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 0.2rem;
-            margin-top: 1.5rem;
-            margin-bottom: 0.8rem;
+            padding-bottom: 0.15rem;
+            margin-top: 1rem;
+            margin-bottom: 0.4rem;
             color: #1e293b;
         }
         .document-paper p {
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             text-align: justify;
         }
         .document-paper ul {
-            margin-bottom: 1rem;
-            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            padding-left: 1.2rem;
         }
         .signature-block-grid {
             display: flex;
             justify-content: space-between;
-            margin-top: 3rem;
-            padding-top: 1rem;
-        }
-        .signature-box {
-            width: 45%;
-            border-top: 1px dashed #94a3b8;
+            align-items: flex-start;
+            margin-top: 2rem;
             padding-top: 0.5rem;
-            text-align: center;
+            width: 100%;
+        }
+        .signature-box-left {
+            width: 44%;
+            border-top: 1px dashed #94a3b8;
+            padding-top: 0.4rem;
+            text-align: left;
+        }
+        .signature-box-right {
+            width: 44%;
+            border-top: 1px dashed #94a3b8;
+            padding-top: 0.4rem;
+            text-align: right;
         }
 
         /* Export Bar */
@@ -910,17 +919,17 @@
                 <p>Les deux parties reconnaissent expressément avoir lu, compris et accepté l'ensemble des clauses et conditions du présent contrat.</p>
 
                 <div class="signature-block-grid">
-                    <div class="signature-box">
-                        <strong>Signature du Propriétaire (Bailleur)</strong><br><br><br>
-                        (Lu et approuvé)
+                    <div class="signature-box-left">
+                        <strong>Signature du Propriétaire (Bailleur)</strong><br><br><br><br>
+                        <span style="font-size: 8.5pt; color: #475569;">(Lu et approuvé)</span>
                     </div>
-                    <div class="signature-box">
-                        <strong>Signature du Locataire (Preneur)</strong><br><br><br>
-                        (Lu et approuvé)
+                    <div class="signature-box-right">
+                        <strong>Signature du Locataire (Preneur)</strong><br><br><br><br>
+                        <span style="font-size: 8.5pt; color: #475569;">(Lu et approuvé)</span>
                     </div>
                 </div>
 
-                <p style="margin-top: 2.5rem; text-align: center; font-size: 10pt;">Fait à <strong>${faitA}</strong>, le <strong>${faitDate}</strong> en deux exemplaires originaux.</p>
+                <p style="margin-top: 1.8rem; text-align: center; font-size: 9pt;">Fait à <strong>${faitA}</strong>, le <strong>${faitDate}</strong> en deux exemplaires originaux.</p>
             `;
 
             setTimeout(() => {
