@@ -503,7 +503,10 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-.cv-template-canva .cv-canva-box-title {
+.cv-template-canva .cv-canva-box-title,
+.cv-template-canva .cv-canva-box-title *,
+.cv-template-canva .cv-canva-box-title i,
+.cv-template-canva .cv-canva-box-title span {
     background: #800000 !important;
     color: #ffffff !important;
     text-transform: uppercase;
@@ -511,7 +514,7 @@
     font-size: 10.5pt;
     letter-spacing: 1px;
     padding: 6px 12px;
-    text-align: center;
+    text-align: left;
     border-radius: 2px;
     margin-bottom: 8px;
     margin-top: 8px;

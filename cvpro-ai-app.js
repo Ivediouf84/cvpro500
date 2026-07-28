@@ -788,6 +788,16 @@ function updateCVStyles() {
             line-height: ${lineHeight} !important;
         }
 
+        /* Texte et icônes BLANCS ÉCLATANTS obligatoires dans les bandes rouges de section */
+        #cv-document .cv-canva-box-title,
+        #cv-document .cv-canva-box-title *,
+        #cv-document .cv-canva-box-title i,
+        #cv-document .cv-canva-box-title span,
+        #cv-document .cv-section-title-banner,
+        #cv-document .cv-section-title-banner * {
+            color: #ffffff !important;
+        }
+
         /* Seuls les en-têtes à fond sombre conservent le texte blanc */
         .cv-template-modern .cv-header h1,
         .cv-template-modern .cv-header h2,
