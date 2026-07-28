@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acte de Vente de Véhicule - NovaDoc</title>
+    <link rel="stylesheet" href="styles.css?v=vente1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Supabase JS & Auth Guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth-guard.js"></script>
+    
+    <style>
+        body.vente-body {
+            background: var(--body-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .builder-nav {
+            height: 65px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .builder-nav-brand {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .builder-nav-brand i { color: var(--primary); }
+
+        .container-main {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Step Progress Bar */
+        .step-progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            overflow-x: auto;
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+        .step-item.active {
+            color: #a5b4fc;
+        }
+        .step-item.active .step-number {
+            background: var(--grad-primary);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+        .step-divider {
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+            margin: 0 1rem;
+            min-width: 20px;
+        }
+
+        /* Main Grid */
+        .generator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .generator-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #818cf8;
+            margin: 1.8rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 0.5rem;
+        }
+        .form-section-title:first-child {
+            margin-top: 0;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 600px) {
+            .form-grid-2, .form-grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.83rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--text-main);
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Radio Type Vehicle Grid */
+        .vehicle-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .vehicle-type-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.8rem 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .vehicle-type-card:hover, .vehicle-type-card.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.15);
+            color: white;
+        }
+        .vehicle-type-card i {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #818cf8;
+        }
+
+        /* Checkbox Grid */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+            background: rgba(255,255,255,0.02);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.88rem;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 1.1rem;
+            background: var(--grad-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1.15rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-top: 2rem;
+            box-shadow: var(--shadow-glow);
+            transition: all 0.25s ease-in-out;
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+        }
+
+        /* Result Panel */
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            position: sticky;
+            top: 85px;
+        }
+
+        /* Rich Editor Toolbar */
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tool-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .tool-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Document Paper Preview */
+        .document-paper {
+            background: #ffffff;
+            color: #1e293b;
+            padding: 2.5rem 2rem;
+            border-radius: var(--radius-md);
+            min-height: 720px;
+            max-height: 820px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 9.5pt;
+            line-height: 1.45;
+            outline: none;
+        }
+        .document-paper h1 {
+            text-align: center;
+            font-size: 13.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.2rem;
+            text-decoration: underline;
+            color: #0f172a;
+        }
+        .document-paper h2 {
+            font-size: 10pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 0.15rem;
+            margin-top: 1rem;
+            margin-bottom: 0.4rem;
+            color: #1e293b;
+        }
+        .document-paper p {
+            margin-bottom: 0.5rem;
+            text-align: justify;
+        }
+        .document-paper ul {
+            margin-bottom: 0.5rem;
+            padding-left: 1.2rem;
+        }
+        .signature-block-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 2rem;
+            padding-top: 0.5rem;
+            width: 100%;
+        }
+        .signature-box-left {
+            width: 44%;
+            border-top: 1px dashed #94a3b8;
+            padding-top: 0.4rem;
+            text-align: left;
+        }
+        .signature-box-right {
+            width: 44%;
+            border-top: 1px dashed #94a3b8;
+            padding-top: 0.4rem;
+            text-align: right;
+        }
+
+        /* Export Bar */
+        .export-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+        }
+        .btn-export {
+            flex: 1;
+            min-width: 130px;
+            padding: 0.8rem 0.8rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.06);
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+        .btn-export:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Loading Overlay */
+        #ai-loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 9, 19, 0.88);
+            backdrop-filter: blur(6px);
+            z-index: 99999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+    </style>
+</head>
+<body class="dark-theme vente-body" data-require-auth="true">
+
+    <!-- Top Navigation -->
+    <nav class="builder-nav">
+        <a href="index.html" class="builder-nav-brand"><i class="fa-solid fa-arrow-left"></i> <span>NovaDoc</span></a>
+        <div style="font-weight: 700; color: #a5b4fc; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-car"></i> Acte de Vente de Véhicule IA
+        </div>
+        <div>
+            <a href="index.html" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none;">Accueil</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-main">
+
+        <!-- Step Progress Bar -->
+        <div class="step-progress-bar">
+            <div class="step-item active" id="step-btn-1" onclick="scrollToSection('sec-vendeur')">
+                <div class="step-number">1</div>
+                <span>Vendeur & Acheteur</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item" id="step-btn-2" onclick="scrollToSection('sec-vehicule')">
+                <div class="step-number">2</div>
+                <span>Le Véhicule</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item" id="step-btn-3" onclick="scrollToSection('sec-vente')">
+                <div class="step-number">3</div>
+                <span>Prix & Documents</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item" id="step-btn-4" onclick="scrollToSection('sec-temoins')">
+                <div class="step-number">4</div>
+                <span>Témoins & Logo</span>
+            </div>
+        </div>
+
+        <div class="generator-grid">
+            
+            <!-- Left Panel: Form -->
+            <div class="form-card">
+                <form id="vente-form" onsubmit="generateVenteWithAI(event)">
+                    
+                    <!-- 1. TYPE DE VÉHICULE -->
+                    <div id="sec-vendeur">
+                        <div class="form-section-title"><i class="fa-solid fa-car-side"></i> 1. Type de Véhicule</div>
+                        <input type="hidden" id="vehicule-type-val" value="Voiture">
+                        <div class="vehicle-type-grid">
+                            <div class="vehicle-type-card active" onclick="selectVehicleType('Voiture', this)">
+                                <i class="fa-solid fa-car"></i>
+                                <span>Voiture</span>
+                            </div>
+                            <div class="vehicle-type-card" onclick="selectVehicleType('Moto', this)">
+                                <i class="fa-solid fa-motorcycle"></i>
+                                <span>Moto</span>
+                            </div>
+                            <div class="vehicle-type-card" onclick="selectVehicleType('Scooter', this)">
+                                <i class="fa-solid fa-moped"></i>
+                                <span>Scooter</span>
+                            </div>
+                            <div class="vehicle-type-card" onclick="selectVehicleType('Vélo', this)">
+                                <i class="fa-solid fa-bicycle"></i>
+                                <span>Vélo</span>
+                            </div>
+                            <div class="vehicle-type-card" onclick="selectVehicleType('Camion', this)">
+                                <i class="fa-solid fa-truck"></i>
+                                <span>Camion</span>
+                            </div>
+                            <div class="vehicle-type-card" onclick="selectVehicleType('Tracteur', this)">
+                                <i class="fa-solid fa-tractor"></i>
+                                <span>Tracteur</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. INFORMATIONS DU VENDEUR -->
+                        <div class="form-section-title" style="margin-top: 1.8rem;"><i class="fa-solid fa-user-tie"></i> 2. Informations du Vendeur</div>
+                        <div class="form-group">
+                            <label for="vendeur-nom">Nom et prénom (Vendeur) *</label>
+                            <input type="text" id="vendeur-nom" class="form-control" placeholder="M. Modou DIOP" required>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="vendeur-dob">Date de naissance</label>
+                                <input type="date" id="vendeur-dob" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="vendeur-pob">Lieu de naissance</label>
+                                <input type="text" id="vendeur-pob" class="form-control" placeholder="Dakar">
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="vendeur-nat">Nationalité</label>
+                                <input type="text" id="vendeur-nat" class="form-control" value="Sénégalaise">
+                            </div>
+                            <div class="form-group">
+                                <label for="vendeur-prof">Profession</label>
+                                <input type="text" id="vendeur-prof" class="form-control" placeholder="Commerçant">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="vendeur-adresse">Adresse complète</label>
+                            <input type="text" id="vendeur-adresse" class="form-control" placeholder="Dakar, Médina Rue 11 x 14">
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="vendeur-tel">Téléphone *</label>
+                                <input type="tel" id="vendeur-tel" class="form-control" placeholder="+221 77 123 45 67" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vendeur-email">E-mail (facultatif)</label>
+                                <input type="email" id="vendeur-email" class="form-control" placeholder="vendeur@email.com">
+                            </div>
+                        </div>
+
+                        <!-- Pièce d'identité Vendeur -->
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="vendeur-piecetype">Type de pièce (Vendeur)</label>
+                                <select id="vendeur-piecetype" class="form-control">
+                                    <option value="CNI" selected>CNI</option>
+                                    <option value="Passeport">Passeport</option>
+                                    <option value="Permis de conduire">Permis de conduire</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="vendeur-piecenum">N° de la pièce</label>
+                                <input type="text" id="vendeur-piecenum" class="form-control" placeholder="1 756 1990 00123">
+                            </div>
+                        </div>
+
+                        <!-- 3. INFORMATIONS DE L'ACHETEUR -->
+                        <div class="form-section-title" style="margin-top: 1.8rem;"><i class="fa-solid fa-user"></i> 3. Informations de l'Acheteur</div>
+                        <div class="form-group">
+                            <label for="acheteur-nom">Nom et prénom (Acheteur) *</label>
+                            <input type="text" id="acheteur-nom" class="form-control" placeholder="M. Cheikh SALL" required>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="acheteur-dob">Date de naissance</label>
+                                <input type="date" id="acheteur-dob" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="acheteur-pob">Lieu de naissance</label>
+                                <input type="text" id="acheteur-pob" class="form-control" placeholder="Thiès">
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="acheteur-nat">Nationalité</label>
+                                <input type="text" id="acheteur-nat" class="form-control" value="Sénégalaise">
+                            </div>
+                            <div class="form-group">
+                                <label for="acheteur-prof">Profession</label>
+                                <input type="text" id="acheteur-prof" class="form-control" placeholder="Ingénieur">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="acheteur-adresse">Adresse complète</label>
+                            <input type="text" id="acheteur-adresse" class="form-control" placeholder="Thiès, Quartier Mbour 1">
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="acheteur-tel">Téléphone *</label>
+                                <input type="tel" id="acheteur-tel" class="form-control" placeholder="+221 78 987 65 43" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="acheteur-email">E-mail (facultatif)</label>
+                                <input type="email" id="acheteur-email" class="form-control" placeholder="acheteur@email.com">
+                            </div>
+                        </div>
+
+                        <!-- Pièce d'identité Acheteur -->
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="acheteur-piecetype">Type de pièce (Acheteur)</label>
+                                <select id="acheteur-piecetype" class="form-control">
+                                    <option value="CNI" selected>CNI</option>
+                                    <option value="Passeport">Passeport</option>
+                                    <option value="Permis de conduire">Permis de conduire</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="acheteur-piecenum">N° de la pièce</label>
+                                <input type="text" id="acheteur-piecenum" class="form-control" placeholder="2 890 1995 00456">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. IDENTIFICATION DU VÉHICULE -->
+                    <div id="sec-vehicule" style="margin-top: 2rem;">
+                        <div class="form-section-title"><i class="fa-solid fa-car"></i> 4. Identification du Véhicule</div>
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label for="vehicule-marque">Marque *</label>
+                                <input type="text" id="vehicule-marque" class="form-control" placeholder="Toyota" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vehicule-modele">Modèle *</label>
+                                <input type="text" id="vehicule-modele" class="form-control" placeholder="Corolla / RAV4" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vehicule-version">Type / Version</label>
+                                <input type="text" id="vehicule-version" class="form-control" placeholder="D4D / Berline">
+                            </div>
+                        </div>
+
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label for="vehicule-couleur">Couleur</label>
+                                <input type="text" id="vehicule-couleur" class="form-control" placeholder="Gris Métallisé">
+                            </div>
+                            <div class="form-group">
+                                <label for="vehicule-annee-fab">Année Fabrication</label>
+                                <input type="number" id="vehicule-annee-fab" class="form-control" placeholder="2018">
+                            </div>
+                            <div class="form-group">
+                                <label for="vehicule-annee-circ">Année Mise en circulation</label>
+                                <input type="number" id="vehicule-annee-circ" class="form-control" placeholder="2019">
+                            </div>
+                        </div>
+
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label for="vehicule-immat">N° Immatriculation *</label>
+                                <input type="text" id="vehicule-immat" class="form-control" placeholder="DK-1234-BC" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vehicule-chassis">N° Châssis (VIN) *</label>
+                                <input type="text" id="vehicule-chassis" class="form-control" placeholder="JT111AB0009876543" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vehicule-moteur">N° Moteur (facultatif)</label>
+                                <input type="text" id="vehicule-moteur" class="form-control" placeholder="1KD-987654">
+                            </div>
+                        </div>
+
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="vehicule-km">Kilométrage (km)</label>
+                                <input type="text" id="vehicule-km" class="form-control" placeholder="125 000 km">
+                            </div>
+                            <div class="form-group">
+                                <label for="vehicule-etat">État général *</label>
+                                <select id="vehicule-etat" class="form-control">
+                                    <option value="Très bon état" selected>Très bon état</option>
+                                    <option value="Neuf">Neuf</option>
+                                    <option value="Bon état">Bon état</option>
+                                    <option value="État moyen">État moyen</option>
+                                    <option value="À réparer">À réparer</option>
+                                    <option value="Hors service">Hors service</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="vehicule-obs">Observations particulières</label>
+                            <textarea id="vehicule-obs" class="form-control" rows="2" placeholder="Ex: Climatisation fonctionnelle, légère rayure sur l'aile arrière gauche..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 5. INFORMATIONS DE VENTE & 6. DOCUMENTS REMIS -->
+                    <div id="sec-vente" style="margin-top: 2rem;">
+                        <div class="form-section-title"><i class="fa-solid fa-money-bill-wave"></i> 5. Prix et Mode de Paiement</div>
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label for="vente-prix">Prix de vente (FCFA) *</label>
+                                <input type="text" id="vente-prix" class="form-control" placeholder="4 500 000 FCFA" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vente-date">Date de paiement</label>
+                                <input type="date" id="vente-date" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="vente-mode">Mode de paiement *</label>
+                                <select id="vente-mode" class="form-control">
+                                    <option value="Espèces" selected>Espèces</option>
+                                    <option value="Wave">Wave</option>
+                                    <option value="Orange Money">Orange Money</option>
+                                    <option value="Virement bancaire">Virement bancaire</option>
+                                    <option value="Chèque">Chèque</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="checkbox-grid" style="margin-top: 0.5rem;">
+                            <label class="checkbox-label"><input type="checkbox" id="check-recu-montant" checked> ☑ Le vendeur reconnaît avoir reçu l'intégralité du montant convenu.</label>
+                        </div>
+
+                        <!-- 6. DOCUMENTS REMIS -->
+                        <div class="form-section-title" style="margin-top: 1.5rem;"><i class="fa-solid fa-folder-open"></i> 6. Documents Remis à l'Acheteur</div>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-label"><input type="checkbox" id="doc-cartegrise" checked> Carte grise originale</label>
+                            <label class="checkbox-label"><input type="checkbox" id="doc-certificat" checked> Certificat de vente</label>
+                            <label class="checkbox-label"><input type="checkbox" id="doc-visite" checked> Visite technique</label>
+                            <label class="checkbox-label"><input type="checkbox" id="doc-assurance"> Attestation d'assurance</label>
+                            <label class="checkbox-label"><input type="checkbox" id="doc-cles" checked> Double des clés</label>
+                            <label class="checkbox-label"><input type="checkbox" id="doc-carnet"> Carnet d'entretien</label>
+                            <label class="checkbox-label"><input type="checkbox" id="doc-facture"> Facture d'achat</label>
+                            <label class="checkbox-label"><input type="checkbox" id="doc-manuel"> Manuel du constructeur</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="doc-autre-txt">Autre document remis (Optionnel)</label>
+                            <input type="text" id="doc-autre-txt" class="form-control" placeholder="Ex: Quittance de dédouanement (CMC)">
+                        </div>
+                    </div>
+
+                    <!-- 7. TÉMOINS & LOGO -->
+                    <div id="sec-temoins" style="margin-top: 2rem;">
+                        <div class="form-section-title"><i class="fa-solid fa-users"></i> 7. Témoins (Optionnel)</div>
+                        <div id="temoins-container">
+                            <div class="form-grid-2" style="background: rgba(255,255,255,0.02); padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 0.8rem;">
+                                <div class="form-group" style="margin-bottom:0.5rem;"><label>Nom Témoin 1</label><input type="text" id="temoin1-nom" class="form-control" placeholder="Nom & Prénom"></div>
+                                <div class="form-group" style="margin-bottom:0.5rem;"><label>Téléphone Témoin 1</label><input type="tel" id="temoin1-tel" class="form-control" placeholder="+221 77 000 00 00"></div>
+                            </div>
+                        </div>
+
+                        <!-- 8. LIEU ET SIGNATURE -->
+                        <div class="form-section-title" style="margin-top: 1.5rem;"><i class="fa-solid fa-pen-nib"></i> 8. Lieu, Date & Logo</div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="fait-a">Fait à *</label>
+                                <input type="text" id="fait-a" class="form-control" value="Dakar" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fait-date">Date de signature</label>
+                                <input type="date" id="fait-date" class="form-control">
+                            </div>
+                        </div>
+
+                        <!-- Logo Import -->
+                        <div class="form-group">
+                            <label for="logo-input">Logo Entreprise / Vendeur (Optionnel)</label>
+                            <input type="file" id="logo-input" accept="image/*" class="form-control" onchange="handleLogoUpload(this)">
+                        </div>
+                    </div>
+
+                    <!-- Submit Button at bottom of form -->
+                    <button type="submit" class="btn-generate" id="btn-submit-form">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Générer l'Acte de Vente
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Panel: Document Preview & Rich Editor -->
+            <div class="result-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-file-lines" style="color: var(--primary);"></i> Aperçu du Document
+                    </h3>
+                    
+                    <!-- Direct Action Generate Button in Header -->
+                    <button type="button" onclick="document.getElementById('vente-form').requestSubmit()" style="padding: 0.5rem 1rem; background: var(--grad-primary); color: white; border: none; border-radius: var(--radius-md); font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Générer par IA
+                    </button>
+                </div>
+
+                <!-- Editor Toolbar -->
+                <div class="editor-toolbar">
+                    <button type="button" class="tool-btn" onclick="execCmd('bold')" title="Gras"><i class="fa-solid fa-bold"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('italic')" title="Italique"><i class="fa-solid fa-italic"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('underline')" title="Souligné"><i class="fa-solid fa-underline"></i></button>
+                    <div style="width: 1px; height: 24px; background: var(--border); margin: 0 4px;"></div>
+                    <button type="button" class="tool-btn" onclick="execCmd('justifyLeft')" title="Aligner à gauche"><i class="fa-solid fa-align-left"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('justifyCenter')" title="Centrer"><i class="fa-solid fa-align-center"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('justifyRight')" title="Aligner à droite"><i class="fa-solid fa-align-right"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('justifyFull')" title="Justifier"><i class="fa-solid fa-align-justify"></i></button>
+                    <div style="width: 1px; height: 24px; background: var(--border); margin: 0 4px;"></div>
+                    <button type="button" class="tool-btn" onclick="execCmd('insertUnorderedList')" title="Liste à puces"><i class="fa-solid fa-list-ul"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('insertOrderedList')" title="Liste numérotée"><i class="fa-solid fa-list-ol"></i></button>
+                </div>
+
+                <!-- Printable Document Box -->
+                <div id="vente-paper" class="document-paper" contenteditable="true">
+                    <div id="paper-placeholder" style="text-align: center; padding: 4rem 1rem; color: #64748b;">
+                        <i class="fa-solid fa-car-side" style="font-size: 3.8rem; color: #94a3b8; margin-bottom: 1.2rem;"></i>
+                        <h3 style="color: #334155; margin-bottom: 0.6rem; font-size: 1.3rem;">Votre Acte de Vente s'affichera ici</h3>
+                        <p style="font-size: 0.95rem; max-width: 420px; margin: 0 auto 1.8rem auto; line-height: 1.5;">Remplissez les informations du formulaire à gauche puis cliquez sur le bouton <strong>✨ Générer l'Acte de Vente</strong> pour voir apparaître le document juridique officiel sur cette feuille.</p>
+                        <button type="button" onclick="document.getElementById('vente-form').requestSubmit()" style="padding: 0.85rem 1.6rem; background: var(--grad-primary); color: white; border: none; border-radius: var(--radius-md); font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Générer l'acte maintenant
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export Bar -->
+                <div class="export-actions" id="export-bar">
+                    <button class="btn-export" onclick="exportPDF()" style="background: var(--grad-primary); color: white; border: none;">
+                        <i class="fa-solid fa-file-pdf"></i> Télécharger PDF
+                    </button>
+                    <button class="btn-export" onclick="exportWord()">
+                        <i class="fa-solid fa-file-word" style="color: #3b82f6;"></i> Télécharger Word (.docx)
+                    </button>
+                    <button class="btn-export" onclick="copyText()">
+                        <i class="fa-solid fa-copy" style="color: #10b981;"></i> Copier texte
+                    </button>
+                    <button class="btn-export" onclick="printDoc()">
+                        <i class="fa-solid fa-print"></i> Imprimer
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- AI Loading Overlay -->
+    <div id="ai-loading-overlay">
+        <i class="fa-solid fa-wand-magic-sparkles fa-spin" style="font-size: 3rem; color: #818cf8; margin-bottom: 1.5rem;"></i>
+        <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Génération de l'Acte de Vente...</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">L'IA rédige les clauses juridiques formelles selon les lois en vigueur...</p>
+    </div>
+
+    <script>
+        let uploadedLogoDataUrl = '';
+
+        function selectVehicleType(type, cardEl) {
+            document.getElementById('vehicule-type-val').value = type;
+            document.querySelectorAll('.vehicle-type-card').forEach(c => c.classList.remove('active'));
+            cardEl.classList.add('active');
+        }
+
+        function handleLogoUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedLogoDataUrl = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+        }
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        async function generateVenteWithAI(e) {
+            e.preventDefault();
+            const overlay = document.getElementById('ai-loading-overlay');
+            overlay.style.display = 'flex';
+
+            // Collect form data
+            const typeVehicule = document.getElementById('vehicule-type-val').value;
+            
+            const vendedorNom = document.getElementById('vendeur-nom').value;
+            const vendedorDob = document.getElementById('vendeur-dob').value;
+            const vendedorPob = document.getElementById('vendeur-pob').value;
+            const vendedorNat = document.getElementById('vendeur-nat').value;
+            const vendedorProf = document.getElementById('vendeur-prof').value;
+            const vendedorAdresse = document.getElementById('vendeur-adresse').value;
+            const vendedorTel = document.getElementById('vendeur-tel').value;
+            const vendedorEmail = document.getElementById('vendeur-email').value;
+            const vendedorPieceType = document.getElementById('vendeur-piecetype').value;
+            const vendedorPieceNum = document.getElementById('vendeur-piecenum').value;
+
+            const acheteurNom = document.getElementById('acheteur-nom').value;
+            const acheteurDob = document.getElementById('acheteur-dob').value;
+            const acheteurPob = document.getElementById('acheteur-pob').value;
+            const acheteurNat = document.getElementById('acheteur-nat').value;
+            const acheteurProf = document.getElementById('acheteur-prof').value;
+            const acheteurAdresse = document.getElementById('acheteur-adresse').value;
+            const acheteurTel = document.getElementById('acheteur-tel').value;
+            const acheteurEmail = document.getElementById('acheteur-email').value;
+            const acheteurPieceType = document.getElementById('acheteur-piecetype').value;
+            const acheteurPieceNum = document.getElementById('acheteur-piecenum').value;
+
+            const vehMarque = document.getElementById('vehicule-marque').value;
+            const vehModele = document.getElementById('vehicule-modele').value;
+            const vehVersion = document.getElementById('vehicule-version').value;
+            const vehCouleur = document.getElementById('vehicule-couleur').value;
+            const vehAnneeFab = document.getElementById('vehicule-annee-fab').value;
+            const vehAnneeCirc = document.getElementById('vehicule-annee-circ').value;
+            const vehImmat = document.getElementById('vehicule-immat').value;
+            const vehChassis = document.getElementById('vehicule-chassis').value;
+            const vehMoteur = document.getElementById('vehicule-moteur').value;
+            const vehKm = document.getElementById('vehicule-km').value;
+            const vehEtat = document.getElementById('vehicule-etat').value;
+            const vehObs = document.getElementById('vehicule-obs').value;
+
+            const prixVente = document.getElementById('vente-prix').value;
+            const datePaiement = document.getElementById('vente-date').value || new Date().toLocaleDateString('fr-FR');
+            const modePaiement = document.getElementById('vente-mode').value;
+            const recuMontant = document.getElementById('check-recu-montant').checked;
+
+            // Documents remis
+            const docCarteGrise = document.getElementById('doc-cartegrise').checked ? 'Carte grise originale' : '';
+            const docCertificat = document.getElementById('doc-certificat').checked ? 'Certificat de vente' : '';
+            const docVisite = document.getElementById('doc-visite').checked ? 'Visite technique à jour' : '';
+            const docAssurance = document.getElementById('doc-assurance').checked ? 'Attestation d\'assurance' : '';
+            const docCles = document.getElementById('doc-cles').checked ? 'Double des clés' : '';
+            const docCarnet = document.getElementById('doc-carnet').checked ? 'Carnet d\'entretien' : '';
+            const docFacture = document.getElementById('doc-facture').checked ? 'Facture d\'achat' : '';
+            const docManuel = document.getElementById('doc-manuel').checked ? 'Manuel du constructeur' : '';
+            const docAutreTxt = document.getElementById('doc-autre-txt').value;
+
+            const docsRemisList = [docCarteGrise, docCertificat, docVisite, docAssurance, docCles, docCarnet, docFacture, docManuel, docAutreTxt].filter(Boolean);
+
+            const temoin1Nom = document.getElementById('temoin1-nom').value;
+            const temoin1Tel = document.getElementById('temoin1-tel').value;
+
+            const faitA = document.getElementById('fait-a').value || 'Dakar';
+            const faitDate = document.getElementById('fait-date').value || new Date().toLocaleDateString('fr-FR');
+
+            // Build Legal Contract HTML
+            const generatedHtml = `
+                ${uploadedLogoDataUrl ? `<div style="text-align: center; margin-bottom: 1.5rem;"><img src="${uploadedLogoDataUrl}" style="max-height: 70px; object-fit: contain;"></div>` : ''}
+                
+                <h1>ACTE DE VENTE DE VÉHICULE (${typeVehicule.toUpperCase()})</h1>
+                <p style="text-align: center; font-style: italic; margin-bottom: 1.8rem;">Établi en application du code des obligations civiles et commerciales</p>
+                
+                <h2>ENTRE LES SOUSSIGNÉS :</h2>
+                <p><strong>LE VENDEUR :</strong><br>
+                Nom et Prénom : <strong>${vendedorNom}</strong><br>
+                ${vendedorDob ? `Né(e) le : ${vendedorDob} ${vendedorPob ? `à ${vendedorPob}` : ''}<br>` : ''}
+                ${vendedorNat ? `Nationalité : ${vendedorNat} | ` : ''}${vendedorProf ? `Profession : ${vendedorProf}<br>` : ''}
+                Adresse : ${vendedorAdresse || 'Non renseignée'}<br>
+                Téléphone : <strong>${vendedorTel}</strong> ${vendedorEmail ? `| Email : ${vendedorEmail}` : ''}<br>
+                ${vendedorPieceNum ? `Pièce d'identité (${vendedorPieceType}) : <strong>${vendedorPieceNum}</strong>` : ''}</p>
+
+                <p><strong>ET L'ACHETEUR :</strong><br>
+                Nom et Prénom : <strong>${acheteurNom}</strong><br>
+                ${acheteurDob ? `Né(e) le : ${acheteurDob} ${acheteurPob ? `à ${acheteurPob}` : ''}<br>` : ''}
+                ${acheteurNat ? `Nationalité : ${acheteurNat} | ` : ''}${acheteurProf ? `Profession : ${acheteurProf}<br>` : ''}
+                Adresse : ${acheteurAdresse || 'Non renseignée'}<br>
+                Téléphone : <strong>${acheteurTel}</strong> ${acheteurEmail ? `| Email : ${acheteurEmail}` : ''}<br>
+                ${acheteurPieceNum ? `Pièce d'identité (${acheteurPieceType}) : <strong>${acheteurPieceNum}</strong>` : ''}</p>
+
+                <h2>ARTICLE 1 - DESIGNATION ET IDENTIFICATION DU VÉHICULE</h2>
+                <p>Le Vendeur cède et transfère sous les garanties ordinaires et de droit, à l'Acheteur qui l'accepte, le véhicule désigné ci-après :<br>
+                • Type de véhicule : <strong>${typeVehicule}</strong><br>
+                • Marque & Modèle : <strong>${vehMarque} ${vehModele}</strong> ${vehVersion ? `(${vehVersion})` : ''}<br>
+                • Couleur : ${vehCouleur || 'Non spécifiée'} | Année : ${vehAnneeFab || vehAnneeCirc || 'N/C'}<br>
+                • Numéro d'immatriculation : <strong>${vehImmat}</strong><br>
+                • Numéro de Châssis (VIN) : <strong>${vehChassis}</strong><br>
+                ${vehMoteur ? `• Numéro Moteur : <strong>${vehMoteur}</strong><br>` : ''}
+                • Kilométrage au compteur : <strong>${vehKm || 'Non spécifié'}</strong><br>
+                • État général du véhicule : <strong>${vehEtat}</strong>.<br>
+                ${vehObs ? `<em>Observations : ${vehObs}</em>` : ''}</p>
+
+                <h2>ARTICLE 2 - PRIX ET MODALITÉS DE PAIEMENT</h2>
+                <p>La présente vente est consentie et acceptée moyennant le prix ferme et définitif de :<br>
+                <strong style="font-size: 11pt;">${prixVente}</strong>.<br>
+                Payé par <strong>${modePaiement}</strong> le <strong>${datePaiement}</strong>.<br>
+                ${recuMontant ? '<strong>Le Vendeur reconnaît avoir reçu l\'intégralité du montant de la vente et en donne quittance définitive à l\'Acheteur.</strong>' : ''}</p>
+
+                <h2>ARTICLE 3 - DÉCLARATION DE PROPRIÉTÉ ET D'ABSENCE DE GAGE</h2>
+                <p>Le Vendeur certifie sous sa responsabilité être le seul et légitime propriétaire du véhicule susmentionné et garantit que ledit véhicule est vendu libre de tout gage, opposition, saisie, litige ou contravention impayée antérieur à la vente.</p>
+
+                <h2>ARTICLE 4 - REMISE DU VÉHICULE ET DOCUMENTS</h2>
+                <p>L'Acheteur reconnaît avoir reçu du Vendeur la possession du véhicule ainsi que les documents suivants :</p>
+                <ul>
+                    ${docsRemisList.map(doc => `<li>${doc}</li>`).join('')}
+                </ul>
+
+                <h2>ARTICLE 5 - TRANSFERT DE PROPRIÉTÉ ET DE RESPONSABILITÉ</h2>
+                <p>Le transfert de propriété et des risques intervient dès la signature des présentes. L'Acheteur devient seul responsable des infractions, accidents, assurances, taxes et démarches administratives de mutation d'immatriculation à compter de ce jour.</p>
+
+                <h2>ARTICLE 6 - RÈGLEMENT DES LITIGES</h2>
+                <p>En cas de contestation ou litige, les parties s'engagent à privilégier un règlement amiable avant toute action devant la juridiction compétente.</p>
+
+                ${temoin1Nom ? `<p><strong>Témoin :</strong> ${temoin1Nom} (Tél: ${temoin1Tel || 'N/C'})</p>` : ''}
+
+                <div class="signature-block-grid">
+                    <div class="signature-box-left">
+                        <strong>Signature du Vendeur</strong><br><br><br><br>
+                        <span style="font-size: 8.5pt; color: #475569;">(Lu et approuvé)</span>
+                    </div>
+                    <div class="signature-box-right">
+                        <strong>Signature de l'Acheteur</strong><br><br><br><br>
+                        <span style="font-size: 8.5pt; color: #475569;">(Lu et approuvé)</span>
+                    </div>
+                </div>
+
+                <p style="margin-top: 1.8rem; text-align: center; font-size: 9pt;">Fait à <strong>${faitA}</strong>, le <strong>${faitDate}</strong> en deux exemplaires originaux.</p>
+            `;
+
+            setTimeout(() => {
+                document.getElementById('vente-paper').innerHTML = generatedHtml;
+                overlay.style.display = 'none';
+                
+                if (window.innerWidth < 992) {
+                    document.getElementById('vente-paper').scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 750);
+        }
+
+        function exportPDF() {
+            const element = document.getElementById('vente-paper');
+            const opt = {
+                margin:       [0.5, 0.5, 0.5, 0.5],
+                filename:     'Acte_de_Vente_Vehicule_NovaDoc.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function exportWord() {
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' "+
+                "xmlns:w='urn:schemas-microsoft-com:office:word' "+
+                "xmlns='http://www.w3.org/TR/REC-html40'>"+
+                "<head><meta charset='utf-8'><title>Acte de Vente de Véhicule</title></head><body>";
+            const footer = "</body></html>";
+            const sourceHTML = header + document.getElementById('vente-paper').innerHTML + footer;
+            
+            const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+            const fileDownload = document.createElement("a");
+            document.body.appendChild(fileDownload);
+            fileDownload.href = source;
+            fileDownload.download = 'Acte_de_Vente_Vehicule_NovaDoc.doc';
+            fileDownload.click();
+            document.body.removeChild(fileDownload);
+        }
+
+        function copyText() {
+            const content = document.getElementById('vente-paper').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                alert("Le texte de l'acte de vente a été copié dans votre presse-papiers !");
+            });
+        }
+
+        function printDoc() {
+            const printContents = document.getElementById('vente-paper').innerHTML;
+            const originalContents = document.body.innerHTML;
+            document.body.innerHTML = `<div style="padding: 2rem;">${printContents}</div>`;
+            window.print();
+            document.body.innerHTML = originalContents;
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>
