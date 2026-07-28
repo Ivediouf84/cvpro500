@@ -720,14 +720,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Style Panel Logic
+// Tracking active element/selection in CV preview for live dynamic toolbar editing
+let activeCvTargetElement = null;
+
+document.addEventListener('selectionchange', () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+        const container = sel.getRangeAt(0).commonAncestorContainer;
+        const el = container.nodeType === 3 ? container.parentElement : container;
+        const cvDoc = document.getElementById('cv-document');
+        if (cvDoc && cvDoc.contains(el)) {
+            activeCvTargetElement = el;
+        }
+    }
+});
+
+document.addEventListener('click', (e) => {
+    const cvDoc = document.getElementById('cv-document');
+    if (cvDoc && cvDoc.contains(e.target)) {
+        activeCvTargetElement = e.target;
+    }
+});
+
+// Style Panel Logic - Live editing on selected element and whole CV
 function updateCVStyles() {
-    const color = document.getElementById('style-text-color')?.value || '#1a1a1a';
+    const color = document.getElementById('style-text-color')?.value || '#0f172a';
     const headerColor = document.getElementById('style-header-color')?.value || '#4f46e5';
     const fontSize = document.getElementById('style-font-size')?.value || '14';
     const fontFamily = document.getElementById('style-font-family')?.value || 'inherit';
     const lineHeight = document.getElementById('style-line-height')?.value || '1.3';
-    const spacing = document.getElementById('style-spacing')?.value || '0.5';
 
     let styleTag = document.getElementById('dynamic-cv-styles');
     if (!styleTag) {
@@ -737,55 +758,41 @@ function updateCVStyles() {
     }
 
     styleTag.innerHTML = `
-        #cv-document p:not(.cv-header *):not(.cv-classic-header *):not(.cv-elegant-header *),
-        #cv-document li:not(.cv-header *):not(.cv-classic-header *):not(.cv-elegant-header *),
+        #cv-document {
+            font-size: ${fontSize}px !important;
+            line-height: ${lineHeight} !important;
+            color: #0f172a !important;
+        }
+
+        #cv-document p, 
+        #cv-document li, 
+        #cv-document div, 
+        #cv-document span,
+        #cv-document td,
         #cv-document .cv-summary,
         #cv-document .cv-item-title,
         #cv-document .cv-item-company,
         #cv-document .cv-item-date,
-        #cv-document .cv-item-desc {
-            color: ${color};
+        #cv-document .cv-item-desc,
+        #cv-document .cv-canva-header-birth {
+            color: #0f172a !important;
+            opacity: 1 !important;
         }
-        
-        #cv-document {
-            font-size: ${fontSize}px !important;
-            font-family: ${fontFamily} !important;
+
+        /* En-tête Canva : Le titre/profession sous le nom est un noir/bleu très sombre parfaitement lisible sur fond blanc */
+        .cv-canva-right .cv-canva-header-title {
+            color: #0f172a !important;
+            font-size: 13.5pt !important;
+            font-weight: 700 !important;
+            opacity: 1 !important;
             line-height: ${lineHeight} !important;
         }
-        #cv-document h1, #cv-document h2, #cv-document h3, #cv-document h4, #cv-document h5, #cv-document h6 {
-            font-family: ${fontFamily} !important;
-        }
 
-        /* Garantie absolue de contraste pour le Nom (H1) et le Titre du Poste (H2) sur tout fond de couleur */
-        #cv-document .cv-header h1,
-        #cv-document .cv-header-name h1,
-        #cv-document .cv-classic-header h1,
-        #cv-document .cv-elegant-header h1,
-        #cv-document .cv-emerald-header-box h1 {
+        /* Seuls les en-têtes à fond sombre conservent le texte blanc */
+        .cv-template-modern .cv-header h1,
+        .cv-template-modern .cv-header h2,
+        .cv-template-modern .cv-header-contact {
             color: #ffffff !important;
-            font-size: 34pt !important;
-            font-weight: 800 !important;
-            font-family: 'Outfit', 'Inter', sans-serif !important;
-        }
-
-        #cv-document .cv-header h2,
-        #cv-document .cv-header-name h2,
-        #cv-document .cv-canva-header-title,
-        #cv-document .cv-classic-header h2,
-        #cv-document .cv-elegant-header h2,
-        #cv-document .cv-emerald-header-box h2,
-        #cv-document .job-title {
-            color: #f8fafc !important; /* Texte blanc lumineux garanti lisible sur tout fond de couleur */
-            font-size: 14.5pt !important;
-            font-weight: 600 !important;
-            opacity: 0.96 !important;
-            letter-spacing: 0.5px !important;
-        }
-
-        #cv-document .cv-header-contact,
-        #cv-document .cv-header-contact div,
-        #cv-document .cv-header-contact span {
-            color: #f1f5f9 !important;
         }
 
         #cv-document .cv-header,
@@ -794,11 +801,51 @@ function updateCVStyles() {
         #cv-document .cv-mustard-pill-title {
             background-color: ${headerColor} !important;
         }
-        #cv-document .cv-canva-photo-container img {
-            border-color: ${headerColor} !important;
-        }
     `;
+
+    const cvDoc = document.getElementById('cv-document');
+    if (cvDoc) triggerCloudSaveHtml(cvDoc.innerHTML);
 }
+
+// Add interactive event listeners to style controls for live element modification
+['style-text-color', 'style-header-color', 'style-font-size', 'style-font-family', 'style-line-height', 'style-spacing'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const cvDoc = document.getElementById('cv-document');
+
+            if (id === 'style-font-size') {
+                const label = document.getElementById('val-font-size');
+                if (label) label.innerText = val + 'px';
+                if (activeCvTargetElement && cvDoc?.contains(activeCvTargetElement)) {
+                    activeCvTargetElement.style.fontSize = val + 'px';
+                }
+            }
+            if (id === 'style-line-height') {
+                const label = document.getElementById('val-line-height');
+                if (label) label.innerText = val;
+                if (activeCvTargetElement && cvDoc?.contains(activeCvTargetElement)) {
+                    activeCvTargetElement.style.lineHeight = val;
+                }
+            }
+            if (id === 'style-text-color') {
+                const sel = window.getSelection();
+                if (sel && !sel.isCollapsed && cvDoc?.contains(sel.anchorNode)) {
+                    document.execCommand('foreColor', false, val);
+                } else if (activeCvTargetElement && cvDoc?.contains(activeCvTargetElement)) {
+                    activeCvTargetElement.style.color = val;
+                }
+            }
+            if (id === 'style-font-family' && val !== 'inherit') {
+                if (activeCvTargetElement && cvDoc?.contains(activeCvTargetElement)) {
+                    activeCvTargetElement.style.fontFamily = val;
+                }
+            }
+            updateCVStyles();
+        });
+    }
+});
 
 // Switch CV Template dynamically
 function changeCvTemplate(templateClass) {
