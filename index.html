@@ -67,16 +67,16 @@
         .payment-logos img:hover { filter: grayscale(0); }
         
         @media (max-width: 768px) {
-            #user-menu { flex-direction: column !important; align-items: flex-end !important; gap: 0.25rem !important; }
-            #user-email { font-size: 0.75rem !important; line-height: 1; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            #user-menu { flex-direction: row !important; align-items: center !important; gap: 0.4rem !important; }
+            #user-email { display: none !important; } /* Masqué sur mobile pour garder la barre de menu ultra-compacte */
             .logo { font-size: 1.1rem !important; white-space: nowrap; }
-            .navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); }
+            .navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
             .navbar .container { align-items: center !important; padding: 0.5rem 0.75rem !important; justify-content: space-between !important; }
             .nav-actions .btn { padding: 0.35rem 0.6rem !important; font-size: 0.78rem !important; }
             .nav-links { display: none !important; }
 
             .cv-hero {
-                padding: 95px 0.75rem 20px 0.75rem !important; /* Dégage le sous-titre et le titre sous la navbar fixe */
+                padding: 135px 0.75rem 30px 0.75rem !important; /* Dégage intégralement le titre sous la barre de menu fixe */
             }
             .cv-hero h1 {
                 font-size: 1.35rem !important;
