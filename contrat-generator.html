@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Contrat de Location - NovaDoc</title>
+    <link rel="stylesheet" href="styles.css?v=contrat1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Supabase JS & Auth Guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth-guard.js"></script>
+    
+    <style>
+        body.contrat-body {
+            background: var(--body-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .builder-nav {
+            height: 65px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .builder-nav-brand {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .builder-nav-brand i { color: var(--primary); }
+
+        .container-main {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Step Progress Bar */
+        .step-progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            overflow-x: auto;
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+        .step-item.active {
+            color: #a5b4fc;
+        }
+        .step-item.active .step-number {
+            background: var(--grad-primary);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+        .step-item.completed .step-number {
+            background: #10b981;
+            color: white;
+            border-color: transparent;
+        }
+        .step-divider {
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+            margin: 0 1rem;
+            min-width: 20px;
+        }
+
+        /* Main Grid */
+        .generator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .generator-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #818cf8;
+            margin: 1.8rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 0.5rem;
+        }
+        .form-section-title:first-child {
+            margin-top: 0;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 600px) {
+            .form-grid-2, .form-grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.83rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--text-main);
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Checkbox Grid */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+            background: rgba(255,255,255,0.02);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.88rem;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 1.1rem;
+            background: var(--grad-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1.15rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-top: 2rem;
+            box-shadow: var(--shadow-glow);
+            transition: all 0.25s ease-in-out;
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+        }
+
+        /* Result Panel */
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            position: sticky;
+            top: 85px;
+        }
+
+        /* Rich Editor Toolbar */
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tool-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .tool-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Document Paper Preview */
+        .document-paper {
+            background: #ffffff;
+            color: #1e293b;
+            padding: 3rem 2.5rem;
+            border-radius: var(--radius-md);
+            min-height: 750px;
+            max-height: 850px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            outline: none;
+        }
+        .document-paper h1 {
+            text-align: center;
+            font-size: 16pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2rem;
+            text-decoration: underline;
+            color: #0f172a;
+        }
+        .document-paper h2 {
+            font-size: 12pt;
+            text-transform: uppercase;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 0.2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+            color: #1e293b;
+        }
+        .document-paper p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+        .document-paper ul {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        .signature-block-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 1rem;
+        }
+        .signature-box {
+            width: 45%;
+            border-top: 1px dashed #94a3b8;
+            padding-top: 0.5rem;
+            text-align: center;
+        }
+
+        /* Export Bar */
+        .export-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+        }
+        .btn-export {
+            flex: 1;
+            min-width: 130px;
+            padding: 0.75rem 0.8rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.06);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+        .btn-export:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Loading Overlay */
+        #ai-loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 9, 19, 0.88);
+            backdrop-filter: blur(6px);
+            z-index: 99999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+    </style>
+</head>
+<body class="dark-theme contrat-body" data-require-auth="true">
+
+    <!-- Top Navigation -->
+    <nav class="builder-nav">
+        <a href="index.html" class="builder-nav-brand"><i class="fa-solid fa-arrow-left"></i> <span>NovaDoc</span></a>
+        <div style="font-weight: 700; color: #a5b4fc; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-file-contract"></i> Contrat de Location IA
+        </div>
+        <div>
+            <a href="index.html" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none;">Accueil</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-main">
+
+        <!-- Step Progress Bar -->
+        <div class="step-progress-bar">
+            <div class="step-item active" id="step-btn-1" onclick="scrollToSection('sec-parties')">
+                <div class="step-number">1</div>
+                <span>Parties</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item" id="step-btn-2" onclick="scrollToSection('sec-bien')">
+                <div class="step-number">2</div>
+                <span>Le Bien</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item" id="step-btn-3" onclick="scrollToSection('sec-finances')">
+                <div class="step-number">3</div>
+                <span>Finances & Durée</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item" id="step-btn-4" onclick="scrollToSection('sec-clauses')">
+                <div class="step-number">4</div>
+                <span>Clauses & Signatures</span>
+            </div>
+        </div>
+
+        <div class="generator-grid">
+            
+            <!-- Left Panel: Form -->
+            <div class="form-card">
+                <form id="contrat-form" onsubmit="generateContratWithAI(event)">
+                    
+                    <!-- 1. INFORMATIONS SUR LE PROPRIÉTAIRE -->
+                    <div id="sec-parties">
+                        <div class="form-section-title"><i class="fa-solid fa-user-tie"></i> 1. Propriétaire (Bailleur)</div>
+                        <div class="form-group">
+                            <label for="prop-nom">Nom complet *</label>
+                            <input type="text" id="prop-nom" class="form-control" placeholder="M. / Mme Ousmane DIOP" required>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="prop-dob">Date de naissance</label>
+                                <input type="date" id="prop-dob" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="prop-cni">CNI / Passeport</label>
+                                <input type="text" id="prop-cni" class="form-control" placeholder="1 756 1990 01234">
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="prop-tel">Téléphone</label>
+                                <input type="tel" id="prop-tel" class="form-control" placeholder="+221 77 000 00 00">
+                            </div>
+                            <div class="form-group">
+                                <label for="prop-email">E-mail</label>
+                                <input type="email" id="prop-email" class="form-control" placeholder="proprietaire@email.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="prop-adresse">Adresse complète</label>
+                            <input type="text" id="prop-adresse" class="form-control" placeholder="Dakar, Sacré-Cœur 3, Villa N° 12">
+                        </div>
+
+                        <!-- 2. INFORMATIONS SUR LE LOCATAIRE -->
+                        <div class="form-section-title" style="margin-top: 2rem;"><i class="fa-solid fa-user"></i> 2. Locataire (Preneur)</div>
+                        <div class="form-group">
+                            <label for="loc-nom">Nom complet *</label>
+                            <input type="text" id="loc-nom" class="form-control" placeholder="M. / Mme Aminata NDOYE" required>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="loc-dob">Date de naissance</label>
+                                <input type="date" id="loc-dob" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="loc-cni">CNI / Passeport</label>
+                                <input type="text" id="loc-cni" class="form-control" placeholder="2 890 1995 05678">
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="loc-tel">Téléphone</label>
+                                <input type="tel" id="loc-tel" class="form-control" placeholder="+221 78 000 00 00">
+                            </div>
+                            <div class="form-group">
+                                <label for="loc-email">E-mail</label>
+                                <input type="email" id="loc-email" class="form-control" placeholder="locataire@email.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="loc-adresse">Adresse actuelle</label>
+                            <input type="text" id="loc-adresse" class="form-control" placeholder="Dakar, Mermoz, Rue MZ-10">
+                        </div>
+                    </div>
+
+                    <!-- 3. TYPE DE BIEN & 4. ADRESSE -->
+                    <div id="sec-bien" style="margin-top: 2rem;">
+                        <div class="form-section-title"><i class="fa-solid fa-building"></i> 3. Type et Adresse du Bien</div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="bien-type">Type de bien *</label>
+                                <select id="bien-type" class="form-control" required>
+                                    <option value="Appartement" selected>Appartement</option>
+                                    <option value="Chambre">Chambre</option>
+                                    <option value="Studio">Studio</option>
+                                    <option value="Maison">Maison</option>
+                                    <option value="Villa">Villa</option>
+                                    <option value="Bureau">Bureau</option>
+                                    <option value="Magasin">Magasin</option>
+                                    <option value="Terrain">Terrain</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bien-surface">Surface (m²)</label>
+                                <input type="number" id="bien-surface" class="form-control" placeholder="75">
+                            </div>
+                        </div>
+
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="bien-region">Région</label>
+                                <input type="text" id="bien-region" class="form-control" value="Dakar">
+                            </div>
+                            <div class="form-group">
+                                <label for="bien-dept">Département / Commune</label>
+                                <input type="text" id="bien-dept" class="form-control" placeholder="Dakar / Ouakam">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bien-adresse">Adresse détaillée du bien *</label>
+                            <input type="text" id="bien-adresse" class="form-control" placeholder="Immeuble Baobab, 2ème Étage, Appt B4, Ouakam Cité Avion" required>
+                        </div>
+
+                        <!-- 5. CARACTÉRISTIQUES DU BIEN -->
+                        <div class="form-section-title" style="margin-top: 1.5rem;"><i class="fa-solid fa-list-check"></i> 5. Caractéristiques du Bien</div>
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label for="bien-chambres">Nb Chambres</label>
+                                <input type="number" id="bien-chambres" class="form-control" value="2">
+                            </div>
+                            <div class="form-group">
+                                <label for="bien-salons">Nb Salons</label>
+                                <input type="number" id="bien-salons" class="form-control" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="bien-sdb">Salles de bain</label>
+                                <input type="number" id="bien-sdb" class="form-control" value="2">
+                            </div>
+                        </div>
+
+                        <div class="checkbox-grid">
+                            <label class="checkbox-label"><input type="checkbox" id="check-cuisine" checked> Cuisine</label>
+                            <label class="checkbox-label"><input type="checkbox" id="check-balcon" checked> Balcon</label>
+                            <label class="checkbox-label"><input type="checkbox" id="check-garage"> Garage</label>
+                            <label class="checkbox-label"><input type="checkbox" id="check-jardin"> Jardin</label>
+                            <label class="checkbox-label"><input type="checkbox" id="check-meuble"> Meublé</label>
+                        </div>
+                    </div>
+
+                    <!-- 6. INFORMATIONS FINANCIÈRES & 7. DURÉE -->
+                    <div id="sec-finances" style="margin-top: 2rem;">
+                        <div class="form-section-title"><i class="fa-solid fa-coins"></i> 6. Informations Financières</div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="fin-loyer">Loyer mensuel (FCFA) *</label>
+                                <input type="text" id="fin-loyer" class="form-control" placeholder="150 000 FCFA" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fin-caution">Caution (FCFA)</label>
+                                <input type="text" id="fin-caution" class="form-control" placeholder="300 000 FCFA">
+                            </div>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="fin-mois-caution">Nb mois de caution</label>
+                                <input type="number" id="fin-mois-caution" class="form-control" value="2">
+                            </div>
+                            <div class="form-group">
+                                <label for="fin-mode-paiement">Mode de paiement *</label>
+                                <select id="fin-mode-paiement" class="form-control">
+                                    <option value="Wave / Orange Money" selected>Wave / Orange Money</option>
+                                    <option value="Espèces">Espèces</option>
+                                    <option value="Virement bancaire">Virement bancaire</option>
+                                    <option value="Chèque">Chèque</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 7. DURÉE DU CONTRAT -->
+                        <div class="form-section-title" style="margin-top: 1.5rem;"><i class="fa-solid fa-calendar-days"></i> 7. Durée du Contrat</div>
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label for="duree-select">Durée du bail</label>
+                                <select id="duree-select" class="form-control">
+                                    <option value="1 an" selected>1 an (Renouvelable)</option>
+                                    <option value="6 mois">6 mois</option>
+                                    <option value="2 ans">2 ans</option>
+                                    <option value="Indéterminée">Illimitée / Indéterminée</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="duree-debut">Date de début</label>
+                                <input type="date" id="duree-debut" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="duree-fin">Date de fin</label>
+                                <input type="date" id="duree-fin" class="form-control">
+                            </div>
+                        </div>
+
+                        <!-- 8. CHARGES -->
+                        <div class="form-section-title" style="margin-top: 1.5rem;"><i class="fa-solid fa-bolt"></i> 8. Charges Incluses</div>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-label"><input type="checkbox" id="charge-eau"> Eau comprise</label>
+                            <label class="checkbox-label"><input type="checkbox" id="charge-elec"> Électricité comprise</label>
+                            <label class="checkbox-label"><input type="checkbox" id="charge-internet"> Internet compris</label>
+                            <label class="checkbox-label"><input type="checkbox" id="charge-gardien" checked> Gardiennage compris</label>
+                            <label class="checkbox-label"><input type="checkbox" id="charge-taxes" checked> Taxes comprises</label>
+                        </div>
+                    </div>
+
+                    <!-- 9. CONDITIONS PARTICULIÈRES & 10. RÉSILIATION -->
+                    <div id="sec-clauses" style="margin-top: 2rem;">
+                        <div class="form-section-title"><i class="fa-solid fa-scale-balanced"></i> 9. Conditions Particulières & Résiliation</div>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-label"><input type="checkbox" id="cond-sousloc" checked> Sous-location interdite</label>
+                            <label class="checkbox-label"><input type="checkbox" id="cond-animaux"> Animaux autorisés</label>
+                            <label class="checkbox-label"><input type="checkbox" id="cond-fumer" checked> Interdit de fumer</label>
+                            <label class="checkbox-label"><input type="checkbox" id="cond-travaux" checked> Travaux interdits sans accord</label>
+                            <label class="checkbox-label"><input type="checkbox" id="cond-commerce" checked> Activité commerciale interdite</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cond-autres">Autres clauses particulières (Optionnel)</label>
+                            <textarea id="cond-autres" class="form-control" rows="3" placeholder="Ex: Peinture fraiche remise en état, heure de fermeture du portail à 23h..."></textarea>
+                        </div>
+
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="preavis-prop">Préavis Propriétaire</label>
+                                <input type="text" id="preavis-prop" class="form-control" value="3 mois">
+                            </div>
+                            <div class="form-group">
+                                <label for="preavis-loc">Préavis Locataire</label>
+                                <input type="text" id="preavis-loc" class="form-control" value="1 mois">
+                            </div>
+                        </div>
+
+                        <!-- 11. SIGNATURES -->
+                        <div class="form-section-title" style="margin-top: 1.5rem;"><i class="fa-solid fa-pen-nib"></i> 11. Lieu et Date</div>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="fait-a">Fait à *</label>
+                                <input type="text" id="fait-a" class="form-control" value="Dakar" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fait-date">Date de signature</label>
+                                <input type="date" id="fait-date" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-generate">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Générer le contrat avec l'IA
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Panel: Document Preview & Rich Editor -->
+            <div class="result-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin: 0; font-size: 1.2rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-file-lines" style="color: var(--primary);"></i> Aperçu du Contrat
+                    </h3>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Éditable en direct</span>
+                </div>
+
+                <!-- Editor Toolbar -->
+                <div class="editor-toolbar">
+                    <button type="button" class="tool-btn" onclick="execCmd('bold')" title="Gras"><i class="fa-solid fa-bold"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('italic')" title="Italique"><i class="fa-solid fa-italic"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('underline')" title="Souligné"><i class="fa-solid fa-underline"></i></button>
+                    <div style="width: 1px; height: 24px; background: var(--border); margin: 0 4px;"></div>
+                    <button type="button" class="tool-btn" onclick="execCmd('justifyLeft')" title="Aligner à gauche"><i class="fa-solid fa-align-left"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('justifyCenter')" title="Centrer"><i class="fa-solid fa-align-center"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('justifyRight')" title="Aligner à droite"><i class="fa-solid fa-align-right"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('justifyFull')" title="Justifier"><i class="fa-solid fa-align-justify"></i></button>
+                    <div style="width: 1px; height: 24px; background: var(--border); margin: 0 4px;"></div>
+                    <button type="button" class="tool-btn" onclick="execCmd('insertUnorderedList')" title="Liste à puces"><i class="fa-solid fa-list-ul"></i></button>
+                    <button type="button" class="tool-btn" onclick="execCmd('insertOrderedList')" title="Liste numérotée"><i class="fa-solid fa-list-ol"></i></button>
+                </div>
+
+                <!-- Printable Document Box -->
+                <div id="contrat-paper" class="document-paper" contenteditable="true">
+                    <h1>CONTRAT DE BAIL À USAGE D'HABITATION</h1>
+                    <p style="text-align: center; font-style: italic; margin-bottom: 2rem;">Régis par les lois et règlements applicables en matière de bail à loyer</p>
+                    
+                    <h2>ENTRE LES SOUSSIGNÉS :</h2>
+                    <p><strong>LE BAILLEUR (PROPRIÉTAIRE) :</strong><br>
+                    Nom & Prénom : <strong>M. / Mme Ousmane DIOP</strong><br>
+                    Téléphone : +221 77 000 00 00 | E-mail : proprietaire@email.com<br>
+                    Adresse : Dakar, Sacré-Cœur 3, Villa N° 12</p>
+
+                    <p><strong>ET LE PRENEUR (LOCATAIRE) :</strong><br>
+                    Nom & Prénom : <strong>M. / Mme Aminata NDOYE</strong><br>
+                    Téléphone : +221 78 000 00 00 | E-mail : locataire@email.com<br>
+                    Adresse : Dakar, Mermoz, Rue MZ-10</p>
+
+                    <h2>ARTICLE 1 - DÉSIGNATION DU BIEN</h2>
+                    <p>Le Bailleur donne à bail au Locataire qui l'accepte, les locaux désignés ci-après :<br>
+                    Un bien de type <strong>Appartement (Surface : 75 m²)</strong> situé à l'adresse :<br>
+                    <strong>Immeuble Baobab, 2ème Étage, Appt B4, Ouakam Cité Avion, Dakar</strong>.<br>
+                    Comprenant : 2 chambres, 1 salon, 2 salles de bain, cuisine, balcon.</p>
+
+                    <h2>ARTICLE 2 - DURÉE DU BAIL</h2>
+                    <p>Le présent contrat est conclu pour une durée de <strong>1 an (Renouvelable)</strong> à compter du <strong>01/08/2026</strong>.</p>
+
+                    <h2>ARTICLE 3 - CONDITIONS FINANCIÈRES</h2>
+                    <p>Le loyer mensuel est fixé à la somme de <strong>150 000 FCFA</strong>, payable par <strong>Wave / Orange Money</strong>.<br>
+                    Une caution d'un montant de <strong>300 000 FCFA</strong> (équivalent à 2 mois) est versée ce jour par le locataire.</p>
+
+                    <h2>ARTICLE 4 - OBLIGATIONS ET INTERDICTIONS</h2>
+                    <p>Le locataire s'engage à respecter les conditions suivantes :</p>
+                    <ul>
+                        <li>Payer le loyer à la date convenue.</li>
+                        <li>Sous-location strictly interdite.</li>
+                        <li>Interdiction de fumer à l'intérieur des locaux.</li>
+                        <li>Ne faire aucune modification ni travaux sans l'accord écrit du propriétaire.</li>
+                    </ul>
+
+                    <h2>ARTICLE 5 - RÉSILIATION ET JURIDICTION</h2>
+                    <p>Chacune des parties pourra résilier le présent bail sous réserve de respecter un préavis de <strong>3 mois</strong> pour le propriétaire et de <strong>1 mois</strong> pour le locataire.</p>
+
+                    <div class="signature-block-grid">
+                        <div class="signature-box">
+                            <strong>Signature du Propriétaire</strong><br><br><br>
+                            (Lu et approuvé)
+                        </div>
+                        <div class="signature-box">
+                            <strong>Signature du Locataire</strong><br><br><br>
+                            (Lu et approuvé)
+                        </div>
+                    </div>
+                    
+                    <p style="margin-top: 2rem; text-align: center; font-size: 10pt;">Fait à <strong>Dakar</strong>, le <strong>28/07/2026</strong> en deux exemplaires originaux.</p>
+                </div>
+
+                <!-- Export Bar -->
+                <div class="export-actions">
+                    <button class="btn-export" onclick="exportPDF()" style="background: var(--grad-primary); color: white; border: none;">
+                        <i class="fa-solid fa-file-pdf"></i> Télécharger PDF
+                    </button>
+                    <button class="btn-export" onclick="exportWord()">
+                        <i class="fa-solid fa-file-word" style="color: #2563eb;"></i> Word (.docx)
+                    </button>
+                    <button class="btn-export" onclick="copyText()">
+                        <i class="fa-solid fa-copy" style="color: #10b981;"></i> Copier texte
+                    </button>
+                    <button class="btn-export" onclick="printDoc()">
+                        <i class="fa-solid fa-print"></i> Imprimer
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- AI Loading Overlay -->
+    <div id="ai-loading-overlay">
+        <i class="fa-solid fa-wand-magic-sparkles fa-spin" style="font-size: 3rem; color: #818cf8; margin-bottom: 1.5rem;"></i>
+        <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Génération du Contrat de Location...</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">L'IA rédige les clauses juridiques formelles selon vos informations...</p>
+    </div>
+
+    <script>
+        // Formatting commands for rich editor
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+        }
+
+        // Scroll helper for step bar
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Update step bar active status on scroll
+        window.addEventListener('scroll', () => {
+            const sec1 = document.getElementById('sec-parties')?.getBoundingClientRect();
+            const sec2 = document.getElementById('sec-bien')?.getBoundingClientRect();
+            const sec3 = document.getElementById('sec-finances')?.getBoundingClientRect();
+            const sec4 = document.getElementById('sec-clauses')?.getBoundingClientRect();
+
+            const items = [
+                { id: 'step-btn-1', rect: sec1 },
+                { id: 'step-btn-2', rect: sec2 },
+                { id: 'step-btn-3', rect: sec3 },
+                { id: 'step-btn-4', rect: sec4 },
+            ];
+
+            items.forEach(item => {
+                const el = document.getElementById(item.id);
+                if (el && item.rect) {
+                    if (item.rect.top <= 200 && item.rect.bottom >= 0) {
+                        el.classList.add('active');
+                    } else {
+                        el.classList.remove('active');
+                    }
+                }
+            });
+        });
+
+        // AI Generation Handler
+        async function generateContratWithAI(e) {
+            e.preventDefault();
+            const overlay = document.getElementById('ai-loading-overlay');
+            overlay.style.display = 'flex';
+
+            // Collect form data
+            const propNom = document.getElementById('prop-nom').value;
+            const propDob = document.getElementById('prop-dob').value;
+            const propCni = document.getElementById('prop-cni').value;
+            const propTel = document.getElementById('prop-tel').value;
+            const propEmail = document.getElementById('prop-email').value;
+            const propAdresse = document.getElementById('prop-adresse').value;
+
+            const locNom = document.getElementById('loc-nom').value;
+            const locDob = document.getElementById('loc-dob').value;
+            const locCni = document.getElementById('loc-cni').value;
+            const locTel = document.getElementById('loc-tel').value;
+            const locEmail = document.getElementById('loc-email').value;
+            const locAdresse = document.getElementById('loc-adresse').value;
+
+            const bienType = document.getElementById('bien-type').value;
+            const bienSurface = document.getElementById('bien-surface').value;
+            const bienRegion = document.getElementById('bien-region').value;
+            const bienDept = document.getElementById('bien-dept').value;
+            const bienAdresse = document.getElementById('bien-adresse').value;
+
+            const bienChambres = document.getElementById('bien-chambres').value;
+            const bienSalons = document.getElementById('bien-salons').value;
+            const bienSdb = document.getElementById('bien-sdb').value;
+
+            const cuisine = document.getElementById('check-cuisine').checked ? 'Cuisine équipée' : '';
+            const balcon = document.getElementById('check-balcon').checked ? 'Balcon' : '';
+            const garage = document.getElementById('check-garage').checked ? 'Garage' : '';
+            const jardin = document.getElementById('check-jardin').checked ? 'Jardin' : '';
+            const meuble = document.getElementById('check-meuble').checked ? 'Meublé' : 'Non meublé';
+
+            const finLoyer = document.getElementById('fin-loyer').value;
+            const finCaution = document.getElementById('fin-caution').value;
+            const finMoisCaution = document.getElementById('fin-mois-caution').value;
+            const finPaiement = document.getElementById('fin-mode-paiement').value;
+
+            const dureeSelect = document.getElementById('duree-select').value;
+            const dureeDebut = document.getElementById('duree-debut').value || new Date().toISOString().split('T')[0];
+            const dureeFin = document.getElementById('duree-fin').value;
+
+            const chargeEau = document.getElementById('charge-eau').checked ? 'Eau' : '';
+            const chargeElec = document.getElementById('charge-elec').checked ? 'Électricité' : '';
+            const chargeInternet = document.getElementById('charge-internet').checked ? 'Internet' : '';
+            const chargeGardien = document.getElementById('charge-gardien').checked ? 'Gardiennage' : '';
+            const chargeTaxes = document.getElementById('charge-taxes').checked ? 'Taxes d\'enlèvement d\'ordures' : '';
+
+            const condSousloc = document.getElementById('cond-sousloc').checked ? 'Sous-location strictement interdite.' : '';
+            const condAnimaux = document.getElementById('cond-animaux').checked ? 'Animaux domestiques autorisés.' : 'Animaux domestiques interdits.';
+            const condFumer = document.getElementById('cond-fumer').checked ? 'Interdiction de fumer à l\'intérieur.' : '';
+            const condTravaux = document.getElementById('cond-travaux').checked ? 'Aucuns travaux ni modifications sans accord préalable du propriétaire.' : '';
+            const condCommerce = document.getElementById('cond-commerce').checked ? 'Usage commercial ou professionnel interdit (Bail exclusivement d\'habitation).' : '';
+            const condAutres = document.getElementById('cond-autres').value;
+
+            const preavisProp = document.getElementById('preavis-prop').value;
+            const preavisLoc = document.getElementById('preavis-loc').value;
+            const faitA = document.getElementById('fait-a').value || 'Dakar';
+            const faitDate = document.getElementById('fait-date').value || new Date().toLocaleDateString('fr-FR');
+
+            // Format features list
+            const caracteristiquesList = [
+                cuisine, balcon, garage, jardin, meuble,
+                bienChambres ? `${bienChambres} chambre(s)` : '',
+                bienSalons ? `${bienSalons} salon(s)` : '',
+                bienSdb ? `${bienSdb} salle(s) de bain` : ''
+            ].filter(Boolean).join(', ');
+
+            const chargesList = [chargeEau, chargeElec, chargeInternet, chargeGardien, chargeTaxes].filter(Boolean).join(', ');
+
+            // Build Legal Contract HTML
+            const generatedHtml = `
+                <h1>CONTRAT DE BAIL À USAGE D'HABITATION</h1>
+                <p style="text-align: center; font-style: italic; margin-bottom: 2rem;">Établi conformément aux règles du droit locatif en vigueur</p>
+                
+                <h2>ENTRE LES SOUSSIGNÉS :</h2>
+                <p><strong>LE BAILLEUR (PROPRIÉTAIRE) :</strong><br>
+                Nom et Prénom : <strong>${propNom}</strong><br>
+                ${propDob ? `Date de naissance : ${propDob}<br>` : ''}
+                ${propCni ? `N° CNI / Passeport : ${propCni}<br>` : ''}
+                ${propTel ? `Téléphone : ${propTel} | ` : ''}${propEmail ? `E-mail : ${propEmail}<br>` : ''}
+                Adresse : ${propAdresse || 'Non renseignée'}</p>
+
+                <p><strong>ET LE PRENEUR (LOCATAIRE) :</strong><br>
+                Nom et Prénom : <strong>${locNom}</strong><br>
+                ${locDob ? `Date de naissance : ${locDob}<br>` : ''}
+                ${locCni ? `N° CNI / Passeport : ${locCni}<br>` : ''}
+                ${locTel ? `Téléphone : ${locTel} | ` : ''}${locEmail ? `E-mail : ${locEmail}<br>` : ''}
+                Adresse actuelle : ${locAdresse || 'Non renseignée'}</p>
+
+                <h2>ARTICLE 1 - DÉSIGNATION ET CONSISTANCE DU BIEN</h2>
+                <p>Le Bailleur donne à bail à loyer au Locataire qui l'accepte, les locaux ci-après désignés :<br>
+                Un bien de type <strong>${bienType}</strong> ${bienSurface ? `d'une superficie environ de <strong>${bienSurface} m²</strong>` : ''} situé à l'adresse suivante :<br>
+                <strong>${bienAdresse} (${bienDept || ''} - ${bienRegion || 'Dakar'})</strong>.<br>
+                <strong>Équipements et caractéristiques :</strong> ${caracteristiquesList || 'Aucune spécifiée'}.</p>
+
+                <h2>ARTICLE 2 - DURÉE ET PRISE D'EFFET DU BAIL</h2>
+                <p>Le présent contrat est conclu pour une durée de <strong>${dureeSelect}</strong> prenant effet le <strong>${dureeDebut}</strong> ${dureeFin ? `et prenant fin le <strong>${dureeFin}</strong>` : ''}.<br>
+                Sauf congé donné par l'une des parties dans les formes et délais légaux, le bail sera reconduit tacitement.</p>
+
+                <h2>ARTICLE 3 - CONDITIONS FINANCIÈRES (LOYER ET CAUTION)</h2>
+                <p>Le présent bail est consenti et accepté moyennant un loyer mensuel de <strong>${finLoyer}</strong> payable d'avance le premier de chaque mois par <strong>${finPaiement}</strong>.<br>
+                À titre de garantie de l'exécution de ses obligations, le locataire verse ce jour une caution de <strong>${finCaution || '2 mois de loyer'}</strong> ${finMoisCaution ? `(correspondant à ${finMoisCaution} mois)` : ''}. Cette caution sera restituée en fin de bail après état des lieux de sortie.</p>
+
+                <h2>ARTICLE 4 - CHARGES ET PRESTATIONS</h2>
+                <p>Le montant des charges incluses dans le loyer comprend :<br>
+                <strong>${chargesList || 'Aucune charge particulière incluse dans le montant principal'}</strong>.</p>
+
+                <h2>ARTICLE 5 - OBLIGATIONS DES PARTIES</h2>
+                <p><strong>1. Le Locataire s'oblige à :</strong></p>
+                <ul>
+                    <li>Payer le loyer et les charges aux échéances convenues.</li>
+                    <li>User paisiblement des locaux loués selon la destination prévue au contrat.</li>
+                    <li>Répondre des dégradations ou des pertes qui surviennent pendant la durée du contrat.</li>
+                    <li>${condSousloc}</li>
+                    <li>${condFumer}</li>
+                    <li>${condTravaux}</li>
+                    <li>${condCommerce}</li>
+                </ul>
+
+                <p><strong>2. Le Propriétaire s'oblige à :</strong></p>
+                <ul>
+                    <li>Délivrer au locataire le logement en bon état d'usage et de réparations.</li>
+                    <li>Assurer au locataire la jouissance paisible des lieux loués.</li>
+                    <li>Entretenir les locaux en état de servir à l'usage prévu.</li>
+                </ul>
+
+                ${condAutres ? `<h2>ARTICLE 6 - CLAUSES PARTICULIÈRES</h2><p>${condAutres.replace(/\n/g, '<br>')}</p>` : ''}
+
+                <h2>ARTICLE ${condAutres ? '7' : '6'} - RÉSILIATION DU CONTRAT ET RÈGLEMENT DES LITIGES</h2>
+                <p>Chacune des parties peut résilier le présent contrat en notifiant sa décision par écrit sous réserve de respecter le délai de préavis suivant :<br>
+                • Préavis du propriétaire : <strong>${preavisProp}</strong><br>
+                • Préavis du locataire : <strong>${preavisLoc}</strong><br>
+                En cas de litige relatif à l'interprétation ou à l'exécution du présent contrat, les parties s'engagent à rechercher une solution amiable avant toute action judiciaire devant le tribunal compétent.</p>
+
+                <p>Les deux parties reconnaissent expressément avoir lu, compris et accepté l'ensemble des clauses et conditions du présent contrat.</p>
+
+                <div class="signature-block-grid">
+                    <div class="signature-box">
+                        <strong>Signature du Propriétaire (Bailleur)</strong><br><br><br>
+                        (Lu et approuvé)
+                    </div>
+                    <div class="signature-box">
+                        <strong>Signature du Locataire (Preneur)</strong><br><br><br>
+                        (Lu et approuvé)
+                    </div>
+                </div>
+
+                <p style="margin-top: 2.5rem; text-align: center; font-size: 10pt;">Fait à <strong>${faitA}</strong>, le <strong>${faitDate}</strong> en deux exemplaires originaux.</p>
+            `;
+
+            setTimeout(() => {
+                document.getElementById('contrat-paper').innerHTML = generatedHtml;
+                overlay.style.display = 'none';
+                
+                // Scroll preview into view on mobile
+                if (window.innerWidth < 992) {
+                    document.getElementById('contrat-paper').scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 800);
+        }
+
+        // Export PDF using html2pdf.js
+        function exportPDF() {
+            const element = document.getElementById('contrat-paper');
+            const opt = {
+                margin:       [0.5, 0.5, 0.5, 0.5],
+                filename:     'Contrat_de_Location_NovaDoc.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Export Word (.docx / .doc blob)
+        function exportWord() {
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' "+
+                "xmlns:w='urn:schemas-microsoft-com:office:word' "+
+                "xmlns='http://www.w3.org/TR/REC-html40'>"+
+                "<head><meta charset='utf-8'><title>Contrat de Location</title></head><body>";
+            const footer = "</body></html>";
+            const sourceHTML = header + document.getElementById('contrat-paper').innerHTML + footer;
+            
+            const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+            const fileDownload = document.createElement("a");
+            document.body.appendChild(fileDownload);
+            fileDownload.href = source;
+            fileDownload.download = 'Contrat_de_Location_NovaDoc.doc';
+            fileDownload.click();
+            document.body.removeChild(fileDownload);
+        }
+
+        // Copy Text
+        function copyText() {
+            const content = document.getElementById('contrat-paper').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                alert("Le texte du contrat a été copié dans votre presse-papiers !");
+            });
+        }
+
+        // Print Document
+        function printDoc() {
+            const printContents = document.getElementById('contrat-paper').innerHTML;
+            const originalContents = document.body.innerHTML;
+            document.body.innerHTML = `<div style="padding: 2rem;">${printContents}</div>`;
+            window.print();
+            document.body.innerHTML = originalContents;
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>
