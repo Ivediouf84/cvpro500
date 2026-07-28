@@ -5,27 +5,54 @@ let supabaseClient = null;
 let generatedDemandeHtml = '';
 let generatedMotivationHtml = '';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Check URL parameters to adapt UI for Demande d'Emploi vs Lettre de Motivation
+function applyDocTypeFilter() {
     const urlParams = new URLSearchParams(window.location.search);
     const docType = urlParams.get('doc');
     const titleEl = document.getElementById('page-main-title');
+
+    const demandeBlock = document.getElementById('demande-preview-block');
+    const motivationBlock = document.getElementById('motivation-preview-block');
+    const readyTitle = document.getElementById('results-ready-title');
+    const readySub = document.getElementById('results-ready-subtitle');
+    const btnLabelTop = document.getElementById('btn-pay-label-top');
+    const btnLabelBottom = document.getElementById('btn-pay-label-bottom');
+    const modalDesc = document.getElementById('modal-pay-desc');
 
     if (docType === 'demande') {
         document.title = "Générateur de Demande d'Emploi Officielle (IA) - NovaDoc";
         if (titleEl) {
             titleEl.innerHTML = "<i class='fa-solid fa-file-signature' style='color: #8b5cf6;'></i> Générateur de Demande d'Emploi Officielle (IA)";
         }
+        if (motivationBlock) motivationBlock.style.setProperty('display', 'none', 'important');
+        if (demandeBlock) demandeBlock.style.setProperty('display', 'block', 'important');
+        if (readyTitle) readyTitle.innerText = "Votre Demande d'Emploi est prête ! 🎉";
+        if (readySub) readySub.innerText = "Téléchargez votre Demande d'Emploi au format PDF.";
+        if (btnLabelTop) btnLabelTop.innerText = "Télécharger ma Demande d'Emploi (500 FCFA)";
+        if (btnLabelBottom) btnLabelBottom.innerText = "Télécharger ma Demande d'Emploi (500 FCFA)";
+        if (modalDesc) modalDesc.innerText = "Paiement sécurisé via SenePay pour télécharger votre Demande d'Emploi (format PDF).";
     } else if (docType === 'motivation') {
         document.title = "Générateur de Lettre de Motivation Sur-Mesure (IA) - NovaDoc";
         if (titleEl) {
             titleEl.innerHTML = "<i class='fa-solid fa-envelope-open-text' style='color: #c026d3;'></i> Générateur de Lettre de Motivation Sur-Mesure (IA)";
         }
+        if (demandeBlock) demandeBlock.style.setProperty('display', 'none', 'important');
+        if (motivationBlock) motivationBlock.style.setProperty('display', 'block', 'important');
+        if (readyTitle) readyTitle.innerText = "Votre Lettre de Motivation est prête ! 🎉";
+        if (readySub) readySub.innerText = "Téléchargez votre Lettre de Motivation au format PDF.";
+        if (btnLabelTop) btnLabelTop.innerText = "Télécharger ma Lettre de Motivation (500 FCFA)";
+        if (btnLabelBottom) btnLabelBottom.innerText = "Télécharger ma Lettre de Motivation (500 FCFA)";
+        if (modalDesc) modalDesc.innerText = "Paiement sécurisé via SenePay pour télécharger votre Lettre de Motivation (format PDF).";
     }
+}
+window.applyDocTypeFilter = applyDocTypeFilter;
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyDocTypeFilter();
 
     // Check for SenePay payment success redirect
+    const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
-        alert("Paiement réussi avec SenePay ! Vos documents vont être téléchargés.");
+        alert("Paiement réussi avec SenePay ! Votre document va être téléchargé.");
         window.history.replaceState({}, document.title, window.location.pathname);
         
         // Restore from local storage in case of redirect
@@ -37,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('doc-motivation').innerHTML = savedMotivation;
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('results-section').style.display = 'flex';
+            applyDocTypeFilter();
             
             exportBothPDFs();
         }
@@ -174,6 +202,7 @@ async function generateDocuments(event) {
             // Show results
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('results-section').style.display = 'flex';
+            applyDocTypeFilter();
         } else {
             throw new Error("Format de réponse IA invalide: " + JSON.stringify(result));
         }
