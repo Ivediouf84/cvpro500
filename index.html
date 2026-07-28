@@ -6,6 +6,16 @@
     <title>NovaDoc - Créez tous vos documents professionnels avec NovaDoc</title>
     <link rel="stylesheet" href="styles.css?v=cvpro1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PWA Manifest & App Icons -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NovaDoc">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <script src="pwa-installer.js" defer></script>
     <!-- Local Extraction Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
@@ -136,6 +146,7 @@
                 <a href="#fonctionnement" style="color: var(--text-main); text-decoration: none;">Fonctionnement</a>
                 <a href="cvpro-builder.html" style="color: var(--text-main); text-decoration: none;">Modèles</a>
                 <a href="#tarifs" style="color: var(--text-main); text-decoration: none;">Tarif</a>
+                <a href="#" onclick="createPwaInstallBanner(); return false;" style="color: #a5b4fc; font-weight: 600; text-decoration: none;"><i class="fa-solid fa-mobile-screen"></i> Installer l'App</a>
             </div>
             <div class="nav-actions" style="display: flex; gap: 1rem; align-items: center;">
                 <div id="auth-buttons" style="display: none;">
