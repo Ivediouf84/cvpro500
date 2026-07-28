@@ -325,10 +325,10 @@ function renderParsedJsonToHtml(parsed) {
     const html = `
         <!-- Modèle Canva Moderne IA Auto-Adaptatif (Photo Téléphone, PDF, Word) -->
         <div class="cv-canva-left" style="width: 36%; padding: 25px 18px; background: #fafafa; border-right: 1px solid #e2e8f0;">
-            <div class="cv-canva-photo-container" onclick="document.getElementById('photo-upload-input')?.click()" style="cursor: pointer; text-align: center; margin-bottom: 18px;" title="Cliquez pour insérer votre photo prise avec le téléphone">
+            <div class="cv-canva-photo-container" onclick="triggerPhotoUpload()" style="cursor: pointer; text-align: center; margin-bottom: 18px;" title="Cliquez pour insérer votre photo de profil">
                 ${scannedPhotoUrl ? 
                   `<img src="${scannedPhotoUrl}" class="cv-photo" alt="Photo du candidat" style="width:130px; height:130px; border-radius:50%; border:4px solid ${accentColor}; object-fit:cover; display:block; margin:0 auto; box-shadow:0 6px 16px rgba(0,0,0,0.12);">` : 
-                  `<div style="width:125px; height:125px; border-radius:50%; border:3px dashed ${accentColor}; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; color:${accentColor}; margin:0 auto; font-size:0.8rem; font-weight:bold; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s;"><i class="fa-solid fa-camera" style="font-size:2rem; margin-bottom:4px;"></i><span>Photo / Scan</span></div>`}
+                  `<div style="width:125px; height:125px; border-radius:50%; border:3px dashed ${accentColor}; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; color:${accentColor}; margin:0 auto; font-size:0.8rem; font-weight:bold; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s; cursor: pointer;"><i class="fa-solid fa-camera" style="font-size:2rem; margin-bottom:4px; color:#800000;"></i><span style="color:#800000;">Photo / Scan</span></div>`}
             </div>
 
             ${profileSummary ? `
@@ -367,7 +367,7 @@ function renderParsedJsonToHtml(parsed) {
                 <h1 style="font-size: 26pt; font-weight: 900; color: ${themeColor}; margin: 0; line-height: 1.1; text-transform: uppercase;">${p.firstName} <span style="color:#2563eb;">${p.lastName}</span></h1>
             </div>` : ''}
             
-            ${p.jobTitle ? `<div class="cv-canva-header-title" style="font-size: 13.5pt; font-weight: 700; color: #475569; margin-bottom: 6px;">${p.jobTitle}</div>` : ''}
+            ${p.jobTitle ? `<div class="cv-canva-header-title" style="font-size: 13.5pt !important; font-weight: 700 !important; color: #0f172a !important; opacity: 1 !important; margin-bottom: 8px !important; line-height: 1.4 !important;">${p.jobTitle}</div>` : ''}
             
             ${p.birth ? `<div class="cv-canva-header-birth" style="font-size: 9.5pt; font-weight: 700; color: #64748b; margin-bottom: 16px; display:inline-block; background:#f1f5f9; padding:3px 10px; border-radius:12px;"><i class="fa-solid fa-cake-candles"></i> ${p.birth}</div>` : ''}
 
@@ -421,41 +421,46 @@ function renderParsedJsonToHtml(parsed) {
     triggerCloudSaveHtml(html);
 }
 
-function setupPhotoUploader() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.id = 'photo-upload-input';
-    fileInput.accept = 'image/*';
-    fileInput.style.display = 'none';
-    document.body.appendChild(fileInput);
-    
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const photoDataUrl = ev.target.result;
-                localStorage.setItem('scanned_cv_image_url', photoDataUrl);
+window.triggerPhotoUpload = function() {
+    let fileInput = document.getElementById('photo-upload-input');
+    if (!fileInput) {
+        fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.id = 'photo-upload-input';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
 
-                // Target photo containers specifically to keep photo strictly inside the circle
-                const photoContainers = document.querySelectorAll('.cv-canva-photo-container, .cv-photo-placeholder, .cv-photo-container');
-                if (photoContainers.length > 0) {
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const photoDataUrl = ev.target.result;
+                    localStorage.setItem('scanned_cv_image_url', photoDataUrl);
+
+                    const photoContainers = document.querySelectorAll('.cv-canva-photo-container, .cv-photo-placeholder, .cv-photo-container');
                     photoContainers.forEach(container => {
-                        container.innerHTML = `<img src="${photoDataUrl}" class="cv-photo" alt="Photo du candidat" style="width:125px; height:125px; border-radius:50%; border:3px solid #800000; object-fit:cover; display:block; margin:0 auto; box-shadow:0 4px 12px rgba(0,0,0,0.15);">`;
+                        container.innerHTML = `<img src="${photoDataUrl}" class="cv-photo" alt="Photo du candidat" style="width:125px; height:125px; border-radius:50%; border:3px solid #800000; object-fit:cover; display:block; margin:0 auto; box-shadow:0 4px 12px rgba(0,0,0,0.15); cursor:pointer;">`;
                     });
-                }
 
-                const photoImgs = document.querySelectorAll('img.cv-photo, img.cv-profile-pic');
-                photoImgs.forEach(img => {
-                    img.src = photoDataUrl;
-                });
+                    const photoImgs = document.querySelectorAll('img.cv-photo, img.cv-profile-pic');
+                    photoImgs.forEach(img => {
+                        img.src = photoDataUrl;
+                    });
 
-                const docEl = document.getElementById('cv-document');
-                if (docEl) triggerCloudSaveHtml(docEl.innerHTML);
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+                    const docEl = document.getElementById('cv-document');
+                    if (docEl) triggerCloudSaveHtml(docEl.innerHTML);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    fileInput.click();
+};
+
+function setupPhotoUploader() {
+    window.triggerPhotoUpload();
 }
 
 // Cloud functionality adapted for HTML

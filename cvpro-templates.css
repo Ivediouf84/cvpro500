@@ -564,11 +564,13 @@
 }
 
 .cv-template-canva .cv-canva-header-title {
-    font-size: 13pt;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin-top: 2px;
-    margin-bottom: 4px;
+    font-size: 13.5pt !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    opacity: 1 !important;
+    margin-top: 2px !important;
+    margin-bottom: 6px !important;
+    line-height: 1.4 !important;
 }
 
 .cv-template-canva .cv-canva-header-birth {
