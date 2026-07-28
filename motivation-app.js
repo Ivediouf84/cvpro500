@@ -6,8 +6,24 @@ let generatedDemandeHtml = '';
 let generatedMotivationHtml = '';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check for SenePay payment success redirect
+    // Check URL parameters to adapt UI for Demande d'Emploi vs Lettre de Motivation
     const urlParams = new URLSearchParams(window.location.search);
+    const docType = urlParams.get('doc');
+    const titleEl = document.getElementById('page-main-title');
+
+    if (docType === 'demande') {
+        document.title = "Générateur de Demande d'Emploi Officielle (IA) - NovaDoc";
+        if (titleEl) {
+            titleEl.innerHTML = "<i class='fa-solid fa-file-signature' style='color: #8b5cf6;'></i> Générateur de Demande d'Emploi Officielle (IA)";
+        }
+    } else if (docType === 'motivation') {
+        document.title = "Générateur de Lettre de Motivation Sur-Mesure (IA) - NovaDoc";
+        if (titleEl) {
+            titleEl.innerHTML = "<i class='fa-solid fa-envelope-open-text' style='color: #c026d3;'></i> Générateur de Lettre de Motivation Sur-Mesure (IA)";
+        }
+    }
+
+    // Check for SenePay payment success redirect
     if (urlParams.get('payment') === 'success') {
         alert("Paiement réussi avec SenePay ! Vos documents vont être téléchargés.");
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -247,22 +263,47 @@ async function exportBothPDFs() {
     const nom = document.getElementById('input-nom')?.value || "";
     const namePrefix = `${prenom}_${nom}`.trim().replace(/\s+/g, '_');
 
-    const opt = {
-        margin: [10, 10, 10, 10],
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+    function createPdfClone(sourceEl) {
+        const clone = document.createElement('div');
+        clone.style.position = 'absolute';
+        clone.style.left = '-9999px';
+        clone.style.top = '0';
+        clone.style.width = '750px';
+        clone.style.background = '#ffffff';
+        clone.style.color = '#1e293b';
+        clone.style.padding = '30px 25px';
+        clone.style.fontFamily = "'Times New Roman', Times, serif";
+        clone.style.fontSize = '11pt';
+        clone.style.lineHeight = '1.5';
+        clone.innerHTML = sourceEl.innerHTML;
+        document.body.appendChild(clone);
+        return clone;
+    }
 
-    // Download Demande
     try {
-        opt.filename = `Demande_Emploi_${namePrefix}.pdf`;
-        await html2pdf().set(opt).from(demandeElement).save();
+        const clone1 = createPdfClone(demandeElement);
+        const opt1 = {
+            margin: [0.4, 0.4, 0.4, 0.4],
+            filename: `Demande_Emploi_${namePrefix}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
         
-        // Wait a small moment before downloading the second one to ensure browser doesn't block it
+        await html2pdf().set(opt1).from(clone1).save();
+        document.body.removeChild(clone1);
+        
         setTimeout(async () => {
-            opt.filename = `Lettre_Motivation_${namePrefix}.pdf`;
-            await html2pdf().set(opt).from(motivationElement).save();
+            const clone2 = createPdfClone(motivationElement);
+            const opt2 = {
+                margin: [0.4, 0.4, 0.4, 0.4],
+                filename: `Lettre_Motivation_${namePrefix}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            await html2pdf().set(opt2).from(clone2).save();
+            document.body.removeChild(clone2);
             alert("Vos 2 documents ont été téléchargés avec succès !");
         }, 1000);
         
