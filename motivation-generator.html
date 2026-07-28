@@ -69,6 +69,7 @@
     <div class="container-main">
         <div class="header-title">
             <h1 id="page-main-title">Générateur de Demande & Lettre de Motivation (IA)</h1>
+            <p id="page-main-subtitle" style="color: var(--text-muted); font-size: 1.05rem; margin-top: 0.5rem;">Insérez votre CV et remplissez les informations pour générer des documents sur-mesure.</p>
         </div>
         
         <div class="form-card" id="input-section">
@@ -104,12 +105,12 @@
                     <div class="upload-area" onclick="document.getElementById('input-cv').click()">
                         <i class="fa-regular fa-file-pdf"></i>
                         <h3 id="file-name-display">Clique pour insérer ton CV</h3>
-                        <p>L'IA va lire ton CV pour rédiger des lettres ultra-personnalisées.</p>
+                        <p id="upload-box-desc">L'IA va lire ton CV pour rédiger des documents ultra-personnalisés.</p>
                     </div>
                 </div>
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; cursor: pointer; font-weight: bold;">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Générer avec l'IA
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span id="btn-submit-label">Générer avec l'IA</span>
                 </button>
             </form>
         </div>

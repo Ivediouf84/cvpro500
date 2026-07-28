@@ -9,6 +9,9 @@ function applyDocTypeFilter() {
     const urlParams = new URLSearchParams(window.location.search);
     const docType = urlParams.get('doc');
     const titleEl = document.getElementById('page-main-title');
+    const subtitleEl = document.getElementById('page-main-subtitle');
+    const uploadDesc = document.getElementById('upload-box-desc');
+    const btnSubmit = document.getElementById('btn-submit-label');
 
     const demandeBlock = document.getElementById('demande-preview-block');
     const motivationBlock = document.getElementById('motivation-preview-block');
@@ -23,25 +26,43 @@ function applyDocTypeFilter() {
         if (titleEl) {
             titleEl.innerHTML = "<i class='fa-solid fa-file-signature' style='color: #8b5cf6;'></i> Générateur de Demande d'Emploi Officielle (IA)";
         }
+        if (subtitleEl) {
+            subtitleEl.innerText = "Entrez vos informations et insérez votre CV. L'IA rédigera une Demande d'Emploi formelle respectant les normes administratives.";
+        }
+        if (uploadDesc) {
+            uploadDesc.innerText = "L'IA va analyser votre CV pour rédiger une Demande d'Emploi administrative formelle et structurée.";
+        }
+        if (btnSubmit) {
+            btnSubmit.innerText = "Générer ma Demande d'Emploi (IA)";
+        }
         if (motivationBlock) motivationBlock.style.setProperty('display', 'none', 'important');
         if (demandeBlock) demandeBlock.style.setProperty('display', 'block', 'important');
         if (readyTitle) readyTitle.innerText = "Votre Demande d'Emploi est prête ! 🎉";
-        if (readySub) readySub.innerText = "Téléchargez votre Demande d'Emploi au format PDF.";
+        if (readySub) readySub.innerText = "Vérifiez les informations, ajustez le texte si besoin et téléchargez au format PDF.";
         if (btnLabelTop) btnLabelTop.innerText = "Télécharger ma Demande d'Emploi (500 FCFA)";
         if (btnLabelBottom) btnLabelBottom.innerText = "Télécharger ma Demande d'Emploi (500 FCFA)";
-        if (modalDesc) modalDesc.innerText = "Paiement sécurisé via SenePay pour télécharger votre Demande d'Emploi (format PDF).";
+        if (modalDesc) modalDesc.innerText = "Paiement sécurisé via SenePay pour télécharger votre Demande d'Emploi officielle (format PDF).";
     } else if (docType === 'motivation') {
         document.title = "Générateur de Lettre de Motivation Sur-Mesure (IA) - NovaDoc";
         if (titleEl) {
             titleEl.innerHTML = "<i class='fa-solid fa-envelope-open-text' style='color: #c026d3;'></i> Générateur de Lettre de Motivation Sur-Mesure (IA)";
         }
+        if (subtitleEl) {
+            subtitleEl.innerText = "Entrez vos informations et insérez votre CV. L'IA valorisera vos compétences clés pour créer une Lettre de Motivation captivante.";
+        }
+        if (uploadDesc) {
+            uploadDesc.innerText = "L'IA va extraire vos meilleures compétences et expériences du CV pour rédiger une Lettre de Motivation convaincante.";
+        }
+        if (btnSubmit) {
+            btnSubmit.innerText = "Générer ma Lettre de Motivation (IA)";
+        }
         if (demandeBlock) demandeBlock.style.setProperty('display', 'none', 'important');
         if (motivationBlock) motivationBlock.style.setProperty('display', 'block', 'important');
         if (readyTitle) readyTitle.innerText = "Votre Lettre de Motivation est prête ! 🎉";
-        if (readySub) readySub.innerText = "Téléchargez votre Lettre de Motivation au format PDF.";
+        if (readySub) readySub.innerText = "Vérifiez les informations, ajustez le texte si besoin et téléchargez au format PDF.";
         if (btnLabelTop) btnLabelTop.innerText = "Télécharger ma Lettre de Motivation (500 FCFA)";
         if (btnLabelBottom) btnLabelBottom.innerText = "Télécharger ma Lettre de Motivation (500 FCFA)";
-        if (modalDesc) modalDesc.innerText = "Paiement sécurisé via SenePay pour télécharger votre Lettre de Motivation (format PDF).";
+        if (modalDesc) modalDesc.innerText = "Paiement sécurisé via SenePay pour télécharger votre Lettre de Motivation sur-mesure (format PDF).";
     }
 }
 window.applyDocTypeFilter = applyDocTypeFilter;
