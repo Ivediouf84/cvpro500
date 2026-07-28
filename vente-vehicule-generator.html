@@ -805,21 +805,40 @@
 
                 <!-- Export Bar -->
                 <div class="export-actions" id="export-bar">
-                    <button class="btn-export" onclick="exportPDF()" style="background: var(--grad-primary); color: white; border: none;">
-                        <i class="fa-solid fa-file-pdf"></i> Télécharger PDF
+                    <button class="btn-export" onclick="requestPDFExport()" style="background: var(--grad-primary); color: white; border: none;">
+                        <i class="fa-solid fa-file-pdf"></i> Télécharger PDF (500F)
                     </button>
-                    <button class="btn-export" onclick="exportWord()">
-                        <i class="fa-solid fa-file-word" style="color: #3b82f6;"></i> Télécharger Word (.docx)
+                    <button class="btn-export" onclick="requestWordExport()">
+                        <i class="fa-solid fa-file-word" style="color: #3b82f6;"></i> Télécharger Word (500F)
                     </button>
-                    <button class="btn-export" onclick="copyText()">
-                        <i class="fa-solid fa-copy" style="color: #10b981;"></i> Copier texte
-                    </button>
-                    <button class="btn-export" onclick="printDoc()">
-                        <i class="fa-solid fa-print"></i> Imprimer
+                    <button class="btn-export" onclick="requestPrintExport()">
+                        <i class="fa-solid fa-print"></i> Imprimer (500F)
                     </button>
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- SenePay Payment Modal -->
+    <div id="payment-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(6, 9, 19, 0.88); backdrop-filter: blur(6px); z-index: 99999; justify-content: center; align-items: center;">
+        <div style="background: var(--surface); padding: 2.5rem; border-radius: var(--radius-lg); width: 90%; max-width: 420px; text-align: center; position: relative; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <button onclick="closePaymentModal()" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 style="color: var(--text-main); margin-top: 0; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><i class="fa-solid fa-lock" style="color: var(--primary);"></i> Débloquer le document</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">Paiement sécurisé via SenePay (Wave / Orange Money) pour télécharger et imprimer votre document officiel.</p>
+            
+            <div style="font-size: 2.5rem; font-weight: 800; color: #818cf8; margin: 1.2rem 0;">
+                500 FCFA
+            </div>
+            
+            <div style="margin-top: 1.2rem; text-align: left;">
+                <label style="display: block; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: 600;">Votre numéro Wave ou Orange Money :</label>
+                <input type="tel" id="senepay-phone" class="form-control" placeholder="Ex: 77 123 45 67" style="font-size: 1.2rem; text-align: center; letter-spacing: 2px;">
+            </div>
+            
+            <button id="btn-confirm-pay" onclick="processSenePayPayment()" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; margin-top: 1.5rem; border-radius: var(--radius-md); background: var(--grad-primary); border: none; color: white; font-weight: bold; cursor: pointer; box-shadow: var(--shadow-glow);">
+                <i class="fa-solid fa-credit-card"></i> Payer 500F et Télécharger
+            </button>
         </div>
     </div>
 
@@ -1066,11 +1085,116 @@
             document.body.removeChild(fileDownload);
         }
 
-        function copyText() {
-            const content = document.getElementById('vente-paper').innerText;
-            navigator.clipboard.writeText(content).then(() => {
-                alert("Le texte de l'acte de vente a été copié dans votre presse-papiers !");
-            });
+        // Payment Verification & Export Handlers
+        let hasPaidForDocument = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('payment') === 'success') {
+                hasPaidForDocument = true;
+                localStorage.setItem('paid_vente_session', 'true');
+                
+                const savedHtml = localStorage.getItem('saved_vente_paper_html');
+                if (savedHtml && document.getElementById('vente-paper')) {
+                    document.getElementById('vente-paper').innerHTML = savedHtml;
+                }
+
+                window.history.replaceState({}, document.title, window.location.pathname);
+                alert("Votre paiement de 500 FCFA a été validé avec succès ! Vos téléchargements sont débloqués.");
+
+                const pendingAction = sessionStorage.getItem('pending_action');
+                if (pendingAction === 'pdf') exportPDF();
+                else if (pendingAction === 'word') exportWord();
+                else if (pendingAction === 'print') printDoc();
+                sessionStorage.removeItem('pending_action');
+            } else if (localStorage.getItem('paid_vente_session') === 'true') {
+                hasPaidForDocument = true;
+            }
+        });
+
+        function requestPDFExport() {
+            if (!hasPaidForDocument) {
+                sessionStorage.setItem('pending_action', 'pdf');
+                openPaymentModal();
+            } else {
+                exportPDF();
+            }
+        }
+
+        function requestWordExport() {
+            if (!hasPaidForDocument) {
+                sessionStorage.setItem('pending_action', 'word');
+                openPaymentModal();
+            } else {
+                exportWord();
+            }
+        }
+
+        function requestPrintExport() {
+            if (!hasPaidForDocument) {
+                sessionStorage.setItem('pending_action', 'print');
+                openPaymentModal();
+            } else {
+                printDoc();
+            }
+        }
+
+        function openPaymentModal() {
+            document.getElementById('payment-modal').style.display = 'flex';
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').style.display = 'none';
+        }
+
+        async function processSenePayPayment() {
+            const btn = document.getElementById('btn-confirm-pay');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirection SenePay...';
+            btn.disabled = true;
+
+            const paper = document.getElementById('vente-paper');
+            if (paper) {
+                localStorage.setItem('saved_vente_paper_html', paper.innerHTML);
+            }
+
+            try {
+                const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+                const supabaseKey = localStorage.getItem('supabase_anon_key');
+                
+                if (!supabaseKey) {
+                    throw new Error("Veuillez vous connecter avant de procéder au paiement.");
+                }
+
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/init-senepay`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${supabaseKey}`
+                    },
+                    body: JSON.stringify({
+                        amount: 500,
+                        orderPrefix: "VENTE-",
+                        description: "Téléchargement Acte de Vente de Véhicule",
+                        returnUrl: window.location.href.split('?')[0] + "?payment=success",
+                        cancelUrl: window.location.href.split('?')[0] + "?payment=cancel"
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.checkoutUrl) {
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    throw new Error(data.message || data.error || JSON.stringify(data));
+                }
+
+            } catch (err) {
+                console.error("SenePay Error:", err);
+                alert("Erreur SenePay : " + err.message);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
         function printDoc() {
