@@ -965,39 +965,44 @@
             }, 750);
         }
 
-        // Export PDF using html2pdf.js with off-screen container clone
+        // Export PDF using html2pdf.js directly on target paper with temporary style expansion
         function exportPDF() {
             const paper = document.getElementById('contrat-paper');
-            
-            const clone = document.createElement('div');
-            clone.style.position = 'absolute';
-            clone.style.left = '-9999px';
-            clone.style.top = '0';
-            clone.style.width = '750px';
-            clone.style.background = '#ffffff';
-            clone.style.color = '#1e293b';
-            clone.style.padding = '30px 25px';
-            clone.style.fontFamily = "'Times New Roman', Times, serif";
-            clone.style.fontSize = '9.5pt';
-            clone.style.lineHeight = '1.45';
-            clone.innerHTML = paper.innerHTML;
-            document.body.appendChild(clone);
+            if (!paper) return;
+
+            // Store original styles
+            const origMaxHeight = paper.style.maxHeight;
+            const origOverflowY = paper.style.overflowY;
+            const origBoxShadow = paper.style.boxShadow;
+
+            // Expand paper to full height in-place so html2canvas renders the complete document
+            paper.style.maxHeight = 'none';
+            paper.style.overflowY = 'visible';
+            paper.style.boxShadow = 'none';
 
             const opt = {
                 margin:       [0.4, 0.4, 0.4, 0.4],
                 filename:     'Contrat_de_Location_NovaDoc.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(clone).save().then(() => {
-                document.body.removeChild(clone);
+            html2pdf().set(opt).from(paper).save().then(() => {
+                // Restore original paper scroll styles
+                paper.style.maxHeight = origMaxHeight;
+                paper.style.overflowY = origOverflowY;
+                paper.style.boxShadow = origBoxShadow;
             }).catch(err => {
                 console.error("PDF generation error:", err);
-                if (document.body.contains(clone)) {
-                    document.body.removeChild(clone);
-                }
+                paper.style.maxHeight = origMaxHeight;
+                paper.style.overflowY = origOverflowY;
+                paper.style.boxShadow = origBoxShadow;
             });
         }
 
