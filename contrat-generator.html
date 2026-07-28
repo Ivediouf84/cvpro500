@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Générateur de Contrat de Location - NovaDoc</title>
-    <link rel="stylesheet" href="styles.css?v=contrat1">
+    <link rel="stylesheet" href="styles.css?v=contrat2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- html2pdf for PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -96,11 +96,6 @@
             border-color: transparent;
             color: white;
             box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
-        }
-        .step-item.completed .step-number {
-            background: #10b981;
-            color: white;
-            border-color: transparent;
         }
         .step-divider {
             flex: 1;
@@ -289,8 +284,8 @@
             color: #1e293b;
             padding: 3rem 2.5rem;
             border-radius: var(--radius-md);
-            min-height: 750px;
-            max-height: 850px;
+            min-height: 700px;
+            max-height: 800px;
             overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             font-family: 'Times New Roman', Times, serif;
@@ -347,13 +342,13 @@
         .btn-export {
             flex: 1;
             min-width: 130px;
-            padding: 0.75rem 0.8rem;
+            padding: 0.8rem 0.8rem;
             border-radius: var(--radius-md);
             border: 1px solid var(--border);
             background: rgba(255,255,255,0.06);
             color: var(--text-main);
-            font-weight: 600;
-            font-size: 0.88rem;
+            font-weight: 700;
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -659,8 +654,8 @@
                         </div>
                     </div>
 
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn-generate">
+                    <!-- Submit Button at bottom of form -->
+                    <button type="submit" class="btn-generate" id="btn-submit-form">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Générer le contrat avec l'IA
                     </button>
                 </form>
@@ -669,10 +664,14 @@
             <!-- Right Panel: Document Preview & Rich Editor -->
             <div class="result-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="margin: 0; font-size: 1.2rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-file-lines" style="color: var(--primary);"></i> Aperçu du Contrat
+                    <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-file-lines" style="color: var(--primary);"></i> Aperçu du Document
                     </h3>
-                    <span style="font-size: 0.8rem; color: var(--text-muted);">Éditable en direct</span>
+                    
+                    <!-- Direct Action Generate Button in Header -->
+                    <button type="button" onclick="document.getElementById('contrat-form').requestSubmit()" style="padding: 0.5rem 1rem; background: var(--grad-primary); color: white; border: none; border-radius: var(--radius-md); font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4);">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Générer par IA
+                    </button>
                 </div>
 
                 <!-- Editor Toolbar -->
@@ -692,66 +691,23 @@
 
                 <!-- Printable Document Box -->
                 <div id="contrat-paper" class="document-paper" contenteditable="true">
-                    <h1>CONTRAT DE BAIL À USAGE D'HABITATION</h1>
-                    <p style="text-align: center; font-style: italic; margin-bottom: 2rem;">Régis par les lois et règlements applicables en matière de bail à loyer</p>
-                    
-                    <h2>ENTRE LES SOUSSIGNÉS :</h2>
-                    <p><strong>LE BAILLEUR (PROPRIÉTAIRE) :</strong><br>
-                    Nom & Prénom : <strong>M. / Mme Ousmane DIOP</strong><br>
-                    Téléphone : +221 77 000 00 00 | E-mail : proprietaire@email.com<br>
-                    Adresse : Dakar, Sacré-Cœur 3, Villa N° 12</p>
-
-                    <p><strong>ET LE PRENEUR (LOCATAIRE) :</strong><br>
-                    Nom & Prénom : <strong>M. / Mme Aminata NDOYE</strong><br>
-                    Téléphone : +221 78 000 00 00 | E-mail : locataire@email.com<br>
-                    Adresse : Dakar, Mermoz, Rue MZ-10</p>
-
-                    <h2>ARTICLE 1 - DÉSIGNATION DU BIEN</h2>
-                    <p>Le Bailleur donne à bail au Locataire qui l'accepte, les locaux désignés ci-après :<br>
-                    Un bien de type <strong>Appartement (Surface : 75 m²)</strong> situé à l'adresse :<br>
-                    <strong>Immeuble Baobab, 2ème Étage, Appt B4, Ouakam Cité Avion, Dakar</strong>.<br>
-                    Comprenant : 2 chambres, 1 salon, 2 salles de bain, cuisine, balcon.</p>
-
-                    <h2>ARTICLE 2 - DURÉE DU BAIL</h2>
-                    <p>Le présent contrat est conclu pour une durée de <strong>1 an (Renouvelable)</strong> à compter du <strong>01/08/2026</strong>.</p>
-
-                    <h2>ARTICLE 3 - CONDITIONS FINANCIÈRES</h2>
-                    <p>Le loyer mensuel est fixé à la somme de <strong>150 000 FCFA</strong>, payable par <strong>Wave / Orange Money</strong>.<br>
-                    Une caution d'un montant de <strong>300 000 FCFA</strong> (équivalent à 2 mois) est versée ce jour par le locataire.</p>
-
-                    <h2>ARTICLE 4 - OBLIGATIONS ET INTERDICTIONS</h2>
-                    <p>Le locataire s'engage à respecter les conditions suivantes :</p>
-                    <ul>
-                        <li>Payer le loyer à la date convenue.</li>
-                        <li>Sous-location strictly interdite.</li>
-                        <li>Interdiction de fumer à l'intérieur des locaux.</li>
-                        <li>Ne faire aucune modification ni travaux sans l'accord écrit du propriétaire.</li>
-                    </ul>
-
-                    <h2>ARTICLE 5 - RÉSILIATION ET JURIDICTION</h2>
-                    <p>Chacune des parties pourra résilier le présent bail sous réserve de respecter un préavis de <strong>3 mois</strong> pour le propriétaire et de <strong>1 mois</strong> pour le locataire.</p>
-
-                    <div class="signature-block-grid">
-                        <div class="signature-box">
-                            <strong>Signature du Propriétaire</strong><br><br><br>
-                            (Lu et approuvé)
-                        </div>
-                        <div class="signature-box">
-                            <strong>Signature du Locataire</strong><br><br><br>
-                            (Lu et approuvé)
-                        </div>
+                    <div id="paper-placeholder" style="text-align: center; padding: 4rem 1rem; color: #64748b;">
+                        <i class="fa-solid fa-file-contract" style="font-size: 3.8rem; color: #94a3b8; margin-bottom: 1.2rem;"></i>
+                        <h3 style="color: #334155; margin-bottom: 0.6rem; font-size: 1.3rem;">Votre Contrat de Location s'affichera ici</h3>
+                        <p style="font-size: 0.95rem; max-width: 420px; margin: 0 auto 1.8rem auto; line-height: 1.5;">Remplissez les informations du formulaire à gauche puis cliquez sur le bouton <strong>✨ Générer le contrat par IA</strong> pour voir apparaître le document officiel sur cette feuille.</p>
+                        <button type="button" onclick="document.getElementById('contrat-form').requestSubmit()" style="padding: 0.85rem 1.6rem; background: var(--grad-primary); color: white; border: none; border-radius: var(--radius-md); font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Générer le contrat maintenant
+                        </button>
                     </div>
-                    
-                    <p style="margin-top: 2rem; text-align: center; font-size: 10pt;">Fait à <strong>Dakar</strong>, le <strong>28/07/2026</strong> en deux exemplaires originaux.</p>
                 </div>
 
                 <!-- Export Bar -->
-                <div class="export-actions">
+                <div class="export-actions" id="export-bar">
                     <button class="btn-export" onclick="exportPDF()" style="background: var(--grad-primary); color: white; border: none;">
                         <i class="fa-solid fa-file-pdf"></i> Télécharger PDF
                     </button>
                     <button class="btn-export" onclick="exportWord()">
-                        <i class="fa-solid fa-file-word" style="color: #2563eb;"></i> Word (.docx)
+                        <i class="fa-solid fa-file-word" style="color: #3b82f6;"></i> Télécharger Word (.docx)
                     </button>
                     <button class="btn-export" onclick="copyText()">
                         <i class="fa-solid fa-copy" style="color: #10b981;"></i> Copier texte
@@ -975,7 +931,7 @@
                 if (window.innerWidth < 992) {
                     document.getElementById('contrat-paper').scrollIntoView({ behavior: 'smooth' });
                 }
-            }, 800);
+            }, 750);
         }
 
         // Export PDF using html2pdf.js
