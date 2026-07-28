@@ -117,15 +117,15 @@
         <div id="results-section" class="documents-container">
             <!-- Payment CTA (Top) -->
             <div style="background: rgba(79, 70, 229, 0.1); border: 1px solid var(--primary); padding: 1.5rem; border-radius: var(--radius-md); text-align: center; margin-bottom: 1rem;">
-                <h3 style="margin-top: 0; color: var(--text-main);">Tes documents sont prêts ! 🎉</h3>
-                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Télécharge les deux documents (Demande + Lettre de motivation) au format PDF.</p>
+                <h3 style="margin-top: 0; color: var(--text-main);" id="results-ready-title">Votre document est prêt ! 🎉</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;" id="results-ready-subtitle">Téléchargez votre document au format PDF.</p>
                 <button onclick="openPaymentModal()" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: bold; background: var(--grad-primary); border: none; color: white; border-radius: var(--radius-lg); cursor: pointer;">
-                    <i class="fa-solid fa-download"></i> Télécharger les 2 documents (500 FCFA)
+                    <i class="fa-solid fa-download"></i> <span id="btn-pay-label-top">Télécharger mon PDF (500 FCFA)</span>
                 </button>
             </div>
 
             <!-- Demande Preview -->
-            <div>
+            <div id="demande-preview-block">
                 <div class="section-title">
                     <span><i class="fa-solid fa-file-lines"></i> Aperçu : Demande d'emploi</span>
                 </div>
@@ -133,7 +133,7 @@
             </div>
             
             <!-- Motivation Preview -->
-            <div style="margin-top: 2rem;">
+            <div id="motivation-preview-block" style="margin-top: 2rem;">
                 <div class="section-title">
                     <span><i class="fa-solid fa-envelope-open-text"></i> Aperçu : Lettre de Motivation</span>
                 </div>
@@ -143,7 +143,7 @@
             <!-- Payment CTA (Bottom) -->
             <div style="text-align: center; margin-top: 2rem; margin-bottom: 4rem;">
                 <button onclick="openPaymentModal()" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: bold; background: var(--grad-primary); border: none; color: white; border-radius: var(--radius-lg); cursor: pointer;">
-                    <i class="fa-solid fa-download"></i> Télécharger les 2 documents (500 FCFA)
+                    <i class="fa-solid fa-download"></i> <span id="btn-pay-label-bottom">Télécharger mon PDF (500 FCFA)</span>
                 </button>
             </div>
         </div>
@@ -153,8 +153,8 @@
     <div id="payment-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close" onclick="closePaymentModal()">&times;</button>
-            <h2 style="color: var(--text-main); margin-top: 0;"><i class="fa-solid fa-lock"></i> Débloquer les PDF</h2>
-            <p style="color: var(--text-muted);">Paiement sécurisé via SenePay pour télécharger votre Demande et Lettre de Motivation (2 fichiers PDF).</p>
+            <h2 style="color: var(--text-main); margin-top: 0;"><i class="fa-solid fa-lock"></i> Débloquer le PDF</h2>
+            <p style="color: var(--text-muted);" id="modal-pay-desc">Paiement sécurisé via SenePay pour télécharger votre document (fichier PDF).</p>
             
             <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 1.5rem 0;">
                 500 FCFA

@@ -256,59 +256,67 @@ async function processPayment() {
 }
 
 async function exportBothPDFs() {
-    const demandeElement = document.getElementById('doc-demande');
-    const motivationElement = document.getElementById('doc-motivation');
+    const urlParams = new URLSearchParams(window.location.search);
+    const docType = urlParams.get('doc');
     
     const prenom = document.getElementById('input-prenom')?.value || "Candidat";
     const nom = document.getElementById('input-nom')?.value || "";
     const namePrefix = `${prenom}_${nom}`.trim().replace(/\s+/g, '_');
 
-    function createPdfClone(sourceEl) {
-        const clone = document.createElement('div');
-        clone.style.position = 'absolute';
-        clone.style.left = '-9999px';
-        clone.style.top = '0';
-        clone.style.width = '750px';
-        clone.style.background = '#ffffff';
-        clone.style.color = '#1e293b';
-        clone.style.padding = '30px 25px';
-        clone.style.fontFamily = "'Times New Roman', Times, serif";
-        clone.style.fontSize = '11pt';
-        clone.style.lineHeight = '1.5';
-        clone.innerHTML = sourceEl.innerHTML;
-        document.body.appendChild(clone);
-        return clone;
-    }
+    async function generateAndDownloadPdf(sourceEl, filename) {
+        if (!sourceEl || !sourceEl.innerHTML.trim()) return;
 
-    try {
-        const clone1 = createPdfClone(demandeElement);
-        const opt1 = {
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'fixed';
+        tempContainer.style.top = '0';
+        tempContainer.style.left = '0';
+        tempContainer.style.zIndex = '-9999';
+        tempContainer.style.width = '750px';
+        tempContainer.style.background = '#ffffff';
+        tempContainer.style.color = '#1e293b';
+        tempContainer.style.padding = '35px 30px';
+        tempContainer.style.fontFamily = "'Times New Roman', Times, serif";
+        tempContainer.style.fontSize = '11.5pt';
+        tempContainer.style.lineHeight = '1.6';
+        tempContainer.innerHTML = sourceEl.innerHTML;
+        document.body.appendChild(tempContainer);
+
+        const opt = {
             margin: [0.4, 0.4, 0.4, 0.4],
-            filename: `Demande_Emploi_${namePrefix}.pdf`,
+            filename: filename,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
-        
-        await html2pdf().set(opt1).from(clone1).save();
-        document.body.removeChild(clone1);
-        
-        setTimeout(async () => {
-            const clone2 = createPdfClone(motivationElement);
-            const opt2 = {
-                margin: [0.4, 0.4, 0.4, 0.4],
-                filename: `Lettre_Motivation_${namePrefix}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            await html2pdf().set(opt2).from(clone2).save();
-            document.body.removeChild(clone2);
-            alert("Vos 2 documents ont été téléchargés avec succès !");
-        }, 1000);
-        
+
+        try {
+            await html2pdf().set(opt).from(tempContainer).save();
+        } finally {
+            if (document.body.contains(tempContainer)) {
+                document.body.removeChild(tempContainer);
+            }
+        }
+    }
+
+    try {
+        const demandeElement = document.getElementById('doc-demande');
+        const motivationElement = document.getElementById('doc-motivation');
+
+        if (docType === 'demande') {
+            await generateAndDownloadPdf(demandeElement, `Demande_Emploi_${namePrefix}.pdf`);
+            alert("Votre Demande d'Emploi a été téléchargée avec succès !");
+        } else if (docType === 'motivation') {
+            await generateAndDownloadPdf(motivationElement, `Lettre_Motivation_${namePrefix}.pdf`);
+            alert("Votre Lettre de Motivation a été téléchargée avec succès !");
+        } else {
+            await generateAndDownloadPdf(demandeElement, `Demande_Emploi_${namePrefix}.pdf`);
+            setTimeout(async () => {
+                await generateAndDownloadPdf(motivationElement, `Lettre_Motivation_${namePrefix}.pdf`);
+                alert("Vos 2 documents ont été téléchargés avec succès !");
+            }, 1000);
+        }
     } catch(err) {
-        console.error("PDF Export Error:", err);
-        alert("Erreur lors de la création du PDF.");
+        console.error("PDF Export error:", err);
+        alert("Erreur lors de la génération du PDF: " + err.message);
     }
 }
