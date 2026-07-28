@@ -293,8 +293,8 @@ function renderParsedJsonToHtml(parsed) {
     const languages = parsed.languages || parsed.langues || [];
     const interests = parsed.interests || parsed.loisirs || parsed.autres || parsed.hobbies || parsed.activites || [];
     
-    // Photo from phone scan or camera upload
-    const scannedPhotoUrl = localStorage.getItem('scanned_cv_image_url') || '';
+    // Photo from profile upload
+    const userPhotoUrl = localStorage.getItem('user_profile_photo_url') || parsed.personal?.photo || parsed.photo || '';
     const themeColor = document.getElementById('style-text-color')?.value || '#0f172a';
     const accentColor = '#800000';
 
@@ -325,10 +325,10 @@ function renderParsedJsonToHtml(parsed) {
     const html = `
         <!-- Modèle Canva Moderne IA Auto-Adaptatif (Photo Téléphone, PDF, Word) -->
         <div class="cv-canva-left" style="width: 36%; padding: 25px 18px; background: #fafafa; border-right: 1px solid #e2e8f0;">
-            <div class="cv-canva-photo-container" onclick="triggerPhotoUpload()" style="cursor: pointer; text-align: center; margin-bottom: 18px;" title="Cliquez pour insérer votre photo de profil">
-                ${scannedPhotoUrl ? 
-                  `<img src="${scannedPhotoUrl}" class="cv-photo" alt="Photo du candidat" style="width:130px; height:130px; border-radius:50%; border:4px solid ${accentColor}; object-fit:cover; display:block; margin:0 auto; box-shadow:0 6px 16px rgba(0,0,0,0.12);">` : 
-                  `<div style="width:125px; height:125px; border-radius:50%; border:3px dashed ${accentColor}; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; color:${accentColor}; margin:0 auto; font-size:0.8rem; font-weight:bold; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s; cursor: pointer;"><i class="fa-solid fa-camera" style="font-size:2rem; margin-bottom:4px; color:#800000;"></i><span style="color:#800000;">Photo / Scan</span></div>`}
+            <div class="cv-canva-photo-container" onclick="triggerProfilePhotoUpload(event)" style="cursor: pointer; width: 125px; height: 125px; border-radius: 50%; margin: 0 auto 18px auto; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.12); border: 3px solid ${accentColor}; background: #ffffff;" title="Cliquez pour insérer votre photo de profil">
+                ${userPhotoUrl ? 
+                  `<img src="${userPhotoUrl}" class="cv-photo" alt="Photo du candidat" style="width:100%; height:100%; border-radius:50%; object-fit:cover; display:block;">` : 
+                  `<div style="width:100%; height:100%; border-radius:50%; border:2px dashed ${accentColor}; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; color:${accentColor}; font-size:0.8rem; font-weight:bold; box-sizing:border-box; cursor:pointer;"><i class="fa-solid fa-camera" style="font-size:2rem; margin-bottom:4px; color:#800000;"></i><span style="color:#800000;">Photo / Scan</span></div>`}
             </div>
 
             ${profileSummary ? `
@@ -421,32 +421,42 @@ function renderParsedJsonToHtml(parsed) {
     triggerCloudSaveHtml(html);
 }
 
-window.triggerPhotoUpload = function() {
-    let fileInput = document.getElementById('photo-upload-input');
+window.triggerProfilePhotoUpload = function(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    let fileInput = document.getElementById('profile-photo-file-input');
     if (!fileInput) {
         fileInput = document.createElement('input');
         fileInput.type = 'file';
-        fileInput.id = 'photo-upload-input';
+        fileInput.id = 'profile-photo-file-input';
         fileInput.accept = 'image/*';
         fileInput.style.display = 'none';
         document.body.appendChild(fileInput);
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
+        fileInput.addEventListener('change', (evt) => {
+            const file = evt.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     const photoDataUrl = ev.target.result;
-                    localStorage.setItem('scanned_cv_image_url', photoDataUrl);
+                    localStorage.setItem('user_profile_photo_url', photoDataUrl);
 
                     const photoContainers = document.querySelectorAll('.cv-canva-photo-container, .cv-photo-placeholder, .cv-photo-container');
                     photoContainers.forEach(container => {
-                        container.innerHTML = `<img src="${photoDataUrl}" class="cv-photo" alt="Photo du candidat" style="width:125px; height:125px; border-radius:50%; border:3px solid #800000; object-fit:cover; display:block; margin:0 auto; box-shadow:0 4px 12px rgba(0,0,0,0.15); cursor:pointer;">`;
+                        container.innerHTML = `<img src="${photoDataUrl}" class="cv-photo" alt="Photo du candidat" style="width:100%; height:100%; border-radius:50%; object-fit:cover; display:block;">`;
+                        container.style.overflow = 'hidden';
+                        container.style.borderRadius = '50%';
                     });
 
                     const photoImgs = document.querySelectorAll('img.cv-photo, img.cv-profile-pic');
                     photoImgs.forEach(img => {
                         img.src = photoDataUrl;
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '50%';
                     });
 
                     const docEl = document.getElementById('cv-document');
@@ -458,9 +468,10 @@ window.triggerPhotoUpload = function() {
     }
     fileInput.click();
 };
+window.triggerPhotoUpload = window.triggerProfilePhotoUpload;
 
 function setupPhotoUploader() {
-    window.triggerPhotoUpload();
+    // Registered profile photo handler
 }
 
 // Cloud functionality adapted for HTML
