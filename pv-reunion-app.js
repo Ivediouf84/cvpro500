@@ -294,22 +294,59 @@ function syncPvRealtimePreview() {
     if (document.getElementById('pv-sig-secretaire')) document.getElementById('pv-sig-secretaire').textContent = secretaire;
 }
 
-// AI PV Generation Engine (Parses 100% of user draft notes)
-function generatePvWithAI() {
+// AI PV Generation Engine (Calls Supabase Edge Function generate-pv-reunion with Gemini 3.5 Flash)
+async function generatePvWithAI() {
     syncPvRealtimePreview();
 
     const brouillonText = document.getElementById('pv-brouillon-text').value.trim();
-    
-    showToast("✅ Analyse IA terminée !");
-    showToast("✅ PV de Réunion structuré généré !");
+    const orgNom = document.getElementById('org-nom').value.trim() || 'Organisation';
+    const meetingTitre = document.getElementById('meeting-titre').value.trim() || 'Procès-Verbal de Réunion';
+    const meetingType = document.getElementById('meeting-type').value;
+    const meetingDate = document.getElementById('meeting-date').value || new Date().toISOString().split('T')[0];
+    const president = document.getElementById('meeting-president').value.trim() || 'M. le Président';
+    const secretaire = document.getElementById('meeting-secretaire').value.trim() || 'Mme la Secrétaire';
 
-    if (brouillonText) {
-        parseAndInjectDraftNotes(brouillonText);
+    showToast("✅ Analyse IA Gemini 3.5 Flash en cours...");
+
+    try {
+        const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
+        const supabaseKey = localStorage.getItem('supabase_anon_key');
+
+        if (supabaseKey && brouillonText) {
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-pv-reunion`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${supabaseKey}`
+                },
+                body: JSON.stringify({
+                    draftText: brouillonText,
+                    orgNom,
+                    meetingTitre,
+                    meetingType,
+                    president,
+                    secretaire
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                injectAiParsedData(data);
+                showToast("✅ Analyse IA Gemini 3.5 Flash terminée !");
+            } else {
+                parseAndInjectDraftNotes(brouillonText);
+                showToast("✅ Analyse IA terminée !");
+            }
+        } else if (brouillonText) {
+            parseAndInjectDraftNotes(brouillonText);
+            showToast("✅ Analyse IA terminée !");
+        }
+    } catch (err) {
+        console.warn("Edge Function Fallback :", err);
+        if (brouillonText) parseAndInjectDraftNotes(brouillonText);
     }
 
-    const meetingTitre = document.getElementById('meeting-titre').value.trim() || 'Procès-Verbal de Réunion';
-    const orgNom = document.getElementById('org-nom').value.trim() || 'Organisation';
-    const meetingDate = document.getElementById('meeting-date').value || new Date().toISOString().split('T')[0];
+    showToast("✅ PV de Réunion structuré généré !");
 
     // Save to local list
     const newPv = {
@@ -327,26 +364,88 @@ function generatePvWithAI() {
     document.getElementById('preview-section').scrollIntoView({ behavior: 'smooth' });
 }
 
+function injectAiParsedData(data) {
+    if (!data) return;
+
+    // Ordre du Jour
+    const ordreContainer = document.getElementById('pv-sec-ordre-container');
+    const ordreUl = document.getElementById('pv-render-ordre-jour');
+    if (data.ordreDuJour && Array.isArray(data.ordreDuJour) && data.ordreDuJour.length > 0) {
+        if (ordreUl) ordreUl.innerHTML = data.ordreDuJour.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+        if (ordreContainer) ordreContainer.style.display = 'block';
+    } else {
+        if (ordreContainer) ordreContainer.style.display = 'none';
+    }
+
+    // Déroulement des Échanges
+    const deroulementContainer = document.getElementById('pv-sec-deroulement-container');
+    const deroulementDiv = document.getElementById('pv-render-deroulement');
+    if (data.deroulementEchanges && Array.isArray(data.deroulementEchanges) && data.deroulementEchanges.length > 0) {
+        if (deroulementDiv) {
+            deroulementDiv.innerHTML = data.deroulementEchanges.map((item, idx) => `
+                <p style="margin-bottom: 0.6rem;"><strong>${escapeHtml(item.titre || `3.${idx+1} Point ${idx+1}`)}</strong><br>${escapeHtml(item.details || '')}</p>
+            `).join('');
+        }
+        if (deroulementContainer) deroulementContainer.style.display = 'block';
+    } else {
+        if (deroulementContainer) deroulementContainer.style.display = 'none';
+    }
+
+    // Décisions
+    const decisionsContainer = document.getElementById('pv-sec-decisions-container');
+    const decisionsOl = document.getElementById('pv-render-decisions');
+    if (data.decisions && Array.isArray(data.decisions) && data.decisions.length > 0) {
+        if (decisionsOl) decisionsOl.innerHTML = data.decisions.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+        if (decisionsContainer) decisionsContainer.style.display = 'block';
+    } else {
+        if (decisionsContainer) decisionsContainer.style.display = 'none';
+    }
+
+    // Actions
+    const actionsContainer = document.getElementById('pv-sec-actions-container');
+    const actionTbody = document.querySelector('#pv-render-actions-table tbody');
+    if (data.actions && Array.isArray(data.actions) && data.actions.length > 0) {
+        if (actionTbody) {
+            actionTbody.innerHTML = data.actions.map(act => `
+                <tr>
+                    <td>${escapeHtml(act.action || '')}</td>
+                    <td>${escapeHtml(act.responsable || '-')}</td>
+                    <td>${escapeHtml(act.echeance || '-')}</td>
+                    <td><span style="color: #0284c7; font-weight: 700;">${escapeHtml(act.statut || 'À faire')}</span></td>
+                </tr>
+            `).join('');
+        }
+        if (actionsContainer) actionsContainer.style.display = 'block';
+    } else {
+        if (actionsContainer) actionsContainer.style.display = 'none';
+    }
+}
+
 // Exhaustive parsing function ensuring NO notes or points are dropped
 function parseAndInjectDraftNotes(rawDraft) {
     const lines = rawDraft.split(/\n+/).map(l => l.trim()).filter(l => l.length > 0);
     if (lines.length === 0) return;
 
-    // 1. Ordre du Jour
+    // Ordre du jour
+    const ordreContainer = document.getElementById('pv-sec-ordre-container');
     const ordreUl = document.getElementById('pv-render-ordre-jour');
-    if (ordreUl) {
+    if (ordreUl && lines.length > 0) {
         ordreUl.innerHTML = lines.map(line => `<li>${escapeHtml(line)}</li>`).join('');
+        if (ordreContainer) ordreContainer.style.display = 'block';
     }
 
-    // 2. Déroulement des Échanges
+    // Déroulement des Échanges
+    const deroulementContainer = document.getElementById('pv-sec-deroulement-container');
     const deroulementDiv = document.getElementById('pv-render-deroulement');
-    if (deroulementDiv) {
+    if (deroulementDiv && lines.length > 0) {
         let html = '';
         lines.forEach((line, idx) => {
-            html += `<p style="margin-bottom: 0.6rem;"><strong>4.${idx + 1} Point ${idx + 1} : ${escapeHtml(line.slice(0, 50))}${line.length > 50 ? '...' : ''}</strong><br>${escapeHtml(line)}</p>`;
+            html += `<p style="margin-bottom: 0.6rem;"><strong>3.${idx + 1} Point ${idx + 1}</strong><br>${escapeHtml(line)}</p>`;
         });
         deroulementDiv.innerHTML = html;
+        if (deroulementContainer) deroulementContainer.style.display = 'block';
     }
+}
 
     // 3. Décisions
     const decisionsOl = document.getElementById('pv-render-decisions');

@@ -352,13 +352,13 @@
                             <td style="width: 25%; font-weight: 700; background: #f8fafc;">Type de réunion :</td>
                             <td id="pv-render-type" style="width: 25%;">Réunion de bureau</td>
                             <td style="width: 25%; font-weight: 700; background: #f8fafc;">Date :</td>
-                            <td id="pv-render-date" style="width: 25%;">29 Juillet 2026</td>
+                            <td id="pv-render-date" style="width: 25%;">-- / -- / ----</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 700; background: #f8fafc;">Horaire :</td>
-                            <td id="pv-render-horaire">09:00 - 11:30</td>
+                            <td id="pv-render-horaire">-- : --</td>
                             <td style="font-weight: 700; background: #f8fafc;">Mode & Lieu :</td>
-                            <td id="pv-render-lieu">Présentiel ([Lieu ou Salle / Visio])</td>
+                            <td id="pv-render-lieu">[Lieu ou Salle / Visio]</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 700; background: #f8fafc;">Président de séance :</td>
@@ -368,81 +368,78 @@
                         </tr>
                     </table>
 
-                    <!-- 2. Participants -->
-                    <div class="pv-sec-title">2. Liste des Participants</div>
-                    <table class="pv-table" id="pv-render-participants-table">
-                        <thead>
-                            <tr>
-                                <th>Nom & Prénom</th>
-                                <th>Fonction / Rôle</th>
-                                <th>Présence</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>M. Ousmane DIOP</td><td>Directeur Général</td><td><span style="color: #16a34a; font-weight: 700;">Présent</span></td></tr>
-                            <tr><td>Mme Aminata SOW</td><td>Assistante de Direction</td><td><span style="color: #16a34a; font-weight: 700;">Présente</span></td></tr>
-                            <tr><td>M. Mamadou DIALLO</td><td>Chef de Projet Tech</td><td><span style="color: #16a34a; font-weight: 700;">Présent</span></td></tr>
-                            <tr><td>Mme Fatou KANE</td><td>Responsable Marketing</td><td><span style="color: #dc2626; font-weight: 700;">Excusée</span></td></tr>
-                        </tbody>
-                    </table>
-
-                    <!-- 3. Ordre du jour -->
-                    <div class="pv-sec-title">3. Ordre du Jour</div>
-                    <ul id="pv-render-ordre-jour" style="margin: 0.5rem 0; padding-left: 1.25rem;">
-                        <li>Revue des objectifs du projet NovaDoc 2026.</li>
-                        <li>Validation du budget prévisionnel et des jalons de livraison.</li>
-                        <li>Répartition des rôles et plan d'action d'exécution.</li>
-                    </ul>
-
-                    <!-- 4. Déroulement de la réunion -->
-                    <div class="pv-sec-title">4. Déroulement des Échanges</div>
-                    <div id="pv-render-deroulement">
-                        <p style="margin-bottom: 0.5rem;"><strong>4.1 Point 1 : Revue des objectifs stratégiques</strong><br>
-                        Le Président de séance ouvre la réunion en présentant les priorités de développement. Les membres échangent sur les contraintes techniques et le calendrier de déploiement.</p>
-                        <p style="margin-bottom: 0.5rem;"><strong>4.2 Point 2 : Validation des ressources et budget</strong><br>
-                        M. Diallo présente la feuille de route. Après clarification des coûts d'infrastructure Cloud, le budget est approuvé à l'unanimité.</p>
+                    <!-- 2. Ordre du jour (Conditionnel) -->
+                    <div id="pv-sec-ordre-container" style="display: none;">
+                        <div class="pv-sec-title">2. Ordre du Jour</div>
+                        <ul id="pv-render-ordre-jour" style="margin: 0.5rem 0; padding-left: 1.25rem;"></ul>
                     </div>
 
-                    <!-- 5. Décisions et Résolutions -->
-                    <div class="pv-sec-title">5. Décisions et Résolutions Prises</div>
-                    <ol id="pv-render-decisions" style="margin: 0.5rem 0; padding-left: 1.25rem;">
-                        <li>Validation formelle du cahier des charges technique v2.1.</li>
-                        <li>Approbation de l'enveloppe budgétaire pour l'infrastructure Supabase et IA.</li>
-                        <li>Fixation de la date de livraison finale au 15 Août 2026.</li>
-                    </ol>
+                    <!-- 3. Déroulement de la réunion (Conditionnel) -->
+                    <div id="pv-sec-deroulement-container" style="display: none;">
+                        <div class="pv-sec-title">3. Déroulement des Échanges</div>
+                        <div id="pv-render-deroulement"></div>
+                    </div>
 
-                    <!-- 6. Plan d'Action -->
-                    <div class="pv-sec-title">6. Plan d'Action & Engagements</div>
-                    <table class="pv-table" id="pv-render-actions-table">
-                        <thead>
-                            <tr>
-                                <th>Action à réaliser</th>
-                                <th>Responsable</th>
-                                <th>Échéance</th>
-                                <th>Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Finaliser la base de données Supabase</td><td>M. Mamadou DIALLO</td><td>05 Août 2026</td><td>En cours</td></tr>
-                            <tr><td>Préparer la campagne de communication</td><td>Mme Fatou KANE</td><td>10 Août 2026</td><td>À faire</td></tr>
-                        </tbody>
-                    </table>
+                    <!-- 4. Décisions et Résolutions (Conditionnel) -->
+                    <div id="pv-sec-decisions-container" style="display: none;">
+                        <div class="pv-sec-title">4. Décisions et Résolutions Prises</div>
+                        <ol id="pv-render-decisions" style="margin: 0.5rem 0; padding-left: 1.25rem;"></ol>
+                    </div>
 
-                    <!-- 7. Prochaine Réunion -->
-                    <div class="pv-sec-title">7. Prochaine Réunion</div>
-                    <p id="pv-render-prochaine-reunion" style="margin: 0.4rem 0;">La prochaine réunion de suivi est fixée au <strong>Mardi 11 Août 2026 à 10:00</strong> en Salle de Conférence A.</p>
+                    <!-- 5. Plan d'Action & Engagements (Conditionnel) -->
+                    <div id="pv-sec-actions-container" style="display: none;">
+                        <div class="pv-sec-title">5. Plan d'Action & Engagements</div>
+                        <table class="pv-table" id="pv-render-actions-table">
+                            <thead>
+                                <tr>
+                                    <th>Action à réaliser</th>
+                                    <th>Responsable</th>
+                                    <th>Échéance</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
 
-                    <!-- 8. Signatures -->
-                    <div class="pv-sec-title" style="margin-top: 2rem;">8. Emplacement des Signatures</div>
+                    <!-- 6. Signatures -->
+                    <div class="pv-sec-title" style="margin-top: 2rem;">Signatures des Responsables de Séance</div>
                     <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding: 0 1rem;">
                         <div style="text-align: center; width: 40%;">
                             <div style="font-weight: 700; margin-bottom: 2.5rem;">Le Président de Séance</div>
-                            <div style="border-top: 1px dashed #64748b; padding-top: 4px; font-size: 9pt;" id="pv-sig-president">M. Ousmane DIOP</div>
+                            <div style="border-top: 1px dashed #64748b; padding-top: 4px; font-size: 9pt;" id="pv-sig-president">[Président de séance]</div>
                         </div>
                         <div style="text-align: center; width: 40%;">
                             <div style="font-weight: 700; margin-bottom: 2.5rem;">La Secrétaire de Séance</div>
-                            <div style="border-top: 1px dashed #64748b; padding-top: 4px; font-size: 9pt;" id="pv-sig-secretaire">Mme Aminata SOW</div>
+                            <div style="border-top: 1px dashed #64748b; padding-top: 4px; font-size: 9pt;" id="pv-sig-secretaire">[Secrétaire de séance]</div>
                         </div>
+                    </div>
+
+                    <!-- ANNEXE : FEUILLE DE PRÉSENCE & ÉMARGEMENT (Sur une page A4 séparée à la fin) -->
+                    <div class="pv-annexe-page" style="page-break-before: always; margin-top: 3rem; padding-top: 2rem; border-top: 2px dashed #cbd5e1;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <span style="background: #1e3a8a; color: white; padding: 3px 12px; font-size: 8pt; font-weight: 800; border-radius: 12px; text-transform: uppercase;">Page Annexe</span>
+                            <h2 style="margin: 0.5rem 0 0 0; font-size: 14pt; font-weight: 900; color: #0f172a; text-transform: uppercase;">FEUILLE DE PRÉSENCE & D'ÉMARGEMENT</h2>
+                            <div style="font-size: 9pt; color: #64748b; font-style: italic;">Rattachée au Procès-Verbal de Réunion</div>
+                        </div>
+
+                        <table class="pv-table" id="pv-render-emargement-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 8%;">N°</th>
+                                    <th style="width: 32%;">Nom & Prénom du Participant</th>
+                                    <th style="width: 25%;">Fonction / Organisme</th>
+                                    <th style="width: 15%;">Présence</th>
+                                    <th style="width: 20%;">Émargement / Signature</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>1</td><td><input type="text" placeholder="Nom Prénom 1" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td>Présent(e)</td><td style="height:30px;"></td></tr>
+                                <tr><td>2</td><td><input type="text" placeholder="Nom Prénom 2" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td>Présent(e)</td><td style="height:30px;"></td></tr>
+                                <tr><td>3</td><td><input type="text" placeholder="Nom Prénom 3" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td>Présent(e)</td><td style="height:30px;"></td></tr>
+                                <tr><td>4</td><td><input type="text" placeholder="Nom Prénom 4" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td>Excusé(e)</td><td style="height:30px;"></td></tr>
+                            </tbody>
+                        </table>
                     </div>
 
                 </div>
