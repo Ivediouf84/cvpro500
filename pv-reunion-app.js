@@ -732,11 +732,6 @@ function cleanAndCorrectFrenchText(str) {
         cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
     }
     return cleaned;
-}tainer) decisionsContainer.style.display = 'none';
-    }
-
-    const actionsContainer = document.getElementById('pv-sec-actions-container');
-    if (actionsContainer) actionsContainer.style.display = 'none';
 }
 
 function escapeHtml(str) {
