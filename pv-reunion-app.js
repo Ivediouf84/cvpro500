@@ -298,7 +298,12 @@ function syncPvRealtimePreview() {
 async function generatePvWithAI() {
     syncPvRealtimePreview();
 
-    const brouillonText = document.getElementById('pv-brouillon-text').value.trim();
+    const brouillonText = (document.getElementById('pv-brouillon-text')?.value || uploadedBrouillonText || "").trim();
+    if (!brouillonText) {
+        alert("⚠️ Veuillez coller le texte de votre brouillon ou importer un fichier (PDF, Word, Image) avant de cliquer sur générer.");
+        return;
+    }
+
     const orgNom = document.getElementById('org-nom').value.trim() || 'Organisation';
     const meetingTitre = document.getElementById('meeting-titre').value.trim() || 'Procès-Verbal de Réunion';
     const meetingType = document.getElementById('meeting-type').value;
@@ -312,7 +317,8 @@ async function generatePvWithAI() {
         const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
         const supabaseKey = localStorage.getItem('supabase_anon_key');
 
-        if (supabaseKey && brouillonText) {
+        let isParsedWithEdge = false;
+        if (supabaseKey) {
             const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-pv-reunion`, {
                 method: 'POST',
                 headers: {
@@ -331,19 +337,21 @@ async function generatePvWithAI() {
 
             if (response.ok) {
                 const data = await response.json();
-                injectAiParsedData(data);
-                showToast("✅ Analyse IA Gemini 3.5 Flash terminée !");
-            } else {
-                parseAndInjectDraftNotes(brouillonText);
-                showToast("✅ Analyse IA terminée !");
+                if (data && (data.ordreDuJour || data.deroulementEchanges || data.decisions)) {
+                    injectAiParsedData(data);
+                    isParsedWithEdge = true;
+                    showToast("✅ Analyse IA Gemini 3.5 Flash terminée !");
+                }
             }
-        } else if (brouillonText) {
+        }
+
+        if (!isParsedWithEdge) {
             parseAndInjectDraftNotes(brouillonText);
-            showToast("✅ Analyse IA terminée !");
+            showToast("✅ Brouillon structuré et inséré avec succès !");
         }
     } catch (err) {
         console.warn("Edge Function Fallback :", err);
-        if (brouillonText) parseAndInjectDraftNotes(brouillonText);
+        parseAndInjectDraftNotes(brouillonText);
     }
 
     showToast("✅ PV de Réunion structuré généré !");
@@ -444,6 +452,33 @@ function parseAndInjectDraftNotes(rawDraft) {
         });
         deroulementDiv.innerHTML = html;
         if (deroulementContainer) deroulementContainer.style.display = 'block';
+    }
+
+    // Décisions (si mots clés présents)
+    const decisionsContainer = document.getElementById('pv-sec-decisions-container');
+    const decisionsOl = document.getElementById('pv-render-decisions');
+    const decisionLines = lines.filter(l => /décid|adopt|valid|résol|conclus/i.test(l));
+    if (decisionsOl && decisionLines.length > 0) {
+        decisionsOl.innerHTML = decisionLines.map(line => `<li>${escapeHtml(line)}</li>`).join('');
+        if (decisionsContainer) decisionsContainer.style.display = 'block';
+    }
+
+    // Plan d'Action (si actions présentes)
+    const actionsContainer = document.getElementById('pv-sec-actions-container');
+    const actionTbody = document.querySelector('#pv-render-actions-table tbody');
+    const actionLines = lines.filter(l => /action|tâche|faire|responsable|charge|échéance|rappeler|suivre/i.test(l));
+    if (actionTbody && actionLines.length > 0) {
+        const pres = document.getElementById('meeting-president')?.value || "Président";
+        const sec = document.getElementById('meeting-secretaire')?.value || "Secrétaire";
+        actionTbody.innerHTML = actionLines.map((line, idx) => `
+            <tr>
+                <td>${escapeHtml(line)}</td>
+                <td>${escapeHtml(idx % 2 === 0 ? pres : sec)}</td>
+                <td>À fixer</td>
+                <td><span style="color: #0284c7; font-weight: 700;">À faire</span></td>
+            </tr>
+        `).join('');
+        if (actionsContainer) actionsContainer.style.display = 'block';
     }
 }
 
