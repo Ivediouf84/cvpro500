@@ -675,7 +675,13 @@ function parseAndInjectDraftNotes(rawDraft) {
         });
         textPoint1 = p1.join(' ');
         textPoint2 = p2.join(' ');
-        textP    if (deroulementDiv && agendaItems.length > 0) {
+        textPoint3 = p3.join(' ');
+    }
+
+    const deroulementContainer = document.getElementById('pv-sec-deroulement-container');
+    const deroulementDiv = document.getElementById('pv-render-deroulement');
+
+    if (deroulementDiv && agendaItems.length > 0) {
         let exchangesHtml = '';
 
         agendaItems.forEach((agendaItem, idx) => {
