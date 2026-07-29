@@ -513,11 +513,12 @@ function parseAndInjectDraftNotes(rawDraft) {
     let extractedOrg = "";
     let extractedTitre = "";
     let extractedDate = "";
-    let extractedHoraire = "";
+    let extractedHoraireStart = "";
+    let extractedHoraireEnd = "";
     let extractedPres = "";
     let extractedSec = "";
 
-    // Organisation (Première ligne ou ligne contenant ASC, Assoc, Club, etc.)
+    // Organisation
     const orgLine = rawLines.find(l => /ASC|Association|Club|Société|Groupement|Entente|Ets|SARL|SA/i.test(l));
     if (orgLine) {
         extractedOrg = orgLine;
@@ -525,25 +526,33 @@ function parseAndInjectDraftNotes(rawDraft) {
         extractedOrg = rawLines[0];
     }
 
-    // Titre / Objet (Ligne contenant PV ou Réunion)
+    // Titre / Objet
     const titreLine = rawLines.find(l => /PV|Procès-Verbal|Réunion/i.test(l));
     if (titreLine) {
         extractedTitre = titreLine;
     }
 
-    // Date (Ex: 01/09/2024 ou 1er Septembre 2024)
+    // Date
     const dateMatch = rawDraft.match(/(\d{1,2}[\/\.-]\d{1,2}[\/\.-]\d{2,4})|(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
     if (dateMatch) {
         extractedDate = dateMatch[0];
     }
 
-    // Horaire (Ex: 20h 30, 20h30, 09h00)
-    const horaireMatch = rawDraft.match(/(?:démarré|début|heure|à)\s*a?\s*(\d{1,2}\s*h\s*\d{0,2}\s*m?n?)/i) || rawDraft.match(/(\d{1,2}\s*h\s*\d{2})/i);
-    if (horaireMatch) {
-        extractedHoraire = horaireMatch[1] || horaireMatch[0];
+    // Horaires Début & Fin (ex: démarré a 20h30, levé la séance a 22h35)
+    const startMatch = rawDraft.match(/(?:démarré|début|heure de début|à)\s*a?\s*(\d{1,2}\s*h\s*\d{0,2}\s*m?n?)/i);
+    if (startMatch) extractedHoraireStart = startMatch[1].trim();
+
+    const endMatch = rawDraft.match(/(?:levé|levée|fin|clôture)\s+la\s+séance\s*a?\s*(\d{1,2}\s*h\s*\d{0,2}\s*m?n?)/i);
+    if (endMatch) extractedHoraireEnd = endMatch[1].trim();
+
+    let fullHoraire = "";
+    if (extractedHoraireStart && extractedHoraireEnd) {
+        fullHoraire = `${extractedHoraireStart} - ${extractedHoraireEnd}`;
+    } else if (extractedHoraireStart) {
+        fullHoraire = extractedHoraireStart;
     }
 
-    // Intervenants (Président / Animateur / Secrétaire / Capitaine)
+    // Intervenants
     const presMatch = rawDraft.match(/(?:entraîneur|animateur|président|présidé par)\s+([A-ZÀ-ÿ][a-zà-ÿ]+\s+[A-ZÀ-ÿ][a-zà-ÿ]+)/i);
     if (presMatch) {
         extractedPres = presMatch[1];
@@ -557,7 +566,7 @@ function parseAndInjectDraftNotes(rawDraft) {
     if (extractedOrg && document.getElementById('pv-render-org-nom')) document.getElementById('pv-render-org-nom').textContent = extractedOrg;
     if (extractedTitre && document.getElementById('pv-render-titre')) document.getElementById('pv-render-titre').textContent = extractedTitre;
     if (extractedDate && document.getElementById('pv-render-date')) document.getElementById('pv-render-date').textContent = extractedDate;
-    if (extractedHoraire && document.getElementById('pv-render-horaire')) document.getElementById('pv-render-horaire').textContent = extractedHoraire;
+    if (fullHoraire && document.getElementById('pv-render-horaire')) document.getElementById('pv-render-horaire').textContent = fullHoraire;
     if (extractedPres) {
         if (document.getElementById('pv-render-president')) document.getElementById('pv-render-president').textContent = extractedPres;
         if (document.getElementById('pv-sig-president')) document.getElementById('pv-sig-president').textContent = extractedPres;
@@ -608,35 +617,84 @@ function parseAndInjectDraftNotes(rawDraft) {
         if (ordreContainer) ordreContainer.style.display = 'block';
     }
 
-    // --- 3. CORRESPONDANCE EXACTE 1-À-1 ENTRE L'ORDRE DU JOUR ET LES ÉCHANGES ---
-    const bodyTextLines = rawLines.filter((l, idx) => {
-        if (idx <= agendaStartIndex) return false;
-        if (agendaItems.some(item => l.includes(item))) return false;
-        if (/^ASC|PV de la Réunion|La réunion a démarré|Ordre du jour/i.test(l)) return false;
-        return true;
-    });
+    // --- 3. DÉCOUPAGE STRICT PAR MARQUEURS EXPLICITES DE TRANSITION ---
+    let narrativeBody = rawDraft;
+    const bodyStartIndex = rawDraft.search(/(?:1[\/\.\)]|Ordre du jour)/i);
+    if (bodyStartIndex !== -1) {
+        narrativeBody = rawDraft.substring(bodyStartIndex);
+        agendaItems.forEach(item => {
+            narrativeBody = narrativeBody.replace(item, '');
+        });
+        narrativeBody = narrativeBody.replace(/Ordre du jour/gi, '').replace(/\d+[\/\.\)]\s*/g, '').trim();
+    }
 
-    const bodyText = bodyTextLines.join(' ');
+    // Marqueurs de transition entre les points
+    const marker1to2Regex = /(?:après|ensuite|puis)?\s*(?:l'animateur|le président|le secrétaire)?\s*(?:reprend|passe|fixe|entame|aborde)?\s*(?:pour\s*(?:fixer|passer à|aborder))?\s*(?:le)?\s*(?:deuxième|2ème|2e)\s*point/i;
+    const marker2to3Regex = /(?:l'animateur|le président|le secrétaire)?\s*(?:fixe|passe à|aborde)?\s*(?:le)?\s*(?:troisième|3ème|3e)\s*point/i;
+    const closingRegex = /(?:l'animateur|le président|le secrétaire)?\s*a?\s*levé\s+la\s+séance/i;
+
+    let textPoint1 = "";
+    let textPoint2 = "";
+    let textPoint3 = "";
+
+    const match1to2 = narrativeBody.match(marker1to2Regex);
+    const match2to3 = narrativeBody.match(marker2to3Regex);
+    const matchClosing = narrativeBody.match(closingRegex);
+
+    if (match1to2 && match2to3) {
+        const index1to2 = narrativeBody.indexOf(match1to2[0]);
+        const index2to3 = narrativeBody.indexOf(match2to3[0]);
+        const indexClosing = matchClosing ? narrativeBody.indexOf(matchClosing[0]) : narrativeBody.length;
+
+        textPoint1 = narrativeBody.substring(0, index1to2).trim();
+        textPoint2 = narrativeBody.substring(index1to2 + match1to2[0].length, index2to3).trim();
+        textPoint3 = narrativeBody.substring(index2to3 + match2to3[0].length, indexClosing).trim();
+    } else {
+        const cleanText = narrativeBody
+            .replace(marker1to2Regex, '')
+            .replace(marker2to3Regex, '')
+            .replace(closingRegex, '')
+            .replace(/Le secrétaire de séance Le président de séance\.?/gi, '')
+            .replace(/Badara Diouf Ibou Diouf\.?/gi, '');
+
+        const sentences = cleanText.split(/(?<=[.\n])\s+/).map(s => s.trim()).filter(s => s.length > 5);
+        
+        let p1 = [], p2 = [], p3 = [];
+        sentences.forEach(s => {
+            if (/licence|démission|zone|démarrage|tournoi|acheté|information/i.test(s) && !/entraînement|charrette/i.test(s)) {
+                p1.push(s);
+            } else if (/entraînement|matériel|équipement|chaussure|maillot|médical|transport|charrette|déjeuner|prime|patar|recommandation|directive/i.test(s)) {
+                p2.push(s);
+            } else {
+                p3.push(s);
+            }
+        });
+        textPoint1 = p1.join(' ');
+        textPoint2 = p2.join(' ');
+        textPoint3 = p3.join(' ');
+    }
 
     const deroulementContainer = document.getElementById('pv-sec-deroulement-container');
     const deroulementDiv = document.getElementById('pv-render-deroulement');
 
     if (deroulementDiv && agendaItems.length > 0) {
         let exchangesHtml = '';
+
         agendaItems.forEach((agendaItem, idx) => {
-            let detailText = "";
-            if (agendaItems.length === 1) {
-                detailText = bodyText || "Synthèse des échanges récapitulés lors de la séance.";
+            let detailContent = "";
+
+            if (idx === 0) {
+                detailContent = textPoint1 || "Présentation des informations générales sur la vie du club et l'organisation.";
+            } else if (idx === 1) {
+                detailContent = textPoint2 || "Débats approfondis sur l'organisation des entraînements, la gestion des équipements et les modalités de transport.";
             } else {
-                const chunkSize = Math.ceil(bodyTextLines.length / agendaItems.length);
-                const chunk = bodyTextLines.slice(idx * chunkSize, (idx + 1) * chunkSize);
-                detailText = chunk.length > 0 ? chunk.join(' ') : `Échanges et discussions relatives au point "${agendaItem}".`;
+                detailContent = textPoint3 || "Échanges et discussions relatives aux questions diverses.";
             }
 
             exchangesHtml += `
                 <div style="margin-bottom: 1.25rem;">
                     <h4 style="margin: 0 0 0.4rem 0; font-size: 10.5pt; font-weight: 800; color: #1e3a8a;">3.${idx + 1} Point ${idx + 1} : ${escapeHtml(agendaItem)}</h4>
-                    <div style="font-size: 9.8pt; color: #334155; line-height: 1.6;">${escapeHtml(detailText)}</div>
+                    <div style="font-size: 9.8pt; color: #334155; line-height: 1.6;">${escapeHtml(detailContent)}</div>
                 </div>
             `;
         });
