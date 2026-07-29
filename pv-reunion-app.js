@@ -411,7 +411,43 @@ async function generatePvWithAI() {
 function injectAiParsedData(data) {
     if (!data) return;
 
-    // Ordre du Jour
+    // 1. Mise à jour automatique des informations générales réelles extraites du brouillon
+    if (data.meetingInfo) {
+        const info = data.meetingInfo;
+        if (info.orgNom && document.getElementById('pv-render-org-nom')) {
+            document.getElementById('pv-render-org-nom').textContent = info.orgNom;
+            const orgInput = document.getElementById('org-nom');
+            if (orgInput) orgInput.value = info.orgNom;
+        }
+        if (info.meetingTitre && document.getElementById('pv-render-titre')) {
+            document.getElementById('pv-render-titre').textContent = info.meetingTitre;
+            const titreInput = document.getElementById('meeting-titre');
+            if (titreInput) titreInput.value = info.meetingTitre;
+        }
+        if (info.meetingDate && document.getElementById('pv-render-date')) {
+            document.getElementById('pv-render-date').textContent = info.meetingDate;
+        }
+        if (info.horaire && document.getElementById('pv-render-horaire')) {
+            document.getElementById('pv-render-horaire').textContent = info.horaire;
+        }
+        if (info.meetingLieu && document.getElementById('pv-render-lieu')) {
+            document.getElementById('pv-render-lieu').textContent = info.meetingLieu;
+        }
+        if (info.president) {
+            if (document.getElementById('pv-render-president')) document.getElementById('pv-render-president').textContent = info.president;
+            if (document.getElementById('pv-sig-president')) document.getElementById('pv-sig-president').textContent = info.president;
+            const presInput = document.getElementById('meeting-president');
+            if (presInput) presInput.value = info.president;
+        }
+        if (info.secretaire) {
+            if (document.getElementById('pv-render-secretaire')) document.getElementById('pv-render-secretaire').textContent = info.secretaire;
+            if (document.getElementById('pv-sig-secretaire')) document.getElementById('pv-sig-secretaire').textContent = info.secretaire;
+            const secInput = document.getElementById('meeting-secretaire');
+            if (secInput) secInput.value = info.secretaire;
+        }
+    }
+
+    // 2. Ordre du Jour
     const ordreContainer = document.getElementById('pv-sec-ordre-container');
     const ordreUl = document.getElementById('pv-render-ordre-jour');
     if (data.ordreDuJour && Array.isArray(data.ordreDuJour) && data.ordreDuJour.length > 0) {
@@ -421,13 +457,16 @@ function injectAiParsedData(data) {
         if (ordreContainer) ordreContainer.style.display = 'none';
     }
 
-    // Déroulement des Échanges
+    // 3. Déroulement des Échanges (Correspondance point par point)
     const deroulementContainer = document.getElementById('pv-sec-deroulement-container');
     const deroulementDiv = document.getElementById('pv-render-deroulement');
     if (data.deroulementEchanges && Array.isArray(data.deroulementEchanges) && data.deroulementEchanges.length > 0) {
         if (deroulementDiv) {
             deroulementDiv.innerHTML = data.deroulementEchanges.map((item, idx) => `
-                <p style="margin-bottom: 0.6rem;"><strong>${escapeHtml(item.titre || `3.${idx+1} Point ${idx+1}`)}</strong><br>${escapeHtml(item.details || '')}</p>
+                <div style="margin-bottom: 1.25rem;">
+                    <h4 style="margin: 0 0 0.4rem 0; font-size: 10.5pt; font-weight: 800; color: #1e3a8a;">${escapeHtml(item.titre || `3.${idx+1} Point ${idx+1}`)}</h4>
+                    <div style="font-size: 9.8pt; color: #334155; line-height: 1.6;">${escapeHtml(item.details || '')}</div>
+                </div>
             `).join('');
         }
         if (deroulementContainer) deroulementContainer.style.display = 'block';
@@ -435,7 +474,7 @@ function injectAiParsedData(data) {
         if (deroulementContainer) deroulementContainer.style.display = 'none';
     }
 
-    // Décisions
+    // 4. Décisions
     const decisionsContainer = document.getElementById('pv-sec-decisions-container');
     const decisionsOl = document.getElementById('pv-render-decisions');
     if (data.decisions && Array.isArray(data.decisions) && data.decisions.length > 0) {
@@ -445,7 +484,7 @@ function injectAiParsedData(data) {
         if (decisionsContainer) decisionsContainer.style.display = 'none';
     }
 
-    // Actions
+    // 5. Actions
     const actionsContainer = document.getElementById('pv-sec-actions-container');
     const actionTbody = document.querySelector('#pv-render-actions-table tbody');
     if (data.actions && Array.isArray(data.actions) && data.actions.length > 0) {
