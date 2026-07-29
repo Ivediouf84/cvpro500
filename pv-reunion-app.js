@@ -447,32 +447,6 @@ function parseAndInjectDraftNotes(rawDraft) {
     }
 }
 
-    // 3. Décisions
-    const decisionsOl = document.getElementById('pv-render-decisions');
-    if (decisionsOl) {
-        decisionsOl.innerHTML = lines.map(line => `<li>Validation et adoption de : ${escapeHtml(line)}</li>`).join('');
-    }
-
-    // 4. Plan d'Action
-    const actionTbody = document.querySelector('#pv-render-actions-table tbody');
-    if (actionTbody) {
-        let actionHtml = '';
-        const pres = document.getElementById('meeting-president')?.value || "M. le Président";
-        const sec = document.getElementById('meeting-secretaire')?.value || "Mme la Secrétaire";
-
-        lines.forEach((line, idx) => {
-            const resp = idx % 2 === 0 ? pres : sec;
-            actionHtml += `<tr>
-                <td>${escapeHtml(line)}</td>
-                <td>${escapeHtml(resp)}</td>
-                <td>Prochaine réunion</td>
-                <td><span style="color: #0284c7; font-weight: 700;">En cours</span></td>
-            </tr>`;
-        });
-        actionTbody.innerHTML = actionHtml;
-    }
-}
-
 function escapeHtml(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
