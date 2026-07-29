@@ -105,18 +105,22 @@ function switchPvTab(tabName) {
     const builderView = document.getElementById('view-builder');
     const btnDash = document.getElementById('tab-btn-dashboard');
     const btnBuilder = document.getElementById('tab-btn-builder');
+    const paymentModal = document.getElementById('payment-modal');
+
+    if (paymentModal) paymentModal.style.display = 'none';
 
     if (tabName === 'dashboard') {
-        dashView.style.display = 'block';
-        builderView.style.display = 'none';
-        btnDash.classList.add('active');
-        btnBuilder.classList.remove('active');
+        if (dashView) dashView.style.display = 'block';
+        if (builderView) builderView.style.display = 'none';
+        if (btnDash) btnDash.classList.add('active');
+        if (btnBuilder) btnBuilder.classList.remove('active');
         loadSavedPvs();
     } else {
-        dashView.style.display = 'none';
-        builderView.style.display = 'block';
-        btnDash.classList.remove('active');
-        btnBuilder.classList.add('active');
+        if (dashView) dashView.style.display = 'none';
+        if (builderView) builderView.style.display = 'block';
+        if (btnDash) btnDash.classList.remove('active');
+        if (btnBuilder) btnBuilder.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
