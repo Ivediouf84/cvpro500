@@ -6,6 +6,16 @@
     <title>Générateur de Demande & Lettre de Motivation (IA)</title>
     <link rel="stylesheet" href="styles.css?v=cvpro1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PWA Manifest & App Icons -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NovaDoc">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <script src="pwa-installer.js" defer></script>
     <!-- Supabase JS & Auth Guard -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth-guard.js"></script>
@@ -59,11 +69,40 @@
             .document-box { padding: 1.5rem; min-height: auto; }
         }
     </style>
+    <script>
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('novadoc_theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+        function updateThemeIcon(theme) {
+            const btnIcon = document.getElementById('theme-toggle-icon');
+            if (btnIcon) {
+                if (theme === 'light') {
+                    btnIcon.className = 'fa-solid fa-sun';
+                    btnIcon.style.color = '#f59e0b';
+                } else {
+                    btnIcon.className = 'fa-solid fa-moon';
+                    btnIcon.style.color = '#a5b4fc';
+                }
+            }
+        }
+        (function() {
+            const saved = localStorage.getItem('novadoc_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+            document.addEventListener('DOMContentLoaded', () => updateThemeIcon(saved));
+        })();
+    </script>
 </head>
 <body class="dark-theme" data-require-auth="true">
 
     <nav class="builder-nav">
         <a href="index.html" class="builder-nav-brand"><i class="fa-solid fa-arrow-left"></i> NovaDoc</a>
+        <button id="theme-toggle-btn" onclick="toggleTheme()" title="Changer de thème (Clair / Sombre)" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
+            <i id="theme-toggle-icon" class="fa-solid fa-moon" style="font-size: 1rem; color: #a5b4fc;"></i>
+        </button>
     </nav>
 
     <div class="container-main">

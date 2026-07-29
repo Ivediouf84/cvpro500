@@ -129,6 +129,85 @@
   transform: translateY(0) scale(0.98) !important;
 }
 
+/* Surcharges complètes pour le Mode Clair universel (Toutes les pages et Formulaires) */
+[data-theme="light"] body,
+[data-theme="light"] .builder-container,
+[data-theme="light"] .container-main,
+[data-theme="light"] .app-layout,
+[data-theme="light"] .main-content {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .builder-nav,
+[data-theme="light"] .builder-sidebar,
+[data-theme="light"] .builder-header,
+[data-theme="light"] .top-bar,
+[data-theme="light"] .form-card,
+[data-theme="light"] .auth-card,
+[data-theme="light"] .auth-container,
+[data-theme="light"] .auth-box,
+[data-theme="light"] .modal-content,
+[data-theme="light"] .card,
+[data-theme="light"] .step-card,
+[data-theme="light"] .cv-form-section,
+[data-theme="light"] #scanner-modal > div {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select,
+[data-theme="light"] .form-control,
+[data-theme="light"] .form-group input,
+[data-theme="light"] .form-group textarea,
+[data-theme="light"] .form-group select {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus,
+[data-theme="light"] select:focus,
+[data-theme="light"] .form-control:focus {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #4F46E5 !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #64748B !important;
+}
+
+[data-theme="light"] label,
+[data-theme="light"] .form-group label,
+[data-theme="light"] .form-label,
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] p,
+[data-theme="light"] span:not(.btn span):not(.tag),
+[data-theme="light"] .builder-nav-brand,
+[data-theme="light"] .upload-area h3 {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .upload-area {
+  background: rgba(79, 70, 229, 0.04) !important;
+  border-color: #4F46E5 !important;
+}
+
+[data-theme="light"] .upload-area p {
+  color: #475569 !important;
+}
+
 * {
   margin: 0;
   padding: 0;
