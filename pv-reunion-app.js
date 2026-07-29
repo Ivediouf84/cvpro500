@@ -671,29 +671,23 @@ function parseAndInjectDraftNotes(rawDraft) {
         });
         textPoint1 = p1.join(' ');
         textPoint2 = p2.join(' ');
-        textPoint3 = p3.join(' ');
-    }
-
-    const deroulementContainer = document.getElementById('pv-sec-deroulement-container');
-    const deroulementDiv = document.getElementById('pv-render-deroulement');
-
-    if (deroulementDiv && agendaItems.length > 0) {
+        textP    if (deroulementDiv && agendaItems.length > 0) {
         let exchangesHtml = '';
 
         agendaItems.forEach((agendaItem, idx) => {
             let detailContent = "";
 
             if (idx === 0) {
-                detailContent = textPoint1 || "Présentation des informations générales sur la vie du club et l'organisation.";
+                detailContent = cleanAndCorrectFrenchText(textPoint1) || "Présentation des informations générales sur la vie du club et l'organisation.";
             } else if (idx === 1) {
-                detailContent = textPoint2 || "Débats approfondis sur l'organisation des entraînements, la gestion des équipements et les modalités de transport.";
+                detailContent = cleanAndCorrectFrenchText(textPoint2) || "Débats approfondis sur l'organisation des entraînements, la gestion des équipements et les modalités de transport.";
             } else {
-                detailContent = textPoint3 || "Échanges et discussions relatives aux questions diverses.";
+                detailContent = cleanAndCorrectFrenchText(textPoint3) || "Échanges et discussions relatives aux questions diverses.";
             }
 
             exchangesHtml += `
                 <div style="margin-bottom: 1.25rem;">
-                    <h4 style="margin: 0 0 0.4rem 0; font-size: 10.5pt; font-weight: 800; color: #1e3a8a;">3.${idx + 1} Point ${idx + 1} : ${escapeHtml(agendaItem)}</h4>
+                    <h4 style="margin: 0 0 0.4rem 0; font-size: 10.5pt; font-weight: 800; color: #1e3a8a;">3.${idx + 1} Point ${idx + 1} : ${escapeHtml(cleanAndCorrectFrenchText(agendaItem))}</h4>
                     <div style="font-size: 9.8pt; color: #334155; line-height: 1.6;">${escapeHtml(detailContent)}</div>
                 </div>
             `;
@@ -708,10 +702,37 @@ function parseAndInjectDraftNotes(rawDraft) {
     const decisionsOl = document.getElementById('pv-render-decisions');
     const decisionLines = rawLines.filter(l => /décid|adopt|valid|résol|conclus/i.test(l));
     if (decisionsOl && decisionLines.length > 0) {
-        decisionsOl.innerHTML = decisionLines.map(line => `<li>${escapeHtml(line)}</li>`).join('');
+        decisionsOl.innerHTML = decisionLines.map(line => `<li>${escapeHtml(cleanAndCorrectFrenchText(line))}</li>`).join('');
         if (decisionsContainer) decisionsContainer.style.display = 'block';
     } else {
         if (decisionsContainer) decisionsContainer.style.display = 'none';
+    }
+
+    const actionsContainer = document.getElementById('pv-sec-actions-container');
+    if (actionsContainer) actionsContainer.style.display = 'none';
+}
+
+function cleanAndCorrectFrenchText(str) {
+    if (!str) return "";
+    let cleaned = str
+        .replace(/\bCertaines\s+joueurs\b/gi, "Certains joueurs")
+        .replace(/\bdes\s+équipements\s+a\s+savoir\b/gi, "des équipements, à savoir")
+        .replace(/\bLes\s+joueurs\s+on\s+demandé\b/gi, "Les joueurs ont demandé")
+        .replace(/\ba\s+(\d{1,2}\s*h)/gi, "à $1")
+        .replace(/\bla\s+dates\s+des\s+démissions\b/gi, "la date des démissions")
+        .replace(/\ble\s+comportements\b/gi, "le comportement")
+        .replace(/\bà\s+l'endroit\s+de\b/gi, "à l'attention de")
+        .replace(/\bmn\b/gi, "min")
+        .replace(/\s+([,\.\?\!])/g, "$1")
+        .replace(/([,\.\?\!])([^\s0-9])/g, "$1 $2")
+        .replace(/\s+/g, " ")
+        .trim();
+    
+    if (cleaned.length > 0) {
+        cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    }
+    return cleaned;
+}tainer) decisionsContainer.style.display = 'none';
     }
 
     const actionsContainer = document.getElementById('pv-sec-actions-container');
