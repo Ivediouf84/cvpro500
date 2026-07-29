@@ -261,42 +261,55 @@ function handleOrgLogoUpload(event) {
     reader.readAsDataURL(file);
 }
 
-// AI PV Generation Engine
+// Real-Time Live Typing Preview Synchronization
+function syncPvRealtimePreview() {
+    const orgNom = document.getElementById('org-nom')?.value.trim() || "[Nom de votre Organisation]";
+    const orgAdresse = document.getElementById('org-adresse')?.value.trim() || "[Adresse complète]";
+    const orgPhone = document.getElementById('org-telephone')?.value.trim() || "[Téléphone]";
+    const orgEmail = document.getElementById('org-email')?.value.trim() || "[Email]";
+
+    const meetingTitre = document.getElementById('meeting-titre')?.value.trim() || "[Objet / Titre de la réunion]";
+    const meetingType = document.getElementById('meeting-type')?.value || "Réunion de bureau";
+    const meetingDate = document.getElementById('meeting-date')?.value || new Date().toISOString().split('T')[0];
+    const heureDebut = document.getElementById('meeting-heure-debut')?.value || "09:00";
+    const heureFin = document.getElementById('meeting-heure-fin')?.value || "11:30";
+    const meetingMode = document.getElementById('meeting-mode')?.value || "Présentiel";
+    const meetingLieu = document.getElementById('meeting-lieu')?.value.trim() || "[Lieu ou Salle / Visio]";
+    const president = document.getElementById('meeting-president')?.value.trim() || "[Président de séance]";
+    const secretaire = document.getElementById('meeting-secretaire')?.value.trim() || "[Secrétaire de séance]";
+
+    if (document.getElementById('pv-render-org-nom')) document.getElementById('pv-render-org-nom').textContent = orgNom;
+    if (document.getElementById('pv-render-org-adresse')) document.getElementById('pv-render-org-adresse').textContent = orgAdresse;
+    if (document.getElementById('pv-render-org-contact')) document.getElementById('pv-render-org-contact').textContent = `Tél : ${orgPhone} | Email : ${orgEmail}`;
+    if (document.getElementById('pv-render-titre')) document.getElementById('pv-render-titre').textContent = meetingTitre;
+
+    if (document.getElementById('pv-render-type')) document.getElementById('pv-render-type').textContent = meetingType;
+    if (document.getElementById('pv-render-date')) document.getElementById('pv-render-date').textContent = formatDateFr(meetingDate);
+    if (document.getElementById('pv-render-horaire')) document.getElementById('pv-render-horaire').textContent = `${heureDebut} - ${heureFin}`;
+    if (document.getElementById('pv-render-lieu')) document.getElementById('pv-render-lieu').textContent = `${meetingMode} (${meetingLieu})`;
+    if (document.getElementById('pv-render-president')) document.getElementById('pv-render-president').textContent = president;
+    if (document.getElementById('pv-render-secretaire')) document.getElementById('pv-render-secretaire').textContent = secretaire;
+
+    if (document.getElementById('pv-sig-president')) document.getElementById('pv-sig-president').textContent = president;
+    if (document.getElementById('pv-sig-secretaire')) document.getElementById('pv-sig-secretaire').textContent = secretaire;
+}
+
+// AI PV Generation Engine (Parses 100% of user draft notes)
 function generatePvWithAI() {
+    syncPvRealtimePreview();
+
     const brouillonText = document.getElementById('pv-brouillon-text').value.trim();
-    const orgNom = document.getElementById('org-nom').value.trim() || 'DAKAR TECH SOLUTIONS SAS';
-    const orgAdresse = document.getElementById('org-adresse').value.trim() || 'Avenue Lamine Guèye, Dakar, Sénégal';
-    const orgPhone = document.getElementById('org-telephone').value.trim() || '+221 33 800 00 00';
-    const orgEmail = document.getElementById('org-email').value.trim() || 'contact@entreprise.sn';
-
-    const meetingTitre = document.getElementById('meeting-titre').value.trim() || 'Réunion de Lancement du Projet NovaDoc 2026';
-    const meetingType = document.getElementById('meeting-type').value;
-    const meetingDate = document.getElementById('meeting-date').value || new Date().toISOString().split('T')[0];
-    const heureDebut = document.getElementById('meeting-heure-debut').value || '09:00';
-    const heureFin = document.getElementById('meeting-heure-fin').value || '11:30';
-    const meetingMode = document.getElementById('meeting-mode').value;
-    const meetingLieu = document.getElementById('meeting-lieu').value.trim() || 'Salle de Conférence A';
-    const president = document.getElementById('meeting-president').value.trim() || 'M. Ousmane DIOP (Directeur Général)';
-    const secretaire = document.getElementById('meeting-secretaire').value.trim() || 'Mme Aminata SOW (Assistante de Direction)';
-
+    
     showToast("✅ Analyse IA terminée !");
     showToast("✅ PV de Réunion structuré généré !");
 
-    // Sync rendered document fields
-    document.getElementById('pv-render-org-nom').textContent = orgNom;
-    document.getElementById('pv-render-org-adresse').textContent = orgAdresse;
-    document.getElementById('pv-render-org-contact').textContent = `Tél : ${orgPhone} | Email : ${orgEmail}`;
-    document.getElementById('pv-render-titre').textContent = meetingTitre;
+    if (brouillonText) {
+        parseAndInjectDraftNotes(brouillonText);
+    }
 
-    document.getElementById('pv-render-type').textContent = meetingType;
-    document.getElementById('pv-render-date').textContent = formatDateFr(meetingDate);
-    document.getElementById('pv-render-horaire').textContent = `${heureDebut} - ${heureFin}`;
-    document.getElementById('pv-render-lieu').textContent = `${meetingMode} (${meetingLieu})`;
-    document.getElementById('pv-render-president').textContent = president;
-    document.getElementById('pv-render-secretaire').textContent = secretaire;
-
-    document.getElementById('pv-sig-president').textContent = president;
-    document.getElementById('pv-sig-secretaire').textContent = secretaire;
+    const meetingTitre = document.getElementById('meeting-titre').value.trim() || 'Procès-Verbal de Réunion';
+    const orgNom = document.getElementById('org-nom').value.trim() || 'Organisation';
+    const meetingDate = document.getElementById('meeting-date').value || new Date().toISOString().split('T')[0];
 
     // Save to local list
     const newPv = {
@@ -314,7 +327,58 @@ function generatePvWithAI() {
     document.getElementById('preview-section').scrollIntoView({ behavior: 'smooth' });
 }
 
-// Export PDF & Word & Sharing
+// Exhaustive parsing function ensuring NO notes or points are dropped
+function parseAndInjectDraftNotes(rawDraft) {
+    const lines = rawDraft.split(/\n+/).map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length === 0) return;
+
+    // 1. Ordre du Jour
+    const ordreUl = document.getElementById('pv-render-ordre-jour');
+    if (ordreUl) {
+        ordreUl.innerHTML = lines.map(line => `<li>${escapeHtml(line)}</li>`).join('');
+    }
+
+    // 2. Déroulement des Échanges
+    const deroulementDiv = document.getElementById('pv-render-deroulement');
+    if (deroulementDiv) {
+        let html = '';
+        lines.forEach((line, idx) => {
+            html += `<p style="margin-bottom: 0.6rem;"><strong>4.${idx + 1} Point ${idx + 1} : ${escapeHtml(line.slice(0, 50))}${line.length > 50 ? '...' : ''}</strong><br>${escapeHtml(line)}</p>`;
+        });
+        deroulementDiv.innerHTML = html;
+    }
+
+    // 3. Décisions
+    const decisionsOl = document.getElementById('pv-render-decisions');
+    if (decisionsOl) {
+        decisionsOl.innerHTML = lines.map(line => `<li>Validation et adoption de : ${escapeHtml(line)}</li>`).join('');
+    }
+
+    // 4. Plan d'Action
+    const actionTbody = document.querySelector('#pv-render-actions-table tbody');
+    if (actionTbody) {
+        let actionHtml = '';
+        const pres = document.getElementById('meeting-president')?.value || "M. le Président";
+        const sec = document.getElementById('meeting-secretaire')?.value || "Mme la Secrétaire";
+
+        lines.forEach((line, idx) => {
+            const resp = idx % 2 === 0 ? pres : sec;
+            actionHtml += `<tr>
+                <td>${escapeHtml(line)}</td>
+                <td>${escapeHtml(resp)}</td>
+                <td>Prochaine réunion</td>
+                <td><span style="color: #0284c7; font-weight: 700;">En cours</span></td>
+            </tr>`;
+        });
+        actionTbody.innerHTML = actionHtml;
+    }
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// Export PDF & Word & Sharing with strict SenePay payment gate
 function downloadPvPDF() {
     if (!isPvPaid()) {
         openPaymentModal();
@@ -349,6 +413,10 @@ function downloadPvWord() {
 }
 
 function sendPvEmail() {
+    if (!isPvPaid()) {
+        openPaymentModal();
+        return;
+    }
     const titre = document.getElementById('pv-render-titre').textContent;
     const org = document.getElementById('pv-render-org-nom').textContent;
     const body = encodeURIComponent(`Bonjour,\n\nVeuillez trouver le procès-verbal de la réunion "${titre}" tenue pour ${org}.\n\nCordialement,\nSecrétariat de Séance`);
@@ -356,6 +424,10 @@ function sendPvEmail() {
 }
 
 function sharePvWhatsApp() {
+    if (!isPvPaid()) {
+        openPaymentModal();
+        return;
+    }
     const titre = document.getElementById('pv-render-titre').textContent;
     const org = document.getElementById('pv-render-org-nom').textContent;
     const text = encodeURIComponent(`📄 Procès-Verbal de Réunion - NovaDoc\n\n📌 Objet : ${titre}\n🏢 Organisation : ${org}\n\nLe document est prêt et validé.`);

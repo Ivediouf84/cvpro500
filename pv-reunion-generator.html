@@ -170,22 +170,22 @@
                     </div>
                     <div class="form-group">
                         <label>Nom de l'Entreprise / Institution / Association * :</label>
-                        <input type="text" id="org-nom" class="form-control" placeholder="Ex: Dakar Tech Solutions SAS">
+                        <input type="text" id="org-nom" class="form-control" placeholder="Ex: Dakar Tech Solutions SAS" oninput="syncPvRealtimePreview()">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Adresse complète :</label>
-                        <input type="text" id="org-adresse" class="form-control" placeholder="Ex: Avenue Lamine Guèye, Dakar, Sénégal">
+                        <input type="text" id="org-adresse" class="form-control" placeholder="Ex: Avenue Lamine Guèye, Dakar, Sénégal" oninput="syncPvRealtimePreview()">
                     </div>
                     <div class="form-group">
                         <label>Téléphone :</label>
-                        <input type="text" id="org-telephone" class="form-control" placeholder="Ex: +221 33 800 00 00">
+                        <input type="text" id="org-telephone" class="form-control" placeholder="Ex: +221 33 800 00 00" oninput="syncPvRealtimePreview()">
                     </div>
                     <div class="form-group">
                         <label>Email :</label>
-                        <input type="email" id="org-email" class="form-control" placeholder="Ex: contact@entreprise.sn">
+                        <input type="email" id="org-email" class="form-control" placeholder="Ex: contact@entreprise.sn" oninput="syncPvRealtimePreview()">
                     </div>
                 </div>
             </div>
@@ -197,11 +197,12 @@
                 <div class="form-row">
                     <div class="form-group" style="flex: 2;">
                         <label>Titre / Objet de la réunion * :</label>
-                        <input type="text" id="meeting-titre" class="form-control" placeholder="Ex: Réunion de Lancement du Projet NovaDoc 2026">
+                        <input type="text" id="meeting-titre" class="form-control" placeholder="Ex: Réunion de Lancement du Projet NovaDoc 2026" oninput="syncPvRealtimePreview()">
                     </div>
                     <div class="form-group">
                         <label>Type de réunion :</label>
-                        <select id="meeting-type" class="form-control">
+                        <select id="meeting-type" class="form-control" onchange="syncPvRealtimePreview()">
+                            <option value="Réunion de bureau">Réunion de bureau</option>
                             <option value="Réunion d'équipe">Réunion d'équipe</option>
                             <option value="Conseil d'administration">Conseil d'administration</option>
                             <option value="Assemblée générale">Assemblée générale</option>
@@ -215,19 +216,19 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Date de la réunion :</label>
-                        <input type="date" id="meeting-date" class="form-control">
+                        <input type="date" id="meeting-date" class="form-control" onchange="syncPvRealtimePreview()">
                     </div>
                     <div class="form-group">
                         <label>Heure Début :</label>
-                        <input type="time" id="meeting-heure-debut" class="form-control" value="09:00">
+                        <input type="time" id="meeting-heure-debut" class="form-control" value="09:00" onchange="syncPvRealtimePreview()">
                     </div>
                     <div class="form-group">
                         <label>Heure Fin :</label>
-                        <input type="time" id="meeting-heure-fin" class="form-control" value="11:30">
+                        <input type="time" id="meeting-heure-fin" class="form-control" value="11:30" onchange="syncPvRealtimePreview()">
                     </div>
                     <div class="form-group">
                         <label>Mode :</label>
-                        <select id="meeting-mode" class="form-control">
+                        <select id="meeting-mode" class="form-control" onchange="syncPvRealtimePreview()">
                             <option value="Présentiel">Présentiel</option>
                             <option value="En ligne (Visioconférence)">En ligne (Visioconférence)</option>
                             <option value="Hybride">Hybride</option>
@@ -238,15 +239,15 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Lieu / Salle / Lien Visio :</label>
-                        <input type="text" id="meeting-lieu" class="form-control" placeholder="Ex: Salle de Conférence A / Google Meet">
+                        <input type="text" id="meeting-lieu" class="form-control" placeholder="Ex: Salle de Conférence A / Google Meet" oninput="syncPvRealtimePreview()">
                     </div>
                     <div class="form-group">
                         <label>Président de séance :</label>
-                        <input type="text" id="meeting-president" class="form-control" placeholder="Ex: M. Ousmane DIOP (Directeur Général)">
+                        <input type="text" id="meeting-president" class="form-control" placeholder="Ex: M. Ousmane DIOP (Directeur Général)" oninput="syncPvRealtimePreview()">
                     </div>
                     <div class="form-group">
                         <label>Secrétaire de séance :</label>
-                        <input type="text" id="meeting-secretaire" class="form-control" placeholder="Ex: Mme Aminata SOW (Assistante de Direction)">
+                        <input type="text" id="meeting-secretaire" class="form-control" placeholder="Ex: Mme Aminata SOW (Assistante de Direction)" oninput="syncPvRealtimePreview()">
                     </div>
                 </div>
             </div>
@@ -329,11 +330,11 @@
                     <div class="pv-header-table">
                         <div>
                             <img id="pv-render-logo" src="./icon-192.png" alt="Logo" class="pv-header-logo" style="display: block; margin-bottom: 5px;">
-                            <strong id="pv-render-org-nom" style="font-size: 13pt; color: #0f172a; text-transform: uppercase;">DAKAR TECH SOLUTIONS SAS</strong>
+                            <strong id="pv-render-org-nom" style="font-size: 13pt; color: #0f172a; text-transform: uppercase;">[NOM DE VOTRE ORGANISATION]</strong>
                         </div>
                         <div style="text-align: right; font-size: 9pt; color: #475569;">
-                            <div id="pv-render-org-adresse">Avenue Lamine Guèye, Dakar, Sénégal</div>
-                            <div id="pv-render-org-contact">Tél : +221 33 800 00 00 | Email : contact@entreprise.sn</div>
+                            <div id="pv-render-org-adresse">[Adresse de l'organisation]</div>
+                            <div id="pv-render-org-contact">Tél : [Téléphone] | Email : [Email]</div>
                             <div style="margin-top: 4px; font-weight: 700; color: #1e3a8a;">Réf : PV-2026-001</div>
                         </div>
                     </div>
@@ -341,7 +342,7 @@
                     <!-- Main Title -->
                     <div style="text-align: center; margin: 1.5rem 0;">
                         <h1 style="margin: 0; font-size: 16pt; font-weight: 900; letter-spacing: 1px; color: #0f172a; text-transform: uppercase;">PROCÈS-VERBAL DE RÉUNION</h1>
-                        <div id="pv-render-titre" style="font-size: 12pt; font-weight: 700; color: #2563eb; margin-top: 4px;">Réunion de Lancement du Projet NovaDoc 2026</div>
+                        <div id="pv-render-titre" style="font-size: 12pt; font-weight: 700; color: #2563eb; margin-top: 4px;">[Objet / Titre de la Réunion]</div>
                     </div>
 
                     <!-- 1. Informations Générales -->
@@ -349,7 +350,7 @@
                     <table class="pv-table">
                         <tr>
                             <td style="width: 25%; font-weight: 700; background: #f8fafc;">Type de réunion :</td>
-                            <td id="pv-render-type" style="width: 25%;">Réunion de projet</td>
+                            <td id="pv-render-type" style="width: 25%;">Réunion de bureau</td>
                             <td style="width: 25%; font-weight: 700; background: #f8fafc;">Date :</td>
                             <td id="pv-render-date" style="width: 25%;">29 Juillet 2026</td>
                         </tr>
@@ -357,13 +358,13 @@
                             <td style="font-weight: 700; background: #f8fafc;">Horaire :</td>
                             <td id="pv-render-horaire">09:00 - 11:30</td>
                             <td style="font-weight: 700; background: #f8fafc;">Mode & Lieu :</td>
-                            <td id="pv-render-lieu">Présentiel (Salle Conférence A)</td>
+                            <td id="pv-render-lieu">Présentiel ([Lieu ou Salle / Visio])</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 700; background: #f8fafc;">Président de séance :</td>
-                            <td id="pv-render-president">M. Ousmane DIOP</td>
+                            <td id="pv-render-president">[Président de séance]</td>
                             <td style="font-weight: 700; background: #f8fafc;">Secrétaire de séance :</td>
-                            <td id="pv-render-secretaire">Mme Aminata SOW</td>
+                            <td id="pv-render-secretaire">[Secrétaire de séance]</td>
                         </tr>
                     </table>
 
