@@ -193,24 +193,52 @@ function renderDashboardList() {
     });
 }
 
-// File Upload Handlers (OCR & Text Extraction)
+let uploadedBrouillonFile = null;
+
+// File Upload Handlers (OCR & Text Extraction for PDF, DOCX, TXT, Images)
 async function handleBrouillonFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
+
+    uploadedBrouillonFile = file;
 
     const previewBox = document.getElementById('file-upload-preview');
     const previewName = document.getElementById('file-upload-name');
     previewName.innerHTML = `<i class="fa-solid fa-paperclip"></i> ${file.name} (${Math.round(file.size / 1024)} KB)`;
     previewBox.style.display = 'flex';
 
-    showToast("✅ Document importé avec succès ! Analyse en cours...");
+    showToast("✅ Document importé avec succès ! Extraction du texte en cours...");
 
     const fileType = file.name.split('.').pop().toLowerCase();
     
     if (fileType === 'txt') {
-        const text = await file.text();
-        document.getElementById('pv-brouillon-text').value = text;
-        uploadedBrouillonText = text;
+        try {
+            const text = await file.text();
+            document.getElementById('pv-brouillon-text').value = text;
+            uploadedBrouillonText = text;
+            showToast("✅ Texte du fichier TXT extrait avec succès !");
+        } catch(e) { console.warn("TXT read error", e); }
+    } else if (fileType === 'docx' || fileType === 'doc') {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            if (typeof mammoth !== 'undefined') {
+                const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                if (result && result.value) {
+                    document.getElementById('pv-brouillon-text').value = result.value.trim();
+                    uploadedBrouillonText = result.value.trim();
+                    showToast("✅ Texte du document Word (.docx) extrait avec succès !");
+                }
+            } else {
+                const text = await file.text();
+                const cleanText = text.replace(/[^\x20-\x7E\n\r\tÀ-ÿ]/g, " ").replace(/\s+/g, " ");
+                if (cleanText.length > 10) {
+                    document.getElementById('pv-brouillon-text').value = cleanText;
+                    uploadedBrouillonText = cleanText;
+                }
+            }
+        } catch (e) {
+            console.warn("Mammoth DOCX extraction fallback", e);
+        }
     } else if (fileType === 'pdf') {
         try {
             const arrayBuffer = await file.arrayBuffer();
@@ -222,22 +250,29 @@ async function handleBrouillonFileUpload(event) {
                 fullText += content.items.map(item => item.str).join(' ') + "\n";
             }
             if (fullText.trim()) {
-                document.getElementById('pv-brouillon-text').value = fullText;
-                uploadedBrouillonText = fullText;
+                document.getElementById('pv-brouillon-text').value = fullText.trim();
+                uploadedBrouillonText = fullText.trim();
+                showToast("✅ Texte du PDF extrait avec succès !");
             }
         } catch (e) {
             console.warn("PDF extraction fallback", e);
         }
     } else if (['jpg', 'jpeg', 'png', 'webp'].includes(fileType)) {
         try {
+            showToast("🔍 Lecture OCR de l'image en cours...");
             const result = await Tesseract.recognize(file, 'fra');
             if (result && result.data && result.data.text) {
-                document.getElementById('pv-brouillon-text').value = result.data.text;
-                uploadedBrouillonText = result.data.text;
+                document.getElementById('pv-brouillon-text').value = result.data.text.trim();
+                uploadedBrouillonText = result.data.text.trim();
+                showToast("✅ Texte de l'image extrait avec succès !");
             }
         } catch (e) {
             console.warn("OCR fallback", e);
         }
+    }
+
+    if (!uploadedBrouillonText && file.name) {
+        uploadedBrouillonText = `Document importé : ${file.name}`;
     }
 }
 
@@ -245,6 +280,7 @@ function removeUploadedBrouillonFile() {
     document.getElementById('brouillon-file-input').value = '';
     document.getElementById('file-upload-preview').style.display = 'none';
     uploadedBrouillonText = '';
+    uploadedBrouillonFile = null;
 }
 
 function handleOrgLogoUpload(event) {
