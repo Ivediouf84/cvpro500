@@ -50,76 +50,83 @@
 
 [data-theme="light"] {
   /* Mode Clair Colors */
-  --primary: #1E40AF; /* Bleu de nuit plus clair et visible */
-  --primary-hover: #1E3A8A;
-  --secondary: #2E6F57;
-  --background: #EFE5D2; /* Fond secondaire */
-  --body-bg: #F5EFE3; /* Fond principal */
-  --surface: #FFFCF7; /* Cartes */
-  --text-main: #081320;
-  --text-muted: #526274;
-  --border: #DDD2BC;
-  --accent: #D4AF37;
-  --pattern-color: rgba(30, 64, 175, 0.2); /* Motifs en bleu de nuit clair */
-  --nav-bg: rgba(30, 58, 138, 0.95); /* Bleu de nuit un peu clair */
-  --nav-text: #F5EFE3; /* Beige */
-  --nav-logo: linear-gradient(135deg, #1E40AF 0%, #4F46E5 100%); /* Deep Blue to Indigo for high visibility and professional look */
-  --title-color: var(--primary); /* Bleu de nuit pour les titres */
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --secondary: #059669;
+  --background: #F8FAFC;
+  --body-bg: #F1F5F9;
+  --surface: #FFFFFF;
+  --text-main: #0F172A;
+  --text-muted: #334155;
+  --border: #CBD5E1;
+  --accent: #D97706;
+  --pattern-color: rgba(79, 70, 229, 0.08);
+  --nav-bg: rgba(255, 255, 255, 0.96);
+  --nav-text: #0F172A;
+  --nav-logo: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  --title-color: #0F172A;
   
-  --grad-primary: linear-gradient(135deg, var(--primary) 0%, #153A6E 100%);
-  --grad-surface: linear-gradient(180deg, var(--surface) 0%, var(--body-bg) 100%);
+  --grad-primary: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  --grad-surface: linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%);
   
   /* Ombres plus douces */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 20px rgba(11, 31, 58, 0.15);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 10px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 4px 20px rgba(79, 70, 229, 0.25);
 }
 
-/* Global Dashboard Sidebar Links Unification */
-.sidebar .nav-item {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 14px !important; /* Desktop default */
-  font-weight: 600 !important;
-  border-right: none !important; /* Remove inconsistent borders */
+[data-theme="light"] .navbar {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] .navbar a {
+  color: #0F172A !important;
+}
+[data-theme="light"] .feature-card,
+[data-theme="light"] .step-item,
+[data-theme="light"] .faq-item,
+[data-theme="light"] .pricing-card {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
+}
+[data-theme="light"] .feature-card p,
+[data-theme="light"] .step-content p,
+[data-theme="light"] .faq-answer {
+  color: #334155 !important;
+}
+[data-theme="light"] .logo {
+  color: #0F172A !important;
 }
 
-/* Dashboard Sidebar Links in Light Mode */
-[data-theme="light"] .sidebar .nav-item {
-  color: var(--primary) !important;
+/* Animations brillantes des Boutons NovaDoc */
+.hero-btn, .btn-primary, .btn-hero-main {
+  position: relative !important;
+  overflow: hidden !important;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, background 0.3s ease, border-color 0.3s ease !important;
 }
-[data-theme="light"] .sidebar .nav-item:hover,
-[data-theme="light"] .sidebar .nav-item.active {
-  background: rgba(30, 64, 175, 0.1) !important;
+.hero-btn::before, .btn-primary::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -50% !important;
+  left: -75% !important;
+  width: 50% !important;
+  height: 200% !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent) !important;
+  transform: rotate(25deg) !important;
+  transition: all 0.75s ease !important;
 }
-
-/* Dashboard Tables in Light Mode */
-[data-theme="light"] .data-table th {
-  color: var(--primary) !important;
-  font-weight: 800 !important;
+.hero-btn:hover::before, .btn-primary:hover::before {
+  left: 135% !important;
 }
-[data-theme="light"] .data-table td {
-  color: #000000 !important; /* Noir pour faire sortir la lisibilité */
-  font-weight: 500;
+.hero-btn:hover, .btn-primary:hover {
+  transform: translateY(-3px) scale(1.025) !important;
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45) !important;
 }
-
-/* Fix invisible text in cards (Light Mode) */
-[data-theme="light"] .profile-desc,
-[data-theme="light"] .job-desc {
-  color: #081320 !important; /* Texte sombre lisible */
-}
-[data-theme="light"] .tag,
-[data-theme="light"] .job-card .tag,
-[data-theme="light"] .profile-card .tag,
-[data-theme="light"] .job-card .tags .tag {
-  background: rgba(30, 64, 175, 0.1) !important;
-  color: var(--primary) !important;
-  border: 1px solid rgba(30, 64, 175, 0.2) !important;
-}
-[data-theme="light"] .navbar .nav-links .tag,
-[data-theme="light"] .sidebar .tag {
-  background: var(--primary) !important;
-  color: #F5EFE3 !important; /* Beige/Blanc sur les badges du menu */
+.hero-btn:active, .btn-primary:active {
+  transform: translateY(0) scale(0.98) !important;
 }
 
 * {

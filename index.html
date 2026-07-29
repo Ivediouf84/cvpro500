@@ -100,39 +100,68 @@
                 padding: 0 0.25rem !important;
             }
             .cv-hero .btn-group {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                row-gap: 0.75rem !important; /* Espace vertical entre la 2ème et 3ème ligne */
-                column-gap: 0.65rem !important; /* Espace horizontal entre les 2 colonnes */
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0.8rem !important;
                 width: 100% !important;
                 max-width: 480px !important;
                 margin: 0 auto !important;
             }
             .cv-hero .btn-group .btn-hero-main {
-                grid-column: 1 / -1 !important; /* Bouton principal prend toute la largeur */
-                padding: 0.75rem 1rem !important;
-                font-size: 0.9rem !important;
-                margin-bottom: 0.35rem !important; /* Espace net après le premier grand bouton */
+                width: 100% !important;
+                padding: 0.85rem 1rem !important;
+                font-size: 0.92rem !important;
+                margin-bottom: 0.2rem !important;
             }
             .cv-hero .btn-group .hero-btn {
-                padding: 0.65rem 0.5rem !important;
-                font-size: 0.78rem !important;
-                border-radius: 12px !important;
+                padding: 0.75rem 1rem !important;
+                font-size: 0.84rem !important;
+                font-weight: 700 !important;
+                border-radius: 14px !important;
                 justify-content: center !important;
                 text-align: center !important;
-                gap: 0.4rem !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
+                gap: 0.5rem !important;
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                line-height: 1.35 !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
                 box-sizing: border-box !important;
                 width: 100% !important;
                 margin: 0 !important;
             }
             .cv-hero .btn-group .hero-btn i {
-                font-size: 0.85rem !important;
+                font-size: 0.95rem !important;
+                flex-shrink: 0 !important;
             }
         }
     </style>
+    <script>
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('novadoc_theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+        function updateThemeIcon(theme) {
+            const btnIcon = document.getElementById('theme-toggle-icon');
+            if (btnIcon) {
+                if (theme === 'light') {
+                    btnIcon.className = 'fa-solid fa-sun';
+                    btnIcon.style.color = '#f59e0b';
+                } else {
+                    btnIcon.className = 'fa-solid fa-moon';
+                    btnIcon.style.color = '#a5b4fc';
+                }
+            }
+        }
+        (function() {
+            const saved = localStorage.getItem('novadoc_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+            document.addEventListener('DOMContentLoaded', () => updateThemeIcon(saved));
+        })();
+    </script>
 </head>
 <body class="dark-theme">
 
@@ -148,12 +177,15 @@
                 <a href="#tarifs" style="color: var(--text-main); text-decoration: none;">Tarif</a>
                 <a href="#" onclick="createPwaInstallBanner(); return false;" style="color: #a5b4fc; font-weight: 600; text-decoration: none;"><i class="fa-solid fa-mobile-screen"></i> Installer l'App</a>
             </div>
-            <div class="nav-actions" style="display: flex; gap: 1rem; align-items: center;">
+            <div class="nav-actions" style="display: flex; gap: 0.75rem; align-items: center;">
+                <button id="theme-toggle-btn" onclick="toggleTheme()" title="Changer de thème (Clair / Sombre)" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-main); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;">
+                    <i id="theme-toggle-icon" class="fa-solid fa-moon" style="font-size: 1.1rem; color: #a5b4fc;"></i>
+                </button>
                 <div id="auth-buttons" style="display: none;">
                     <a href="auth.html" class="btn btn-ghost" style="color: var(--text-main); text-decoration: none; padding: 0.5rem 1rem;">Connexion</a>
                     <a href="auth.html?mode=signup" class="btn btn-primary" style="padding: 0.5rem 1rem; background: var(--grad-primary); color: white; border: none; border-radius: var(--radius-md); text-decoration: none; font-weight: 600;">S'inscrire</a>
                 </div>
-                <div id="user-menu" style="display: none; align-items: center; gap: 1rem;">
+                <div id="user-menu" style="display: none; align-items: center; gap: 0.75rem;">
                     <span id="user-email" style="font-size: 0.9rem; color: var(--text-muted);"></span>
                     <button onclick="handleLogout()" class="btn btn-ghost" style="color: #ef4444; border: 1px solid #ef4444; padding: 0.4rem 0.8rem; border-radius: var(--radius-md); font-size: 0.85rem; background: transparent; cursor: pointer;">Déconnexion</button>
                     <a href="cvpro-builder.html" class="btn btn-primary" style="padding: 0.5rem 1rem; background: var(--grad-primary); color: white; border: none; border-radius: var(--radius-md); text-decoration: none; font-weight: 600;"><i class="fa-solid fa-wand-magic-sparkles"></i> Mon Espace</a>
