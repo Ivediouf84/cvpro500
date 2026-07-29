@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Admin & Statistiques - NovaDoc</title>
+    <link rel="stylesheet" href="styles.css?v=cvpro1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PWA Manifest & App Icons -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <script src="pwa-installer.js" defer></script>
+    <!-- Supabase JS & Auth Guard -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth-guard.js"></script>
+    <script>
+        (function() {
+            const saved = localStorage.getItem('novadoc_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+    <style>
+        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--body-bg); color: var(--text-main); font-family: 'Inter', sans-serif; }
+        
+        .admin-nav { height: 65px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; flex-shrink: 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+        .admin-brand { font-weight: 800; font-size: 1.25rem; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 0.6rem; }
+        
+        .admin-container { max-width: 1250px; margin: 1.5rem auto; padding: 0 1rem; width: 100%; box-sizing: border-box; flex: 1; }
+        
+        .admin-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .admin-title h1 { margin: 0; font-size: 1.75rem; color: var(--title-color); display: flex; align-items: center; gap: 0.6rem; }
+        .admin-title p { margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.9rem; }
+        
+        /* Time Period Filters */
+        .filter-bar { display: flex; gap: 0.5rem; background: var(--surface); padding: 0.4rem; border-radius: var(--radius-lg); border: 1px solid var(--border); flex-wrap: wrap; }
+        .filter-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.55rem 1rem; border-radius: var(--radius-md); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; }
+        .filter-btn.active, .filter-btn:hover { background: var(--grad-primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        
+        /* Summary Stat Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.35rem; position: relative; overflow: hidden; box-shadow: var(--shadow-md); transition: transform 0.2s ease; }
+        .stat-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+        .stat-icon { position: absolute; top: 1.25rem; right: 1.25rem; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+        .stat-label { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.85rem; font-weight: 800; color: var(--text-main); font-family: 'Outfit', sans-serif; line-height: 1.1; }
+        .stat-sub { font-size: 0.78rem; margin-top: 0.5rem; color: #10B981; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
+        
+        /* Analytics Grid */
+        .analytics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.75rem; }
+        @media (max-width: 992px) { .analytics-grid { grid-template-columns: 1fr; } }
+        
+        .panel-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.5rem; box-shadow: var(--shadow-md); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+        .panel-header h3 { margin: 0; font-size: 1.1rem; color: var(--title-color); display: flex; align-items: center; gap: 0.5rem; }
+        
+        /* Feature Breakdown Bars */
+        .feature-bar-item { margin-bottom: 1rem; }
+        .feature-bar-info { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main); }
+        .feature-bar-bg { height: 10px; background: var(--background); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+        .feature-bar-fill { height: 100%; border-radius: 20px; transition: width 0.6s ease; }
+        
+        /* Payment Method Donut/Pills */
+        .pay-method-card { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; background: var(--background); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 0.75rem; }
+        .pay-method-info { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; font-weight: 700; }
+        .pay-method-badge { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: white; }
+        
+        /* Data Table */
+        .table-responsive { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); }
+        .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+        .admin-table th { background: var(--background); color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); }
+        .admin-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table tr:hover td { background: rgba(79, 70, 229, 0.04); }
+        
+        .badge-status { padding: 0.25rem 0.6rem; border-radius: 20px; font-weight: 700; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-pending { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-failed { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        
+        .search-input { padding: 0.5rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--background); color: var(--text-main); font-size: 0.85rem; width: 220px; }
+        .search-input:focus { outline: none; border-color: var(--primary); }
+    </style>
+</head>
+<body class="dark-theme" data-require-auth="true">
+
+    <!-- Admin Header Navigation -->
+    <nav class="admin-nav">
+        <a href="index.html" class="admin-brand">
+            <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> NovaDoc <span>Admin</span>
+        </a>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <button id="theme-toggle-btn" onclick="toggleTheme()" title="Changer de thème" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <i id="theme-toggle-icon" class="fa-solid fa-moon" style="font-size: 1rem; color: #a5b4fc;"></i>
+            </button>
+            <button onclick="exportCSVReport()" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.82rem; border-radius: var(--radius-md); background: var(--grad-primary); color: white; border: none; font-weight: 700; cursor: pointer;">
+                <i class="fa-solid fa-file-csv"></i> Exporter Rapport CSV
+            </button>
+            <a href="index.html" class="btn btn-ghost" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; border: 1px solid var(--border); color: var(--text-main); border-radius: var(--radius-md); text-decoration: none;">
+                <i class="fa-solid fa-house"></i> Site Client
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="admin-container">
+        
+        <!-- Title & Period Filter Bar -->
+        <div class="admin-header">
+            <div class="admin-title">
+                <h1><i class="fa-solid fa-sack-dollar" style="color: #10B981;"></i> Statistiques & Revenus</h1>
+                <p>Analyse financière en temps réel par fonctionnalité, période et mode de paiement.</p>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="setPeriodFilter('all', this)">Global (Tout)</button>
+                <button class="filter-btn" onclick="setPeriodFilter('today', this)">Aujourd'hui</button>
+                <button class="filter-btn" onclick="setPeriodFilter('month', this)">Ce Mois-ci</button>
+                <button class="filter-btn" onclick="setPeriodFilter('year', this)">Cette Année</button>
+            </div>
+        </div>
+
+        <!-- 4 Stat Summary Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10B981;">
+                    <i class="fa-solid fa-vault"></i>
+                </div>
+                <div class="stat-label">Revenu Total Cumulé</div>
+                <div class="stat-value" id="stat-total-revenue">0 FCFA</div>
+                <div class="stat-sub"><i class="fa-solid fa-arrow-trend-up"></i> Taux d'encaissement 100%</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(79, 70, 229, 0.15); color: #6366F1;">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div class="stat-label">Revenu du Mois</div>
+                <div class="stat-value" id="stat-month-revenue">0 FCFA</div>
+                <div class="stat-sub"><i class="fa-solid fa-chart-line"></i> Période en cours</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">
+                    <i class="fa-solid fa-sun"></i>
+                </div>
+                <div class="stat-label">Revenu d'Aujourd'hui</div>
+                <div class="stat-value" id="stat-today-revenue">0 FCFA</div>
+                <div class="stat-sub"><i class="fa-solid fa-clock"></i> Mises à jour en direct</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(192, 38, 211, 0.15); color: #C026D3;">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <div class="stat-label">Total Transactions</div>
+                <div class="stat-value" id="stat-total-transactions">0</div>
+                <div class="stat-sub" id="stat-success-rate"><i class="fa-solid fa-circle-check"></i> 100% Réussies</div>
+            </div>
+        </div>
+
+        <!-- Analytics Grid (Feature Breakdown & Payment Gateways) -->
+        <div class="analytics-grid">
+            
+            <!-- Revenue by Feature -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h3><i class="fa-solid fa-pie-chart" style="color: var(--primary);"></i> Revenus par Fonctionnalité</h3>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);" id="feature-period-label">Période : Global</span>
+                </div>
+                <div id="feature-bars-container">
+                    <!-- Dynamic Bars injected by JS -->
+                </div>
+            </div>
+
+            <!-- Payment Methods & Statuses -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <h3><i class="fa-solid fa-wallet" style="color: #10B981;"></i> Modes de Paiement</h3>
+                </div>
+                
+                <div class="pay-method-card">
+                    <div class="pay-method-info">
+                        <div class="pay-method-badge" style="background: #00A6FF;"><i class="fa-solid fa-mobile-screen"></i></div>
+                        <div>
+                            <div>Wave Mobile</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);" id="wave-tx-count">0 paiements</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right; font-weight: 800; font-family: 'Outfit';" id="wave-total-amount">0 FCFA</div>
+                </div>
+
+                <div class="pay-method-card">
+                    <div class="pay-method-info">
+                        <div class="pay-method-badge" style="background: #FF6600;"><i class="fa-solid fa-signal"></i></div>
+                        <div>
+                            <div>Orange Money</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);" id="om-tx-count">0 paiements</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right; font-weight: 800; font-family: 'Outfit';" id="om-total-amount">0 FCFA</div>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-main);">Statut des Transactions</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                        <span class="badge-status badge-success"><i class="fa-solid fa-circle-check"></i> Réussies (SUCCESS)</span>
+                        <strong id="count-status-success">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                        <span class="badge-status badge-pending"><i class="fa-solid fa-clock"></i> En Attente (PENDING)</span>
+                        <strong id="count-status-pending">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                        <span class="badge-status badge-failed"><i class="fa-solid fa-circle-xmark"></i> Échouées (FAILED)</span>
+                        <strong id="count-status-failed">0</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Detailed Transaction Table -->
+        <div class="panel-card" style="margin-bottom: 3rem;">
+            <div class="panel-header">
+                <h3><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Historique des Transactions</h3>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="text" id="table-search" oninput="filterTransactionsTable()" placeholder="Rechercher email, ID, type..." class="search-input">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID Transaction</th>
+                            <th>Utilisateur / Email</th>
+                            <th>Fonctionnalité</th>
+                            <th>Montant</th>
+                            <th>Mode Paiement</th>
+                            <th>Statut</th>
+                            <th>Date & Heure</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactions-table-body">
+                        <!-- Injected dynamically by admin-app.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Admin App JS -->
+    <script src="admin-app.js"></script>
+</body>
+</html>
