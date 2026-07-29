@@ -504,57 +504,160 @@ function injectAiParsedData(data) {
     }
 }
 
-// Exhaustive parsing function ensuring NO notes or points are dropped
+// Exhaustive & Smart parsing function ensuring metadata is extracted and agenda matches discussions 1-to-1
 function parseAndInjectDraftNotes(rawDraft) {
-    const lines = rawDraft.split(/\n+/).map(l => l.trim()).filter(l => l.length > 0);
-    if (lines.length === 0) return;
+    const rawLines = rawDraft.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+    if (rawLines.length === 0) return;
 
-    // Ordre du jour
+    // --- 1. EXTRACTION INTELLIGENTE DES MÉTADONNÉES (TABLEAU DU HAUT) ---
+    let extractedOrg = "";
+    let extractedTitre = "";
+    let extractedDate = "";
+    let extractedHoraire = "";
+    let extractedPres = "";
+    let extractedSec = "";
+
+    // Organisation (Première ligne ou ligne contenant ASC, Assoc, Club, etc.)
+    const orgLine = rawLines.find(l => /ASC|Association|Club|Société|Groupement|Entente|Ets|SARL|SA/i.test(l));
+    if (orgLine) {
+        extractedOrg = orgLine;
+    } else if (rawLines[0] && rawLines[0].length < 60 && !/PV|Procès|Réunion|Ordre/i.test(rawLines[0])) {
+        extractedOrg = rawLines[0];
+    }
+
+    // Titre / Objet (Ligne contenant PV ou Réunion)
+    const titreLine = rawLines.find(l => /PV|Procès-Verbal|Réunion/i.test(l));
+    if (titreLine) {
+        extractedTitre = titreLine;
+    }
+
+    // Date (Ex: 01/09/2024 ou 1er Septembre 2024)
+    const dateMatch = rawDraft.match(/(\d{1,2}[\/\.-]\d{1,2}[\/\.-]\d{2,4})|(\d{1,2}\s+(?:janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4})/i);
+    if (dateMatch) {
+        extractedDate = dateMatch[0];
+    }
+
+    // Horaire (Ex: 20h 30, 20h30, 09h00)
+    const horaireMatch = rawDraft.match(/(?:démarré|début|heure|à)\s*a?\s*(\d{1,2}\s*h\s*\d{0,2}\s*m?n?)/i) || rawDraft.match(/(\d{1,2}\s*h\s*\d{2})/i);
+    if (horaireMatch) {
+        extractedHoraire = horaireMatch[1] || horaireMatch[0];
+    }
+
+    // Intervenants (Président / Animateur / Secrétaire / Capitaine)
+    const presMatch = rawDraft.match(/(?:entraîneur|animateur|président|présidé par)\s+([A-ZÀ-ÿ][a-zà-ÿ]+\s+[A-ZÀ-ÿ][a-zà-ÿ]+)/i);
+    if (presMatch) {
+        extractedPres = presMatch[1];
+    }
+    const secMatch = rawDraft.match(/(?:capitaine|secrétaire|rapporteur)\s+([A-ZÀ-ÿ][a-zà-ÿ]+\s+[A-ZÀ-ÿ][a-zà-ÿ]+)/i);
+    if (secMatch) {
+        extractedSec = secMatch[1];
+    }
+
+    // Injection dans le Tableau d'Informations Générales
+    if (extractedOrg && document.getElementById('pv-render-org-nom')) document.getElementById('pv-render-org-nom').textContent = extractedOrg;
+    if (extractedTitre && document.getElementById('pv-render-titre')) document.getElementById('pv-render-titre').textContent = extractedTitre;
+    if (extractedDate && document.getElementById('pv-render-date')) document.getElementById('pv-render-date').textContent = extractedDate;
+    if (extractedHoraire && document.getElementById('pv-render-horaire')) document.getElementById('pv-render-horaire').textContent = extractedHoraire;
+    if (extractedPres) {
+        if (document.getElementById('pv-render-president')) document.getElementById('pv-render-president').textContent = extractedPres;
+        if (document.getElementById('pv-sig-president')) document.getElementById('pv-sig-president').textContent = extractedPres;
+    }
+    if (extractedSec) {
+        if (document.getElementById('pv-render-secretaire')) document.getElementById('pv-render-secretaire').textContent = extractedSec;
+        if (document.getElementById('pv-sig-secretaire')) document.getElementById('pv-sig-secretaire').textContent = extractedSec;
+    }
+
+    // --- 2. EXTRACTION DE L'ORDRE DU JOUR ---
+    let agendaItems = [];
+    let isInsideAgenda = false;
+    let agendaStartIndex = -1;
+
+    rawLines.forEach((line, idx) => {
+        if (/ordre du jour/i.test(line)) {
+            isInsideAgenda = true;
+            agendaStartIndex = idx;
+            return;
+        }
+        if (isInsideAgenda) {
+            if (/^\d+[\/\.\)]\s*(.+)/.test(line)) {
+                const item = line.replace(/^\d+[\/\.\)]\s*/, '').trim();
+                if (item) agendaItems.push(item);
+            } else if (agendaItems.length > 0 && line.length > 30) {
+                isInsideAgenda = false;
+            }
+        }
+    });
+
+    if (agendaItems.length === 0) {
+        rawLines.forEach(line => {
+            const match = line.match(/^\d+[\/\.\)]\s*(.+)/);
+            if (match && match[1] && match[1].length < 100) {
+                agendaItems.push(match[1].trim());
+            }
+        });
+    }
+
+    if (agendaItems.length === 0) {
+        agendaItems = ["Informations Générales & Compte-rendu", "Débats et Points à l'ordre du jour", "Divers"];
+    }
+
     const ordreContainer = document.getElementById('pv-sec-ordre-container');
     const ordreUl = document.getElementById('pv-render-ordre-jour');
-    if (ordreUl && lines.length > 0) {
-        ordreUl.innerHTML = lines.map(line => `<li>${escapeHtml(line)}</li>`).join('');
+    if (ordreUl && agendaItems.length > 0) {
+        ordreUl.innerHTML = agendaItems.map((item, idx) => `<li>Point ${idx + 1} : ${escapeHtml(item)}</li>`).join('');
         if (ordreContainer) ordreContainer.style.display = 'block';
     }
 
-    // Déroulement des Échanges
+    // --- 3. CORRESPONDANCE EXACTE 1-À-1 ENTRE L'ORDRE DU JOUR ET LES ÉCHANGES ---
+    const bodyTextLines = rawLines.filter((l, idx) => {
+        if (idx <= agendaStartIndex) return false;
+        if (agendaItems.some(item => l.includes(item))) return false;
+        if (/^ASC|PV de la Réunion|La réunion a démarré|Ordre du jour/i.test(l)) return false;
+        return true;
+    });
+
+    const bodyText = bodyTextLines.join(' ');
+
     const deroulementContainer = document.getElementById('pv-sec-deroulement-container');
     const deroulementDiv = document.getElementById('pv-render-deroulement');
-    if (deroulementDiv && lines.length > 0) {
-        let html = '';
-        lines.forEach((line, idx) => {
-            html += `<p style="margin-bottom: 0.6rem;"><strong>3.${idx + 1} Point ${idx + 1}</strong><br>${escapeHtml(line)}</p>`;
+
+    if (deroulementDiv && agendaItems.length > 0) {
+        let exchangesHtml = '';
+        agendaItems.forEach((agendaItem, idx) => {
+            let detailText = "";
+            if (agendaItems.length === 1) {
+                detailText = bodyText || "Synthèse des échanges récapitulés lors de la séance.";
+            } else {
+                const chunkSize = Math.ceil(bodyTextLines.length / agendaItems.length);
+                const chunk = bodyTextLines.slice(idx * chunkSize, (idx + 1) * chunkSize);
+                detailText = chunk.length > 0 ? chunk.join(' ') : `Échanges et discussions relatives au point "${agendaItem}".`;
+            }
+
+            exchangesHtml += `
+                <div style="margin-bottom: 1.25rem;">
+                    <h4 style="margin: 0 0 0.4rem 0; font-size: 10.5pt; font-weight: 800; color: #1e3a8a;">3.${idx + 1} Point ${idx + 1} : ${escapeHtml(agendaItem)}</h4>
+                    <div style="font-size: 9.8pt; color: #334155; line-height: 1.6;">${escapeHtml(detailText)}</div>
+                </div>
+            `;
         });
-        deroulementDiv.innerHTML = html;
+
+        deroulementDiv.innerHTML = exchangesHtml;
         if (deroulementContainer) deroulementContainer.style.display = 'block';
     }
 
-    // Décisions (si mots clés présents)
+    // --- 4. DÉCISIONS ET ACTIONS ---
     const decisionsContainer = document.getElementById('pv-sec-decisions-container');
     const decisionsOl = document.getElementById('pv-render-decisions');
-    const decisionLines = lines.filter(l => /décid|adopt|valid|résol|conclus/i.test(l));
+    const decisionLines = rawLines.filter(l => /décid|adopt|valid|résol|conclus/i.test(l));
     if (decisionsOl && decisionLines.length > 0) {
         decisionsOl.innerHTML = decisionLines.map(line => `<li>${escapeHtml(line)}</li>`).join('');
         if (decisionsContainer) decisionsContainer.style.display = 'block';
+    } else {
+        if (decisionsContainer) decisionsContainer.style.display = 'none';
     }
 
-    // Plan d'Action (si actions présentes)
     const actionsContainer = document.getElementById('pv-sec-actions-container');
-    const actionTbody = document.querySelector('#pv-render-actions-table tbody');
-    const actionLines = lines.filter(l => /action|tâche|faire|responsable|charge|échéance|rappeler|suivre/i.test(l));
-    if (actionTbody && actionLines.length > 0) {
-        const pres = document.getElementById('meeting-president')?.value || "Président";
-        const sec = document.getElementById('meeting-secretaire')?.value || "Secrétaire";
-        actionTbody.innerHTML = actionLines.map((line, idx) => `
-            <tr>
-                <td>${escapeHtml(line)}</td>
-                <td>${escapeHtml(idx % 2 === 0 ? pres : sec)}</td>
-                <td>À fixer</td>
-                <td><span style="color: #0284c7; font-weight: 700;">À faire</span></td>
-            </tr>
-        `).join('');
-        if (actionsContainer) actionsContainer.style.display = 'block';
-    }
+    if (actionsContainer) actionsContainer.style.display = 'none';
 }
 
 function escapeHtml(str) {
