@@ -82,7 +82,7 @@
         .search-input:focus { outline: none; border-color: var(--primary); }
     </style>
 </head>
-<body class="dark-theme" data-require-auth="true">
+<body class="dark-theme">
 
     <!-- Admin Header Navigation -->
     <nav class="admin-nav">
@@ -93,7 +93,7 @@
             <button id="theme-toggle-btn" onclick="toggleTheme()" title="Changer de thème" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
                 <i id="theme-toggle-icon" class="fa-solid fa-moon" style="font-size: 1rem; color: #a5b4fc;"></i>
             </button>
-            <button onclick="exportCSVReport()" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.82rem; border-radius: var(--radius-md); background: var(--grad-primary); color: white; border: none; font-weight: 700; cursor: pointer;">
+            <button onclick="exportCSVReport()" class="btn btn-pill-navy-red" style="font-size: 0.85rem; padding: 0.45rem 1rem;">
                 <i class="fa-solid fa-file-csv"></i> Exporter Rapport CSV
             </button>
             <a href="index.html" class="btn btn-ghost" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; border: 1px solid var(--border); color: var(--text-main); border-radius: var(--radius-md); text-decoration: none;">
