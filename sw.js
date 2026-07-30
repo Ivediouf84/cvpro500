@@ -1,8 +1,8 @@
-const CACHE_NAME = 'novadoc-v2026-07-30-v5';
+const CACHE_NAME = 'novadoc-v2026-07-30-v6';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=20260730_v5',
+  './styles.css?v=20260730_v6',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'

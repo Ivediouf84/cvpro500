@@ -1,11 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
 
-:root {
-  /* Dynamic Admin protection rule */
-}
 .admin-only-link {
   display: none !important;
 }
+
+:root {
   /* Colors */
   --primary: #4F46E5;
   --primary-hover: #4338ca;
@@ -13,7 +12,7 @@
   --background: #060913;
   --surface: #0E1424;
   --text-main: #F8FAFC;
-  --text-muted: #FFFFFF;
+  --text-muted: #94A3B8;
   --border: #1E293B;
   --body-bg: #0b1121;
   --pattern-color: rgba(148, 163, 184, 0.15);
