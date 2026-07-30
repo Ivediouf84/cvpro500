@@ -1028,9 +1028,12 @@ input:checked + .theme-slider:before {
         --text-profil: 1rem;        /* 16px */
         --text-body: 0.9375rem;     /* 15px (Idéal pour la lecture sur mobile) */
 /* ==========================================================================
-   DESIGN BOUTON CAPSULE HARMONISÉ DESKTOP & MOBILE
+   DESIGN BOUTON CAPSULE HARMONISÉ DESKTOP & MOBILE (MODE CLAIR & SOMBRE)
    (BLEU NUIT SPECIMEN 85% + ROUGE 15% + BORD & TEXTE BLANC)
    ========================================================================== */
+[data-theme="light"] .btn-pill-navy-red,
+[data-theme="light"] .btn-tri-color,
+[data-theme="light"] .cv-hero .btn-group .hero-btn,
 .btn-pill-navy-red,
 .btn-tri-color,
 .cv-hero .btn-group .hero-btn {
@@ -1053,6 +1056,18 @@ input:checked + .theme-slider:before {
     cursor: pointer !important;
 }
 
+[data-theme="light"] .btn-pill-navy-red *,
+[data-theme="light"] .btn-tri-color *,
+[data-theme="light"] .cv-hero .btn-group .hero-btn *,
+.btn-pill-navy-red *,
+.btn-tri-color *,
+.cv-hero .btn-group .hero-btn * {
+    color: #FFFFFF !important;
+}
+
+[data-theme="light"] .btn-pill-navy-red:hover,
+[data-theme="light"] .btn-tri-color:hover,
+[data-theme="light"] .cv-hero .btn-group .hero-btn:hover,
 .btn-pill-navy-red:hover,
 .btn-tri-color:hover,
 .cv-hero .btn-group .hero-btn:hover {
@@ -1063,18 +1078,24 @@ input:checked + .theme-slider:before {
     color: #FFFFFF !important;
 }
 
+[data-theme="light"] .btn-pill-navy-red:active,
+[data-theme="light"] .btn-tri-color:active,
+[data-theme="light"] .cv-hero .btn-group .hero-btn:active,
 .btn-pill-navy-red:active,
 .btn-tri-color:active,
 .cv-hero .btn-group .hero-btn:active {
     transform: translateY(0) scale(0.98) !important;
 }
 
+[data-theme="light"] .btn-pill-navy-red i,
+[data-theme="light"] .btn-tri-color i,
+[data-theme="light"] .cv-hero .btn-group .hero-btn i,
 .btn-pill-navy-red i,
 .btn-tri-color i,
 .cv-hero .btn-group .hero-btn i {
     color: #FFFFFF !important;
     font-size: 1.05rem !important;
-    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.7));
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.7)) !important;
 }
 
 
