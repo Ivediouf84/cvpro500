@@ -1028,10 +1028,12 @@ input:checked + .theme-slider:before {
         --text-profil: 1rem;        /* 16px */
         --text-body: 0.9375rem;     /* 15px (Idéal pour la lecture sur mobile) */
 /* ==========================================================================
-   DESIGN BOUTON CAPSULE (BLEU NUIT SPECIMEN 85% + ROUGE 15% + BORD BLANC)
+   DESIGN BOUTON CAPSULE HARMONISÉ DESKTOP & MOBILE
+   (BLEU NUIT SPECIMEN 85% + ROUGE 15% + BORD & TEXTE BLANC)
    ========================================================================== */
 .btn-pill-navy-red,
-.btn-tri-color {
+.btn-tri-color,
+.cv-hero .btn-group .hero-btn {
     background: linear-gradient(90deg, #000836 0%, #001252 35%, #001C7B 80%, #DC2626 100%) !important;
     color: #FFFFFF !important;
     border: 2px solid #FFFFFF !important;
@@ -1052,7 +1054,8 @@ input:checked + .theme-slider:before {
 }
 
 .btn-pill-navy-red:hover,
-.btn-tri-color:hover {
+.btn-tri-color:hover,
+.cv-hero .btn-group .hero-btn:hover {
     background: linear-gradient(90deg, #001054 0%, #001A75 35%, #0026A3 78%, #EF4444 100%) !important;
     border-color: #FFFFFF !important;
     box-shadow: 0 10px 28px rgba(0, 38, 163, 0.75), 0 0 18px rgba(255, 255, 255, 0.7) !important;
@@ -1061,12 +1064,14 @@ input:checked + .theme-slider:before {
 }
 
 .btn-pill-navy-red:active,
-.btn-tri-color:active {
+.btn-tri-color:active,
+.cv-hero .btn-group .hero-btn:active {
     transform: translateY(0) scale(0.98) !important;
 }
 
 .btn-pill-navy-red i,
-.btn-tri-color i {
+.btn-tri-color i,
+.cv-hero .btn-group .hero-btn i {
     color: #FFFFFF !important;
     font-size: 1.05rem !important;
     filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.7));
