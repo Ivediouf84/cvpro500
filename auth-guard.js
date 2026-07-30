@@ -49,12 +49,12 @@
                                     </div>
                                     <h2 style="color: var(--title-color); margin: 0 0 0.75rem 0; font-size: 1.5rem; font-weight: 800;">⛔ Accès Restreint - Zone Admin</h2>
                                     <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.75rem;">
-                                        Le tableau de bord financier et analytique est exclusivement réservé à l'administrateur principal (<strong>ngalagne84@gmail.com</strong>).
-                                        ${user ? `<br><br>Vous êtes actuellement connecté avec : <code style="background: rgba(0,0,0,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; color: #EF4444;">${user.email}</code>` : '<br><br>Vous n\'êtes pas encore connecté.'}
+                                        Ce tableau de bord financier et analytique est exclusivement réservé à l'administrateur du site.
+                                        ${user ? `<br><br>Compte actuel non autorisé : <code style="background: rgba(0,0,0,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; color: #EF4444;">${user.email}</code>` : '<br><br>Veuillez vous connecter avec un compte administrateur autorisé.'}
                                     </p>
                                     <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                                         <a href="auth.html?redirect=admin.html" class="btn btn-pill-navy-red" style="font-size: 0.9rem; text-decoration: none;">
-                                            <i class="fa-solid fa-right-to-bracket"></i> Se connecter avec ngalagne84@gmail.com
+                                            <i class="fa-solid fa-right-to-bracket"></i> Connexion Administrateur
                                         </a>
                                         <a href="index.html" class="btn btn-ghost" style="padding: 0.65rem 1.2rem; border: 1px solid var(--border); color: var(--text-main); border-radius: 50px; text-decoration: none; font-weight: 600;">
                                             <i class="fa-solid fa-house"></i> Retour à l'accueil
