@@ -82,13 +82,15 @@
 
     function updateAuthUI(user) {
         try {
-            const isAdmin = window.checkIsAdminUser(user);
+            const isAdmin = window.checkIsAdminUser ? window.checkIsAdminUser(user) : (user && user.email && user.email.toLowerCase().trim() === 'ngalagne84@gmail.com');
             const adminLinks = document.querySelectorAll('.admin-only-link');
             
             adminLinks.forEach(link => {
                 if (isAdmin) {
+                    link.classList.add('is-admin-active');
                     link.style.setProperty('display', 'inline-flex', 'important');
                 } else {
+                    link.classList.remove('is-admin-active');
                     link.style.setProperty('display', 'none', 'important');
                 }
             });

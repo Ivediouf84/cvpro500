@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NovaDoc - Créez tous vos documents professionnels avec NovaDoc</title>
-    <link rel="stylesheet" href="styles.css?v=20260730_v6">
+    <link rel="stylesheet" href="styles.css?v=20260730_v7">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- PWA Manifest & App Icons -->
     <link rel="manifest" href="manifest.json">
@@ -68,7 +68,7 @@
             letter-spacing: 0.3px !important;
             box-shadow: 0 8px 22px rgba(0, 24, 115, 0.6), 0 4px 12px rgba(220, 38, 38, 0.35) !important;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            display: inline-flex !important;
+            display: inline-flex;
             align-items: center !important;
             justify-content: center !important;
             gap: 0.6rem !important;
@@ -77,6 +77,13 @@
             cursor: pointer !important;
             opacity: 1 !important;
             visibility: visible !important;
+        }
+
+        .admin-only-link {
+            display: none !important;
+        }
+        .admin-only-link.is-admin-active {
+            display: inline-flex !important;
         }
 
         a.btn-pill-navy-red *,
@@ -324,16 +331,21 @@
                     document.getElementById('user-email').innerText = user.email;
                     
                     // Détection et affichage dynamique des accès Admin pour ngalagne84@gmail.com
-                    const isAdmin = user.email && user.email.toLowerCase().trim() === 'ngalagne84@gmail.com';
+                    const isAdmin = user && user.email && user.email.toLowerCase().trim() === 'ngalagne84@gmail.com';
                     
-                    // Si Admin : Masquer "Mon Espace" et afficher uniquement le bouton compact "Admin"
                     const userEspaceBtn = document.getElementById('nav-user-espace-btn');
                     if (userEspaceBtn) {
                         userEspaceBtn.style.display = isAdmin ? 'none' : 'inline-flex';
                     }
 
                     document.querySelectorAll('.admin-only-link').forEach(el => {
-                        el.style.display = isAdmin ? 'inline-flex' : 'none';
+                        if (isAdmin) {
+                            el.classList.add('is-admin-active');
+                            el.style.setProperty('display', 'inline-flex', 'important');
+                        } else {
+                            el.classList.remove('is-admin-active');
+                            el.style.setProperty('display', 'none', 'important');
+                        }
                     });
 
                     window.handleLogout = async () => {
@@ -343,12 +355,18 @@
                 } else {
                     document.getElementById('auth-buttons').style.display = 'flex';
                     document.getElementById('user-menu').style.display = 'none';
-                    document.querySelectorAll('.admin-only-link').forEach(el => el.style.display = 'none');
+                    document.querySelectorAll('.admin-only-link').forEach(el => {
+                        el.classList.remove('is-admin-active');
+                        el.style.setProperty('display', 'none', 'important');
+                    });
                 }
             } else {
                 document.getElementById('auth-buttons').style.display = 'flex';
                 document.getElementById('user-menu').style.display = 'none';
-                document.querySelectorAll('.admin-only-link').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.admin-only-link').forEach(el => {
+                    el.classList.remove('is-admin-active');
+                    el.style.setProperty('display', 'none', 'important');
+                });
             }
         });
     </script>
