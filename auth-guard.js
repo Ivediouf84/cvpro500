@@ -86,7 +86,11 @@
             const adminLinks = document.querySelectorAll('.admin-only-link');
             
             adminLinks.forEach(link => {
-                link.style.display = isAdmin ? 'inline-flex' : 'none';
+                if (isAdmin) {
+                    link.style.setProperty('display', 'inline-flex', 'important');
+                } else {
+                    link.style.setProperty('display', 'none', 'important');
+                }
             });
 
             const authBtn = document.getElementById('nav-auth-btn') || document.querySelector('.btn-auth');
