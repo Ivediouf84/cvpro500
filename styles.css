@@ -1027,13 +1027,37 @@ input:checked + .theme-slider:before {
         --text-sous-titre: 1.125rem;/* 18px */
         --text-profil: 1rem;        /* 16px */
         --text-body: 0.9375rem;     /* 15px (Idéal pour la lecture sur mobile) */
-        --text-desc: 0.8125rem;     /* 13px */
-        --text-info: 0.75rem;       /* 12px (Taille minimale pour l'accessibilité) */
-    }
+/* ==========================================================================
+   SYSTEME DE BOUTONS HARMONISÉS : BLEU DE NUIT + ROUGE + BLANC
+   ========================================================================== */
+.btn-tri-color {
+    background: linear-gradient(135deg, #0B132B 0%, #1E293B 45%, #DC2626 100%) !important;
+    color: #FFFFFF !important;
+    border: 1.5px solid #FFFFFF !important;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4), 0 2px 8px rgba(11, 19, 43, 0.8) !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.3px;
+    border-radius: var(--radius-lg) !important;
+    padding: 0.65rem 1.25rem !important;
+    cursor: pointer !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.55rem !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
 
-    [style*="grid-template-columns"]:not(.keep-grid) {
-        grid-template-columns: 1fr !important;
-    }
+.btn-tri-color:hover {
+    background: linear-gradient(135deg, #1E293B 0%, #DC2626 65%, #EF4444 100%) !important;
+    border-color: #FFFFFF !important;
+    box-shadow: 0 8px 22px rgba(220, 38, 38, 0.6), 0 0 12px rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-2px) scale(1.02) !important;
+    color: #FFFFFF !important;
+}
+
+.btn-tri-color:active {
+    transform: translateY(0) scale(0.98) !important;
 }
 
 

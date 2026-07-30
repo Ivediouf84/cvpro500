@@ -81,6 +81,102 @@
         .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 0.5rem; }
         .toast { background: #0F172A; color: white; padding: 0.85rem 1.2rem; border-radius: var(--radius-lg); border: 1px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; font-weight: 600; animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* ==========================================================================
+           SYSTEME DE BOUTONS HARMONISÉS : BLEU DE NUIT + ROUGE + BLANC
+           ========================================================================== */
+        .btn-tri-color {
+            background: linear-gradient(135deg, #0B132B 0%, #1E293B 45%, #DC2626 100%) !important;
+            color: #FFFFFF !important;
+            border: 1.5px solid #FFFFFF !important;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4), 0 2px 8px rgba(11, 19, 43, 0.8) !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.3px;
+            border-radius: var(--radius-lg) !important;
+            padding: 0.65rem 1.25rem !important;
+            cursor: pointer !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 0.55rem !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-tri-color:hover {
+            background: linear-gradient(135deg, #1E293B 0%, #DC2626 65%, #EF4444 100%) !important;
+            border-color: #FFFFFF !important;
+            box-shadow: 0 8px 22px rgba(220, 38, 38, 0.6), 0 0 12px rgba(255, 255, 255, 0.5) !important;
+            transform: translateY(-2px) scale(1.02) !important;
+            color: #FFFFFF !important;
+        }
+
+        .btn-tri-color:active {
+            transform: translateY(0) scale(0.98) !important;
+        }
+
+        .btn-export-pdf {
+            background: linear-gradient(135deg, #0B132B 0%, #1E293B 40%, #B91C1C 100%) !important;
+            border: 1.5px solid #EF4444 !important;
+        }
+
+        .btn-export-word {
+            background: linear-gradient(135deg, #0B132B 0%, #1E293B 40%, #DC2626 100%) !important;
+            border: 1.5px solid #F87171 !important;
+        }
+
+        .btn-export-email {
+            background: linear-gradient(135deg, #0B132B 0%, #1E293B 40%, #991B1B 100%) !important;
+            border: 1.5px solid #FCA5A5 !important;
+        }
+
+        .btn-export-whatsapp {
+            background: linear-gradient(135deg, #0B132B 0%, #1E293B 40%, #E11D48 100%) !important;
+            border: 1.5px solid #FDA4AF !important;
+        }
+
+        /* SUPPRESSION DE L'ESPACE SUR MOBILE ET MENU SERRÉ */
+        @media (max-width: 768px) {
+            .builder-nav {
+                height: auto !important;
+                padding: 0.45rem 0.75rem !important;
+            }
+            .builder-nav-brand {
+                font-size: 1rem !important;
+            }
+            .container-main {
+                margin: 0.25rem auto !important;
+                padding: 0 0.5rem !important;
+            }
+            .pv-tab-buttons {
+                margin-bottom: 0.4rem !important;
+                width: 100% !important;
+                justify-content: space-between !important;
+            }
+            .pv-tab-btn {
+                padding: 0.45rem 0.65rem !important;
+                font-size: 0.8rem !important;
+                flex: 1 !important;
+                justify-content: center !important;
+            }
+            #quick-action-header {
+                width: 100% !important;
+                margin-top: -0.2rem !important;
+            }
+            #quick-action-header button {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+            #view-dashboard > div:first-child {
+                margin-bottom: 0.4rem !important;
+            }
+            #view-dashboard h2 {
+                font-size: 1.2rem !important;
+            }
+            #view-dashboard p {
+                font-size: 0.8rem !important;
+            }
+        }
     </style>
 </head>
 <body class="dark-theme" data-require-auth="true">
@@ -104,7 +200,7 @@
     <div class="container-main">
         
         <!-- Navigation Tabs: Mes PV vs Créer PV -->
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
             <div class="pv-tab-buttons">
                 <button class="pv-tab-btn active" id="tab-btn-dashboard" onclick="switchPvTab('dashboard')">
                     <i class="fa-solid fa-folder-open"></i> Mes PV enregistrés
@@ -115,7 +211,7 @@
             </div>
             
             <div id="quick-action-header">
-                <button onclick="switchPvTab('builder')" class="btn btn-primary" style="padding: 0.6rem 1.2rem; border-radius: var(--radius-md); background: var(--grad-primary); color: white; border: none; font-weight: 700; cursor: pointer;">
+                <button onclick="switchPvTab('builder')" class="btn btn-tri-color">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> ➕ Créer un nouveau PV
                 </button>
             </div>
@@ -135,10 +231,10 @@
 
             <!-- Hero Action Card at the bottom of dashboard -->
             <div style="margin-top: 2.5rem; text-align: center; padding: 2.5rem 1.5rem; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-xl);">
-                <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 2.5rem; color: #EF4444; margin-bottom: 1rem;"></i>
                 <h3 style="margin: 0 0 0.5rem 0; color: var(--title-color); font-size: 1.3rem; font-weight: 800;">Vous souhaitez rédiger un nouveau procès-verbal ?</h3>
                 <p style="margin: 0 0 1.5rem 0; color: var(--text-muted); font-size: 0.92rem; max-width: 600px; margin-left: auto; margin-right: auto;">Importez votre brouillon (PDF, Word, Image ou Texte) et laissez l'Intelligence Artificielle le structurer au format officiel A4 en 1 clic.</p>
-                <button onclick="switchPvTab('builder')" class="btn btn-primary" style="padding: 0.9rem 2.2rem; font-size: 1.1rem; border-radius: var(--radius-lg); background: var(--grad-primary); color: white; border: none; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-glow);">
+                <button onclick="switchPvTab('builder')" class="btn btn-tri-color" style="padding: 0.9rem 2.2rem; font-size: 1.1rem;">
                     ✨ ➕ Créer un nouveau PV maintenant
                 </button>
             </div>
@@ -302,7 +398,7 @@
                 </div>
 
                 <div style="margin-top: 1.5rem; text-align: center;">
-                    <button onclick="generatePvWithAI()" class="btn btn-primary" style="padding: 0.85rem 2rem; font-size: 1.1rem; border-radius: var(--radius-lg); background: var(--grad-primary); color: white; border: none; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-glow);">
+                    <button onclick="generatePvWithAI()" class="btn btn-tri-color" style="padding: 0.9rem 2.2rem; font-size: 1.1rem;">
                         ✨ Générer le Procès-Verbal avec IA
                     </button>
                 </div>
@@ -318,16 +414,16 @@
                     </div>
                     
                     <div style="display: flex; gap: 0.55rem; flex-wrap: wrap;">
-                        <button onclick="downloadPvPDF()" class="btn" style="background: #EF4444; color: white; border: none; padding: 0.55rem 1rem; border-radius: var(--radius-md); font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+                        <button onclick="downloadPvPDF()" class="btn btn-tri-color btn-export-pdf">
                             📄 Télécharger PDF
                         </button>
-                        <button onclick="downloadPvWord()" class="btn" style="background: #2563EB; color: white; border: none; padding: 0.55rem 1rem; border-radius: var(--radius-md); font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+                        <button onclick="downloadPvWord()" class="btn btn-tri-color btn-export-word">
                             📝 Télécharger Word
                         </button>
-                        <button onclick="sendPvEmail()" class="btn" style="background: #7C3AED; color: white; border: none; padding: 0.55rem 1rem; border-radius: var(--radius-md); font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+                        <button onclick="sendPvEmail()" class="btn btn-tri-color btn-export-email">
                             📧 Envoyer par Email
                         </button>
-                        <button onclick="sharePvWhatsApp()" class="btn" style="background: #10B981; color: white; border: none; padding: 0.55rem 1rem; border-radius: var(--radius-md); font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+                        <button onclick="sharePvWhatsApp()" class="btn btn-tri-color btn-export-whatsapp">
                             📱 Partager WhatsApp
                         </button>
                     </div>
