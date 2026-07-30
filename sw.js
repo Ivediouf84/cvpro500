@@ -1,8 +1,8 @@
-const CACHE_NAME = 'novadoc-v1';
+const CACHE_NAME = 'novadoc-v2026-07-30-v5';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
+  './styles.css?v=20260730_v5',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -24,8 +24,17 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Network-First strategy pour garantir la fraîcheur du CSS et des scripts
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => response || fetch(event.request))
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+        }
+        return networkResponse;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
