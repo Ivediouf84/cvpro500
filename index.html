@@ -283,19 +283,20 @@
                 <div id="user-menu" style="display: none; align-items: center; gap: 0.75rem;">
                     <span id="user-email" style="font-size: 0.9rem; color: var(--text-muted);"></span>
                     <button onclick="handleLogout()" class="btn btn-ghost" style="color: #ef4444; border: 1px solid #ef4444; padding: 0.4rem 0.8rem; border-radius: var(--radius-md); font-size: 0.85rem; background: transparent; cursor: pointer;">Déconnexion</button>
+                    <a href="admin.html" id="nav-admin-btn" class="btn btn-pill-navy-red admin-only-link" style="display: none; padding: 0.45rem 0.9rem; font-size: 0.85rem; text-decoration: none;"><i class="fa-solid fa-chart-line"></i> Espace Admin</a>
                     <a href="cvpro-builder.html" class="btn btn-primary" style="padding: 0.5rem 1rem; background: var(--grad-primary); color: white; border: none; border-radius: var(--radius-md); text-decoration: none; font-weight: 600;"><i class="fa-solid fa-wand-magic-sparkles"></i> Mon Espace</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Supabase Auth Script -->
+    <!-- Supabase Auth Script & Admin Middleware -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth-guard.js"></script>
     <script>
         window.isLoggedIn = false;
         window.handleHeroAction = (action) => {
             if (!window.isLoggedIn) {
-                // Redirige directement vers le formulaire d'inscription avec la page cible en paramètre
                 window.location.href = `auth.html?mode=signup&redirect=${encodeURIComponent(action)}`;
                 return false;
             }
@@ -309,19 +310,25 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-            const SUPABASE_KEY = localStorage.getItem('supabase_anon_key');
+            const SUPABASE_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
             
-            if (SUPABASE_KEY) {
+            if (window.supabase) {
                 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 const { data } = await supabase.auth.getSession();
                 
-                if (data.session) {
+                if (data && data.session && data.session.user) {
+                    const user = data.session.user;
                     window.isLoggedIn = true;
                     document.getElementById('auth-buttons').style.display = 'none';
                     document.getElementById('user-menu').style.display = 'flex';
-                    document.getElementById('user-email').innerText = data.session.user.email;
+                    document.getElementById('user-email').innerText = user.email;
                     
-                    // Attach global logout function
+                    // Détection et affichage dynamique des accès Admin pour ngalagne84@gmail.com
+                    const isAdmin = user.email && user.email.toLowerCase().trim() === 'ngalagne84@gmail.com';
+                    document.querySelectorAll('.admin-only-link').forEach(el => {
+                        el.style.display = isAdmin ? 'inline-flex' : 'none';
+                    });
+
                     window.handleLogout = async () => {
                         await supabase.auth.signOut();
                         window.location.reload();
@@ -329,10 +336,12 @@
                 } else {
                     document.getElementById('auth-buttons').style.display = 'flex';
                     document.getElementById('user-menu').style.display = 'none';
+                    document.querySelectorAll('.admin-only-link').forEach(el => el.style.display = 'none');
                 }
             } else {
                 document.getElementById('auth-buttons').style.display = 'flex';
                 document.getElementById('user-menu').style.display = 'none';
+                document.querySelectorAll('.admin-only-link').forEach(el => el.style.display = 'none');
             }
         });
     </script>
