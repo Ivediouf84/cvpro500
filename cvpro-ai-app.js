@@ -25,14 +25,6 @@ if (typeof cloudDocumentId === 'undefined') {
 
 // Initialize app
 const initApp = async () => {
-    // Check for SenePay payment success redirect
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('payment') === 'success') {
-        alert("Paiement réussi avec SenePay ! Votre CV va être généré et téléchargé automatiquement.");
-        window.history.replaceState({}, document.title, window.location.pathname);
-        exportPDF();
-    }
-    
     // Auth initialization
     if (window.supabase) {
         try {
@@ -71,6 +63,27 @@ const initApp = async () => {
     setupPhotoUploader();
     updateCVStyles();
     setupDragAndDropImport();
+
+    // Ensure the CV container is visible on screen
+    const scaleWrapper = document.getElementById('cv-scale-wrapper');
+    const emptyUploadCard = document.getElementById('cv-empty-upload-card');
+    if (docEl && docEl.innerHTML.trim().length > 50) {
+        if (scaleWrapper) scaleWrapper.style.display = 'block';
+        if (emptyUploadCard) emptyUploadCard.style.display = 'none';
+    }
+
+    // Check for SenePay payment success redirect AFTER rendering is 100% complete
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment') === 'success') {
+        alert("Paiement réussi avec SenePay ! Votre CV va être généré et téléchargé automatiquement.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(() => {
+            if (typeof exportPDF === 'function') exportPDF();
+        }, 800);
+    } else if (urlParams.get('payment') === 'cancel') {
+        alert("Le paiement SenePay a été annulé.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 };
 
 function setupDragAndDropImport() {
@@ -588,33 +601,38 @@ function zoomOut() {
     }
 }
 function applyZoom() {
-    const wrapper = document.getElementById('cv-scale-wrapper') || document.getElementById('cv-document');
-    if (wrapper) {
-        wrapper.style.transform = `scale(${currentZoom})`;
-    }
-}
 window.zoomIn = zoomIn;
 window.zoomOut = zoomOut;
 
 // Payment/Export logic
 function exportPDF() {
     const originalDoc = document.getElementById('cv-document');
-    if (!originalDoc) return;
+    if (!originalDoc) {
+        alert("Aucun document à exporter.");
+        return;
+    }
 
-    // Clone element to guarantee 100% non-blank PDF without CSS transform interference
+    // Ensure CV preview is visible
+    const scaleWrapper = document.getElementById('cv-scale-wrapper');
+    const emptyUploadCard = document.getElementById('cv-empty-upload-card');
+    if (scaleWrapper) scaleWrapper.style.display = 'block';
+    if (emptyUploadCard) emptyUploadCard.style.display = 'none';
+
     const cloneContainer = document.createElement('div');
-    cloneContainer.style.position = 'fixed';
-    cloneContainer.style.top = '0';
-    cloneContainer.style.left = '0';
-    cloneContainer.style.width = '100vw';
-    cloneContainer.style.height = '100vh';
-    cloneContainer.style.background = '#ffffff';
-    cloneContainer.style.zIndex = '999999';
-    cloneContainer.style.overflow = 'auto';
-    cloneContainer.style.display = 'flex';
-    cloneContainer.style.justifyContent = 'center';
-    cloneContainer.style.alignItems = 'flex-start';
-    cloneContainer.style.padding = '0';
+    cloneContainer.style.cssText = `
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 210mm !important;
+        min-height: 297mm !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        z-index: -9999 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    `;
 
     const clone = originalDoc.cloneNode(true);
     clone.style.transform = 'none';
@@ -624,19 +642,22 @@ function exportPDF() {
     clone.style.minHeight = '297mm';
     clone.style.background = '#ffffff';
     clone.style.color = '#000000';
+    
+    // Remove contenteditable attributes so cursor/selection lines don't show in PDF
+    clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
 
     cloneContainer.appendChild(clone);
     document.body.appendChild(cloneContainer);
 
     const opt = {
         margin: 0,
-        filename: 'cv_professionnel_ia.pdf',
+        filename: 'CV_Professionnel_IA.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, windowWidth: 1200 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(clone).save().then(() => {
+    html2pdf().set(opt).from(cloneContainer).save().then(() => {
         if (cloneContainer.parentNode) {
             document.body.removeChild(cloneContainer);
         }
@@ -677,6 +698,12 @@ async function processPayment() {
     btn.disabled = true;
 
     try {
+        // Save current CV HTML backup before redirect
+        const docEl = document.getElementById('cv-document');
+        if (docEl && docEl.innerHTML.trim().length > 50) {
+            localStorage.setItem('importedCVHtml', docEl.innerHTML);
+        }
+
         const supabaseKey = localStorage.getItem('supabase_anon_key') || HARDCODED_ANON_KEY;
 
         // Appeler la fonction backend sécurisée

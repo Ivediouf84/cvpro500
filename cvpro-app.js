@@ -131,18 +131,6 @@ function sanitizeCvData(raw) {
 // Initialize app safely
 function initApp() {
     try {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('payment') === 'success') {
-            alert("Paiement réussi avec SenePay ! Votre CV va être généré et téléchargé automatiquement.");
-            window.history.replaceState({}, document.title, window.location.pathname);
-            setTimeout(() => {
-                if (typeof generatePDF === 'function') generatePDF();
-            }, 1500);
-        } else if (urlParams.get('payment') === 'cancel') {
-            alert("Le paiement SenePay a été annulé.");
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
         const localData = safeGet('cvpro_data');
         if (localData) {
             try {
@@ -170,6 +158,20 @@ function initApp() {
             } catch(e) {
                 console.warn("Supabase init handled:", e);
             }
+        }
+
+        // Handle payment success AFTER full rendering of forms and CV
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('payment') === 'success') {
+            alert("Paiement réussi avec SenePay ! Votre CV va être généré et téléchargé automatiquement.");
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setTimeout(() => {
+                renderCV();
+                if (typeof generatePDF === 'function') generatePDF();
+            }, 800);
+        } else if (urlParams.get('payment') === 'cancel') {
+            alert("Le paiement SenePay a été annulé.");
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
     } catch(err) {
         console.warn("Main init handled:", err);
@@ -1041,29 +1043,39 @@ function generatePDF() {
     const originalElement = document.getElementById('cv-document');
     if (!originalElement) return;
     
-    // Create an unscaled desktop-size clone off-screen so mobile scale(0.4) never affects the PDF output
+    // Ensure original CV is updated
+    renderCV();
+    
+    // Create an unscaled desktop-size clone positioned at 0,0 behind main UI
     const clone = originalElement.cloneNode(true);
     clone.id = 'cv-document-pdf-export-clone';
     
-    // Reset all responsive transforms, scale, margins and force true A4 dimensions
+    // Remove contenteditable attributes so cursor/selection lines don't show in PDF
+    clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    
+    // Reset all responsive transforms, scale, margins and force true A4 dimensions inside visible viewport area
     clone.style.cssText = `
         position: fixed !important;
-        left: -9999px !important;
+        left: 0 !important;
         top: 0 !important;
         width: 210mm !important;
         min-height: 297mm !important;
         transform: none !important;
         -webkit-transform: none !important;
         margin: 0 !important;
+        padding: 0 !important;
         box-sizing: border-box !important;
         background: #ffffff !important;
-        z-index: -99999 !important;
+        color: #000000 !important;
+        z-index: -9999 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     `;
     
     document.body.appendChild(clone);
     
     const firstName = cvData.personal?.firstName || 'PRO';
-    const lastName = cvData.personal?.lastName || 'Diouf';
+    const lastName = cvData.personal?.lastName || 'Candidat';
     const fileName = `CV_${firstName}_${lastName}.pdf`.replace(/ /g, '_');
     
     const opt = {
@@ -1074,7 +1086,9 @@ function generatePDF() {
             scale: 2, 
             useCORS: true, 
             logging: false,
-            windowWidth: 1200 // Force desktop viewport calculation so mobile CSS scale(0.4) is completely bypassed
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: 1200
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
