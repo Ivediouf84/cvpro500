@@ -1043,41 +1043,27 @@ function generatePDF() {
     const originalElement = document.getElementById('cv-document');
     if (!originalElement) return;
     
-    // Ensure original CV is updated
+    // Ensure latest CV data is rendered to the DOM
     renderCV();
     
-    // Create an unscaled desktop-size clone positioned at 0,0 behind main UI
-    const clone = originalElement.cloneNode(true);
-    clone.id = 'cv-document-pdf-export-clone';
+    // Save original wrapper transform and paper styles
+    const scaleWrapper = document.getElementById('cv-scale-wrapper');
+    const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
+    const origBoxShadow = originalElement.style.boxShadow;
     
-    // Remove contenteditable attributes so cursor/selection lines don't show in PDF
-    clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    if (scaleWrapper) {
+        scaleWrapper.style.transform = 'none';
+    }
+    originalElement.style.boxShadow = 'none';
     
-    // Reset all responsive transforms, scale, margins and force true A4 dimensions inside visible viewport area
-    clone.style.cssText = `
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 210mm !important;
-        min-height: 297mm !important;
-        transform: none !important;
-        -webkit-transform: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-        background: #ffffff !important;
-        color: #000000 !important;
-        z-index: -9999 !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    `;
-    
-    document.body.appendChild(clone);
-    
-    const firstName = cvData.personal?.firstName || 'PRO';
-    const lastName = cvData.personal?.lastName || 'Candidat';
+    // Remove contenteditable focus temporarily so cursor lines don't show
+    const editableEls = originalElement.querySelectorAll('[contenteditable]');
+    editableEls.forEach(el => el.setAttribute('contenteditable', 'false'));
+
+    const firstName = cvData?.personal?.firstName || 'PRO';
+    const lastName = cvData?.personal?.lastName || 'Candidat';
     const fileName = `CV_${firstName}_${lastName}.pdf`.replace(/ /g, '_');
-    
+
     const opt = {
         margin:       0,
         filename:     fileName,
@@ -1086,22 +1072,25 @@ function generatePDF() {
             scale: 2, 
             useCORS: true, 
             logging: false,
+            backgroundColor: '#ffffff',
             scrollX: 0,
             scrollY: 0,
             windowWidth: 1200
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    
-    html2pdf().set(opt).from(clone).save().then(() => {
-        if (clone && clone.parentNode) {
-            clone.parentNode.removeChild(clone);
-        }
+
+    const restoreStyles = () => {
+        if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
+        originalElement.style.boxShadow = origBoxShadow;
+        editableEls.forEach(el => el.setAttribute('contenteditable', 'true'));
+    };
+
+    html2pdf().set(opt).from(originalElement).save().then(() => {
+        restoreStyles();
     }).catch(err => {
         console.error("PDF export error:", err);
-        if (clone && clone.parentNode) {
-            clone.parentNode.removeChild(clone);
-        }
+        restoreStyles();
     });
 }
 

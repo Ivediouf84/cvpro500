@@ -618,55 +618,45 @@ function exportPDF() {
     if (scaleWrapper) scaleWrapper.style.display = 'block';
     if (emptyUploadCard) emptyUploadCard.style.display = 'none';
 
-    const cloneContainer = document.createElement('div');
-    cloneContainer.style.cssText = `
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 210mm !important;
-        min-height: 297mm !important;
-        background: #ffffff !important;
-        color: #000000 !important;
-        z-index: -9999 !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        overflow: hidden !important;
-        box-sizing: border-box !important;
-    `;
+    const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
+    const origBoxShadow = originalDoc.style.boxShadow;
 
-    const clone = originalDoc.cloneNode(true);
-    clone.style.transform = 'none';
-    clone.style.margin = '0';
-    clone.style.boxShadow = 'none';
-    clone.style.width = '210mm';
-    clone.style.minHeight = '297mm';
-    clone.style.background = '#ffffff';
-    clone.style.color = '#000000';
-    
-    // Remove contenteditable attributes so cursor/selection lines don't show in PDF
-    clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    if (scaleWrapper) {
+        scaleWrapper.style.transform = 'none';
+    }
+    originalDoc.style.boxShadow = 'none';
 
-    cloneContainer.appendChild(clone);
-    document.body.appendChild(cloneContainer);
+    const editableEls = originalDoc.querySelectorAll('[contenteditable]');
+    editableEls.forEach(el => el.setAttribute('contenteditable', 'false'));
 
     const opt = {
         margin: 0,
         filename: 'CV_Professionnel_IA.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, windowWidth: 1200 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false, 
+            backgroundColor: '#ffffff', 
+            scrollX: 0, 
+            scrollY: 0, 
+            windowWidth: 1200 
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(cloneContainer).save().then(() => {
-        if (cloneContainer.parentNode) {
-            document.body.removeChild(cloneContainer);
-        }
+    const restoreStyles = () => {
+        if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
+        originalDoc.style.boxShadow = origBoxShadow;
+        editableEls.forEach(el => el.setAttribute('contenteditable', 'true'));
+    };
+
+    html2pdf().set(opt).from(originalDoc).save().then(() => {
+        restoreStyles();
         closePaymentModal();
     }).catch(err => {
         console.error("PDF generation error:", err);
-        if (cloneContainer.parentNode) {
-            document.body.removeChild(cloneContainer);
-        }
+        restoreStyles();
         alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
     });
 }
