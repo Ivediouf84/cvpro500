@@ -1046,16 +1046,20 @@ async function generatePDF() {
     // Ensure latest CV data is rendered to the DOM
     renderCV();
     
-    // Save original wrapper transform and paper styles
+    // Save original styles
     const scaleWrapper = document.getElementById('cv-scale-wrapper');
     const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
     const origBoxShadow = paper.style.boxShadow;
+    const origMaxHeight = paper.style.maxHeight;
+    const origOverflow = paper.style.overflow;
     
-    // Disable zoom transform & shadow temporarily for 1:1 crisp A4 capture
+    // Disable zoom transform & shadow, and force single-page A4 height limit (296mm)
     if (scaleWrapper) {
         scaleWrapper.style.transform = 'none';
     }
     paper.style.boxShadow = 'none';
+    paper.style.maxHeight = '296mm';
+    paper.style.overflow = 'hidden';
     
     // Scroll window to top (0,0) so html2canvas scrollY = 0
     const currentScrollY = window.scrollY;
@@ -1081,12 +1085,15 @@ async function generatePDF() {
             scrollX: 0,
             scrollY: 0
         },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     const restoreStyles = () => {
         if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
         paper.style.boxShadow = origBoxShadow;
+        paper.style.maxHeight = origMaxHeight;
+        paper.style.overflow = origOverflow;
         editables.forEach(el => el.setAttribute('contenteditable', 'true'));
         window.scrollTo(0, currentScrollY);
     };

@@ -625,11 +625,15 @@ async function exportPDF() {
 
     const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
     const origBoxShadow = paper.style.boxShadow;
+    const origMaxHeight = paper.style.maxHeight;
+    const origOverflow = paper.style.overflow;
 
     if (scaleWrapper) {
         scaleWrapper.style.transform = 'none';
     }
     paper.style.boxShadow = 'none';
+    paper.style.maxHeight = '296mm';
+    paper.style.overflow = 'hidden';
 
     const currentScrollY = window.scrollY;
     window.scrollTo(0, 0);
@@ -649,12 +653,15 @@ async function exportPDF() {
             scrollX: 0, 
             scrollY: 0
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     const restoreStyles = () => {
         if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
         paper.style.boxShadow = origBoxShadow;
+        paper.style.maxHeight = origMaxHeight;
+        paper.style.overflow = origOverflow;
         editables.forEach(el => el.setAttribute('contenteditable', 'true'));
         window.scrollTo(0, currentScrollY);
     };
