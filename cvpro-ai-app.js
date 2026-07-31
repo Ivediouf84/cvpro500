@@ -601,6 +601,11 @@ function zoomOut() {
     }
 }
 function applyZoom() {
+    const wrapper = document.getElementById('cv-scale-wrapper') || document.getElementById('cv-document');
+    if (wrapper) {
+        wrapper.style.transform = `scale(${currentZoom})`;
+    }
+}
 window.zoomIn = zoomIn;
 window.zoomOut = zoomOut;
 
