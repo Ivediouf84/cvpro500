@@ -18,8 +18,8 @@ function createPwaInstallBanner() {
 
   const modalHtml = `
     <div id="pwa-install-modal" style="display: flex; position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 440px; background: #0F172A !important; border: 2px solid #6366F1 !important; border-radius: 20px; padding: 1rem 1.25rem; z-index: 999999; box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 25px rgba(99, 102, 241, 0.5); align-items: center; gap: 0.85rem; font-family: 'Inter', sans-serif;">
-      <div style="flex-shrink: 0; width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid #6366F1; box-shadow: 0 4px 10px rgba(0,0,0,0.3); background: #ffffff;">
-        <img src="./icon-192.png" alt="NovaDoc Logo" style="width: 100%; height: 100%; object-fit: cover;">
+      <div style="flex-shrink: 0; width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid #6366F1; box-shadow: 0 4px 10px rgba(0,0,0,0.3); background: #0F172A; display: flex; align-items: center; justify-content: center; padding: 6px;">
+        <img src="./novadoc-logo-n.png?v=12" alt="NovaDoc Logo" style="width: 100%; height: 100%; object-fit: contain;">
       </div>
       <div style="flex: 1; min-width: 0; text-align: left;">
         <h4 style="margin: 0; color: #FFFFFF !important; font-size: 0.98rem; font-weight: 800; font-family: 'Outfit', sans-serif; line-height: 1.2;">Installer l'application NovaDoc</h4>
