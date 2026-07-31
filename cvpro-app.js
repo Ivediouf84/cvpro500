@@ -1039,53 +1039,31 @@ function selectPayment(el) {
     el.classList.add('selected');
 }
 
-function generatePDF() {
-    const originalElement = document.getElementById('cv-document');
-    if (!originalElement) return;
+async function generatePDF() {
+    const paper = document.getElementById('cv-document');
+    if (!paper) return;
     
     // Ensure latest CV data is rendered to the DOM
     renderCV();
     
-    // Create a temporary high-res A4 container at top:0, left:0
-    const container = document.createElement('div');
-    container.id = 'temp-pdf-export-container';
-    container.style.cssText = `
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 210mm !important;
-        height: 296mm !important;
-        max-height: 296mm !important;
-        background: #ffffff !important;
-        color: #000000 !important;
-        z-index: 9999999 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-        overflow: hidden !important;
-    `;
+    // Save original wrapper transform and paper styles
+    const scaleWrapper = document.getElementById('cv-scale-wrapper');
+    const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
+    const origBoxShadow = paper.style.boxShadow;
     
-    // Clone CV content
-    const clone = originalElement.cloneNode(true);
-    clone.style.cssText = `
-        width: 210mm !important;
-        min-height: 296mm !important;
-        max-height: 296mm !important;
-        transform: none !important;
-        -webkit-transform: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        box-sizing: border-box !important;
-        background: #ffffff !important;
-        overflow: hidden !important;
-    `;
+    // Disable zoom transform & shadow temporarily for 1:1 crisp A4 capture
+    if (scaleWrapper) {
+        scaleWrapper.style.transform = 'none';
+    }
+    paper.style.boxShadow = 'none';
     
-    // Remove contenteditable focus attributes from clone
-    clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    // Scroll window to top (0,0) so html2canvas scrollY = 0
+    const currentScrollY = window.scrollY;
+    window.scrollTo(0, 0);
     
-    container.appendChild(clone);
-    document.body.appendChild(container);
+    // Remove contenteditable focus temporarily so cursor lines don't show
+    const editables = paper.querySelectorAll('[contenteditable]');
+    editables.forEach(el => el.setAttribute('contenteditable', 'false'));
 
     const firstName = cvData?.personal?.firstName || 'PRO';
     const lastName = cvData?.personal?.lastName || 'Candidat';
@@ -1101,23 +1079,26 @@ function generatePDF() {
             logging: false,
             backgroundColor: '#ffffff',
             scrollX: 0,
-            scrollY: 0,
-            windowWidth: 794
+            scrollY: 0
         },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(container).save().then(() => {
-        if (container && container.parentNode) {
-            container.parentNode.removeChild(container);
-        }
-    }).catch(err => {
+    const restoreStyles = () => {
+        if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
+        paper.style.boxShadow = origBoxShadow;
+        editables.forEach(el => el.setAttribute('contenteditable', 'true'));
+        window.scrollTo(0, currentScrollY);
+    };
+
+    try {
+        await html2pdf().set(opt).from(paper).save();
+    } catch (err) {
         console.error("PDF export error:", err);
-        if (container && container.parentNode) {
-            container.parentNode.removeChild(container);
-        }
-    });
+        alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
+    } finally {
+        restoreStyles();
+    }
 }
 
 document.getElementById('cv-document')?.addEventListener('click', (e) => {
