@@ -19,7 +19,27 @@ function checkPaymentSuccess() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
         localStorage.setItem('pv_reunion_paid', 'true');
-        showToast("✅ Paiement SenePay de 500 FCFA confirmé avec succès !");
+        
+        // Restore document if needed
+        const savedPv = localStorage.getItem('pv_reunion_doc_html');
+        const pvOutput = document.getElementById('pv-document-a4');
+        const resultsSection = document.getElementById('pv-results-section');
+        const formSection = document.getElementById('pv-form-section');
+        
+        if (savedPv && pvOutput) {
+            pvOutput.innerHTML = savedPv;
+            if (resultsSection) resultsSection.style.display = 'block';
+            if (formSection) formSection.style.display = 'none';
+        }
+        
+        showToast("✅ Paiement SenePay de 500 FCFA confirmé ! Téléchargement automatique...");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        setTimeout(() => {
+            if (typeof downloadPvPDF === 'function') {
+                downloadPvPDF();
+            }
+        }, 800);
     }
 }
 
@@ -43,6 +63,12 @@ async function processSenePayPayment() {
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirection SenePay (500 F)...';
     btn.disabled = true;
+
+    // Save PV HTML before redirecting to SenePay
+    const pvOutput = document.getElementById('pv-document-a4');
+    if (pvOutput && pvOutput.innerHTML.trim().length > 50) {
+        localStorage.setItem('pv_reunion_doc_html', pvOutput.innerHTML);
+    }
 
     try {
         const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
@@ -749,22 +775,32 @@ function escapeHtml(str) {
 }
 
 // Export PDF & Word & Sharing with strict SenePay payment gate
-function downloadPvPDF() {
+async function downloadPvPDF() {
     if (!isPvPaid()) {
         openPaymentModal();
         return;
     }
     const el = document.getElementById('pv-document-a4');
+    if (!el) return;
+
+    const currentScrollY = window.scrollY;
+    window.scrollTo(0, 0);
+
     const opt = {
         margin: 10,
         filename: `PV_Reunion_NovaDoc_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(el).save().then(() => {
+    try {
+        await html2pdf().set(opt).from(el).save();
         showToast("✅ PDF du PV téléchargé avec succès !");
-    });
+    } catch (err) {
+        console.error("PV PDF export error:", err);
+    } finally {
+        window.scrollTo(0, currentScrollY);
+    }
 }
 
 function downloadPvWord() {

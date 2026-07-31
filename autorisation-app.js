@@ -135,6 +135,9 @@ function handleLogoUpload(event) {
         const reader = new FileReader();
         reader.onload = (e) => {
             uploadedLogoDataUrl = e.target.result;
+            try {
+                localStorage.setItem('auto_uploaded_logo', uploadedLogoDataUrl);
+            } catch(err) {}
             const previewContainer = document.getElementById('auto-logo-preview-container');
             const previewImg = document.getElementById('auto-logo-preview');
             if (previewContainer && previewImg) {
@@ -521,43 +524,29 @@ function exportAutorisationWord() {
     openAutorisationPaymentModal('word');
 }
 
-function exportAutorisationPDFDirect() {
+async function exportAutorisationPDFDirect() {
     const docEl = document.getElementById('doc-autorisation-output');
     if (!docEl) return;
 
-    const cloneContainer = document.createElement('div');
-    cloneContainer.style.position = 'fixed';
-    cloneContainer.style.top = '0';
-    cloneContainer.style.left = '0';
-    cloneContainer.style.width = '100vw';
-    cloneContainer.style.height = '100vh';
-    cloneContainer.style.background = '#ffffff';
-    cloneContainer.style.zIndex = '999999';
-    cloneContainer.style.overflow = 'auto';
-
-    const clone = docEl.cloneNode(true);
-    clone.style.margin = '0 auto';
-    clone.style.width = '210mm';
-    clone.style.boxShadow = 'none';
-
-    cloneContainer.appendChild(clone);
-    document.body.appendChild(cloneContainer);
+    const currentScrollY = window.scrollY;
+    window.scrollTo(0, 0);
 
     const opt = {
         margin: 0,
         filename: 'demande_autorisation_manifestation.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
+        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(clone).save().then(() => {
-        if (cloneContainer.parentNode) document.body.removeChild(cloneContainer);
-    }).catch(err => {
+    try {
+        await html2pdf().set(opt).from(docEl).save();
+    } catch (err) {
         console.error("PDF Export Error:", err);
-        if (cloneContainer.parentNode) document.body.removeChild(cloneContainer);
         alert("Erreur lors de la création du PDF.");
-    });
+    } finally {
+        window.scrollTo(0, currentScrollY);
+    }
 }
 
 function exportAutorisationWord() {
