@@ -809,14 +809,42 @@ function downloadPvWord() {
         openPaymentModal();
         return;
     }
-    const htmlContent = document.getElementById('pv-document-a4').innerHTML;
-    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+    const docEl = document.getElementById('pv-document-a4');
+    if (!docEl) return;
+
+    let cleanHtml = docEl.innerHTML.replace(/<!--[\s\S]*?-->/g, '');
+
+    const wordHeader = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+            <meta charset='utf-8'>
+            <title>PV de Réunion - NovaDoc</title>
+            <style>
+                body { font-family: 'Arial', sans-serif; font-size: 11pt; color: #0f172a; line-height: 1.5; padding: 20px; }
+                h1, h2, h3, h4 { color: #1e3a8a; }
+                table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+                th, td { border: 1px solid #cbd5e1; padding: 6px 10px; font-size: 10pt; }
+                th { background-color: #f1f5f9; font-weight: bold; }
+                img { max-width: 160px; max-height: 70px; height: auto; display: block; }
+                .pv-sec-title { font-weight: bold; color: #1e3a8a; border-bottom: 2px solid #93c5fd; padding-bottom: 4px; margin-top: 16px; text-transform: uppercase; }
+            </style>
+        </head>
+        <body>
+            ${cleanHtml}
+        </body>
+        </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + wordHeader], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `PV_Reunion_NovaDoc_${new Date().toISOString().split('T')[0]}.doc`;
+    document.body.appendChild(a);
     a.click();
-    showToast("✅ Document Word téléchargé avec succès !");
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("✅ Document Word du PV téléchargé avec succès !");
 }
 
 function sendPvEmail() {
