@@ -10,6 +10,18 @@ document.addEventListener('DOMContentLoaded', () => {
         dateInput.value = new Date().toISOString().split('T')[0];
     }
 
+    // Restore saved association logo
+    const savedLogo = localStorage.getItem('auto_uploaded_logo');
+    if (savedLogo) {
+        uploadedLogoDataUrl = savedLogo;
+        const previewContainer = document.getElementById('auto-logo-preview-container');
+        const previewImg = document.getElementById('auto-logo-preview');
+        if (previewContainer && previewImg) {
+            previewImg.src = savedLogo;
+            previewContainer.style.display = 'block';
+        }
+    }
+
     // Auto-open modal when navigating to autorisation generator
     const urlParams = new URLSearchParams(window.location.search);
     const isPaymentSuccess = urlParams.get('payment') === 'success' || urlParams.get('payment_success') === 'autorisation';
@@ -219,6 +231,8 @@ function getSenegalAutoriteHeader(autorite, { region, departement, arrondissemen
 
 async function generateAutorisationDocument(event) {
     if (event) event.preventDefault();
+
+    uploadedLogoDataUrl = uploadedLogoDataUrl || localStorage.getItem('auto_uploaded_logo') || '';
 
     const dateRedaction = document.getElementById('auto-date-redaction')?.value || new Date().toISOString().split('T')[0];
     const lieuRedaction = document.getElementById('auto-lieu-redaction')?.value.trim() || 'Dakar';

@@ -29,9 +29,9 @@
     </script>
     <style>
         .btn-institutional {
-            background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+            background: var(--grad-primary);
             color: #ffffff !important;
-            border: 1px solid #3b82f6;
+            border: none;
             border-radius: var(--radius-lg);
             padding: 0.85rem 1.6rem;
             font-weight: 700;
@@ -41,13 +41,13 @@
             gap: 0.65rem;
             cursor: pointer;
             transition: all 0.25s ease-in-out;
-            box-shadow: 0 4px 14px rgba(30, 64, 175, 0.4);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
             text-decoration: none;
         }
         .btn-institutional:hover {
-            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.55);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55);
         }
         .btn-institutional:active {
             transform: scale(0.97);
@@ -201,12 +201,12 @@
         
         <!-- Landing Hero Section -->
         <div id="autorisation-landing-section" style="text-align: center; max-width: 800px; margin: 2rem auto;">
-            <div style="display: inline-flex; padding: 12px 20px; border-radius: 50px; background: rgba(30,64,175,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; font-weight: 700; margin-bottom: 1.5rem; gap: 8px; align-items: center;">
+            <div style="display: inline-flex; padding: 12px 20px; border-radius: 50px; background: rgba(99,102,241,0.15); border: 1px solid rgba(165,180,252,0.3); color: #a5b4fc; font-weight: 700; margin-bottom: 1.5rem; gap: 8px; align-items: center;">
                 <i class="fa-solid fa-building-shield"></i> Administration du Sénégal
             </div>
             
             <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.2rem; line-height: 1.2;">
-                Générateur Intelligent de <br><span style="color: #60a5fa;">Demande d'Autorisation de Manifestation</span>
+                Générateur Intelligent de <br><span style="color: #a5b4fc;">Demande d'Autorisation de Manifestation</span>
             </h1>
             
             <p style="font-size: 1.15rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.6;">
@@ -220,18 +220,18 @@
 
         <!-- Output Editor Section -->
         <div id="autorisation-results-section" style="display: none; max-width: 900px; margin: 0 auto;">
-            <div style="background: rgba(30,64,175,0.1); border: 1px solid #3b82f6; padding: 1.5rem; border-radius: var(--radius-lg); text-align: center; margin-bottom: 2rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; align-items: center;">
+            <div style="background: rgba(99,102,241,0.1); border: 1px solid var(--primary); padding: 1.5rem; border-radius: var(--radius-lg); text-align: center; margin-bottom: 2rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; align-items: center;">
                 <div style="flex: 1; text-align: left; min-width: 250px;">
                     <h3 style="margin: 0; color: white; font-size: 1.2rem;">Votre Demande d'Autorisation est prête ! 🎉</h3>
-                    <p style="color: #93c5fd; margin: 4px 0 0 0; font-size: 0.9rem;">Vous pouvez modifier librement le texte directement sur la feuille ci-dessous avant d'exporter.</p>
+                    <p style="color: #c7d2fe; margin: 4px 0 0 0; font-size: 0.9rem;">Vous pouvez modifier librement le texte directement sur la feuille ci-dessous avant d'exporter.</p>
                 </div>
                 
                 <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                    <button onclick="exportAutorisationPDF()" class="btn btn-primary" style="padding: 0.85rem 1.4rem; font-weight: bold; background: #1e40af; border: none; color: white; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-file-pdf"></i> Télécharger PDF
+                    <button onclick="exportAutorisationPDF()" class="btn btn-primary" style="padding: 0.85rem 1.4rem; font-weight: bold; background: var(--grad-primary); border: none; color: white; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);">
+                        <i class="fa-solid fa-file-pdf"></i> Télécharger PDF (500F)
                     </button>
-                    <button onclick="exportAutorisationWord()" class="btn btn-ghost" style="padding: 0.85rem 1.4rem; font-weight: bold; border: 1px solid #3b82f6; color: #60a5fa; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; gap: 6px; background: transparent;">
-                        <i class="fa-solid fa-file-word"></i> Télécharger Word
+                    <button onclick="exportAutorisationWord()" class="btn btn-ghost" style="padding: 0.85rem 1.4rem; font-weight: bold; border: 1px solid var(--primary); color: #a5b4fc; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; gap: 6px; background: rgba(99, 102, 241, 0.1);">
+                        <i class="fa-solid fa-file-word" style="color: #3b82f6;"></i> Télécharger Word (500F)
                     </button>
                 </div>
             </div>
@@ -627,7 +627,7 @@
         <div style="background: var(--surface); padding: 2rem; border-radius: var(--radius-lg); max-width: 440px; width: 90%; text-align: center; border: 1px solid var(--border); position: relative; color: white;">
             <button onclick="closeAutorisationPaymentModal()" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
             
-            <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(30,64,175,0.2); border: 2px solid #3b82f6; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; color: #60a5fa; font-size: 1.6rem;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(99,102,241,0.2); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; color: #a5b4fc; font-size: 1.6rem;">
                 <i class="fa-solid fa-lock"></i>
             </div>
             
@@ -635,13 +635,13 @@
             <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:1.5rem; line-height: 1.5;">Un paiement unique de <strong>500 FCFA</strong> est requis pour télécharger votre document officiel aux formats PDF & Word.</p>
             
             <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; border: 1px solid #3b82f6; border-radius: 8px; background: rgba(30,64,175,0.15);">
-                    <span style="font-weight: bold; color: white; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-mobile-screen-button" style="color: #60a5fa;"></i> Wave / Orange Money / SenePay</span>
-                    <span style="font-weight: bold; color: #60a5fa; font-size: 1.1rem;">500 FCFA</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; border: 1px solid var(--primary); border-radius: 8px; background: rgba(99,102,241,0.15);">
+                    <span style="font-weight: bold; color: white; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-mobile-screen-button" style="color: #a5b4fc;"></i> Wave / Orange Money / SenePay</span>
+                    <span style="font-weight: bold; color: #a5b4fc; font-size: 1.1rem;">500 FCFA</span>
                 </div>
             </div>
             
-            <button class="btn btn-primary" onclick="processAutorisationPayment()" style="width:100%; padding:1rem; font-size:1.1rem; border-radius:var(--radius-md); border:none; background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%); color:white; font-weight:bold; cursor:pointer; box-shadow: 0 4px 14px rgba(30,64,175,0.4);">
+            <button class="btn btn-primary" onclick="processAutorisationPayment()" style="width:100%; padding:1rem; font-size:1.1rem; border-radius:var(--radius-md); border:none; background: var(--grad-primary); color:white; font-weight:bold; cursor:pointer; box-shadow: 0 4px 14px rgba(99,102,241,0.4);">
                 <i class="fa-solid fa-lock"></i> Payer 500 FCFA & Télécharger
             </button>
         </div>
