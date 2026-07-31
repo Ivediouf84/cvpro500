@@ -68,11 +68,23 @@
         .ai-option-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
         
         /* Document A4 Preview */
-        .pv-a4-wrapper { max-width: 210mm; margin: 1.5rem auto; background: white; color: #1e293b; padding: 25mm 20mm; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-family: 'Inter', sans-serif; font-size: 10.5pt; line-height: 1.55; box-sizing: border-box; }
-        .pv-header-table { width: 100%; border-bottom: 2px solid #0f172a; padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .pv-a4-wrapper { max-width: 210mm; margin: 1.5rem auto; background: white; color: #1e293b; padding: 12mm 16mm; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-family: 'Inter', sans-serif; font-size: 10.5pt; line-height: 1.55; box-sizing: border-box; }
+        .pv-header-table { width: 100%; border-bottom: 2px solid #0f172a; padding-bottom: 0.75rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
         .pv-header-logo { max-height: 70px; max-width: 180px; object-fit: contain; }
-        .pv-sec-title { font-size: 11pt; font-weight: 800; text-transform: uppercase; color: #1e3a8a; border-bottom: 1.5px solid #93c5fd; padding-bottom: 3px; margin: 1.25rem 0 0.6rem 0; display: flex; align-items: center; gap: 0.5rem; }
+        .pv-sec-title { font-size: 11pt; font-weight: 800; text-transform: uppercase; color: #1e3a8a; border-bottom: 1.5px solid #93c5fd; padding-bottom: 3px; margin: 1.25rem 0 0.6rem 0; display: flex; align-items: center; gap: 0.5rem; page-break-inside: avoid !important; break-inside: avoid !important; }
         
+        .pv-a4-wrapper p,
+        .pv-a4-wrapper h1,
+        .pv-a4-wrapper h2,
+        .pv-a4-wrapper h3,
+        .pv-a4-wrapper h4,
+        .pv-a4-wrapper li,
+        .pv-a4-wrapper tr,
+        .pv-a4-wrapper div {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
         .pv-table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 9.8pt; }
         .pv-table th, .pv-table td { border: 1px solid #cbd5e1; padding: 6px 10px; text-align: left; }
         .pv-table th { background: #f1f5f9; font-weight: 700; color: #0f172a; }

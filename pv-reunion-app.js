@@ -787,11 +787,12 @@ async function downloadPvPDF() {
     window.scrollTo(0, 0);
 
     const opt = {
-        margin: 10,
+        margin: [6, 8, 6, 8],
         filename: `PV_Reunion_NovaDoc_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], avoid: ['p', 'h1', 'h2', 'h3', 'h4', 'li', 'tr', 'div', '.pv-sec-title'] }
     };
     try {
         await html2pdf().set(opt).from(el).save();
