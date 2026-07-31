@@ -623,16 +623,44 @@ function exportPDF() {
     if (scaleWrapper) scaleWrapper.style.display = 'block';
     if (emptyUploadCard) emptyUploadCard.style.display = 'none';
 
-    const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
-    const origBoxShadow = originalDoc.style.boxShadow;
+    // Create a temporary high-res A4 container at top:0, left:0
+    const container = document.createElement('div');
+    container.id = 'temp-pdf-ai-export-container';
+    container.style.cssText = `
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 210mm !important;
+        height: 296mm !important;
+        max-height: 296mm !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        z-index: 9999999 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    `;
 
-    if (scaleWrapper) {
-        scaleWrapper.style.transform = 'none';
-    }
-    originalDoc.style.boxShadow = 'none';
+    const clone = originalDoc.cloneNode(true);
+    clone.style.cssText = `
+        width: 210mm !important;
+        min-height: 296mm !important;
+        max-height: 296mm !important;
+        transform: none !important;
+        -webkit-transform: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+        overflow: hidden !important;
+    `;
 
-    const editableEls = originalDoc.querySelectorAll('[contenteditable]');
-    editableEls.forEach(el => el.setAttribute('contenteditable', 'false'));
+    clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+
+    container.appendChild(clone);
+    document.body.appendChild(container);
 
     const opt = {
         margin: 0,
@@ -645,23 +673,22 @@ function exportPDF() {
             backgroundColor: '#ffffff', 
             scrollX: 0, 
             scrollY: 0, 
-            windowWidth: 1200 
+            windowWidth: 794 
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    const restoreStyles = () => {
-        if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
-        originalDoc.style.boxShadow = origBoxShadow;
-        editableEls.forEach(el => el.setAttribute('contenteditable', 'true'));
-    };
-
-    html2pdf().set(opt).from(originalDoc).save().then(() => {
-        restoreStyles();
+    html2pdf().set(opt).from(container).save().then(() => {
+        if (container && container.parentNode) {
+            container.parentNode.removeChild(container);
+        }
         closePaymentModal();
     }).catch(err => {
         console.error("PDF generation error:", err);
-        restoreStyles();
+        if (container && container.parentNode) {
+            container.parentNode.removeChild(container);
+        }
         alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
     });
 }

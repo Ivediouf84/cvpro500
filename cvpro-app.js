@@ -1046,19 +1046,46 @@ function generatePDF() {
     // Ensure latest CV data is rendered to the DOM
     renderCV();
     
-    // Save original wrapper transform and paper styles
-    const scaleWrapper = document.getElementById('cv-scale-wrapper');
-    const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
-    const origBoxShadow = originalElement.style.boxShadow;
+    // Create a temporary high-res A4 container at top:0, left:0
+    const container = document.createElement('div');
+    container.id = 'temp-pdf-export-container';
+    container.style.cssText = `
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 210mm !important;
+        height: 296mm !important;
+        max-height: 296mm !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        z-index: 9999999 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    `;
     
-    if (scaleWrapper) {
-        scaleWrapper.style.transform = 'none';
-    }
-    originalElement.style.boxShadow = 'none';
+    // Clone CV content
+    const clone = originalElement.cloneNode(true);
+    clone.style.cssText = `
+        width: 210mm !important;
+        min-height: 296mm !important;
+        max-height: 296mm !important;
+        transform: none !important;
+        -webkit-transform: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+        overflow: hidden !important;
+    `;
     
-    // Remove contenteditable focus temporarily so cursor lines don't show
-    const editableEls = originalElement.querySelectorAll('[contenteditable]');
-    editableEls.forEach(el => el.setAttribute('contenteditable', 'false'));
+    // Remove contenteditable focus attributes from clone
+    clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    
+    container.appendChild(clone);
+    document.body.appendChild(container);
 
     const firstName = cvData?.personal?.firstName || 'PRO';
     const lastName = cvData?.personal?.lastName || 'Candidat';
@@ -1075,22 +1102,21 @@ function generatePDF() {
             backgroundColor: '#ffffff',
             scrollX: 0,
             scrollY: 0,
-            windowWidth: 1200
+            windowWidth: 794
         },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    const restoreStyles = () => {
-        if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
-        originalElement.style.boxShadow = origBoxShadow;
-        editableEls.forEach(el => el.setAttribute('contenteditable', 'true'));
-    };
-
-    html2pdf().set(opt).from(originalElement).save().then(() => {
-        restoreStyles();
+    html2pdf().set(opt).from(container).save().then(() => {
+        if (container && container.parentNode) {
+            container.parentNode.removeChild(container);
+        }
     }).catch(err => {
         console.error("PDF export error:", err);
-        restoreStyles();
+        if (container && container.parentNode) {
+            container.parentNode.removeChild(container);
+        }
     });
 }
 
