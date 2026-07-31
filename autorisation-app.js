@@ -323,35 +323,12 @@ DÉTAILS DU FORMULAIRE :
 - Pièces jointes fournies : ${piecesJointes.join(', ')}
         `;
 
-        let generatedBody = '';
-        try {
-            const response = await fetch(`${SUPABASE_URL}/functions/v1/analyze-cv`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${SUPABASE_KEY}`
-                },
-                body: JSON.stringify({
-                    rawText: promptText,
-                    prompt: "Génère le corps complet de la lettre administrative officielle d'autorisation de manifestation en français."
-                })
-            });
-            const dataText = await response.text();
-            if (dataText && dataText.length > 50) {
-                generatedBody = dataText.replace(/```html/g, '').replace(/```/g, '').trim();
-            }
-        } catch(e) {
-            console.warn("IA API fallback to local template:", e);
-        }
-
-        if (!generatedBody || generatedBody.length < 50) {
-            generatedBody = generateLocalAutorisationBody({
-                demandeurPrenom, demandeurNom, demandeurQualite, demandeurAdresse, demandeurTel,
-                typeManifestation, natureManifestation, autorite, objetCustom,
-                adressePrecise, quartier, commune, dateManif, heureDebut, heureFin,
-                nbParticipants, animationSonore, materiel, securite, engagements, piecesJointes
-            });
-        }
+        const generatedBody = generateLocalAutorisationBody({
+            demandeurPrenom, demandeurNom, demandeurQualite, demandeurAdresse, demandeurTel,
+            typeManifestation, natureManifestation, autorite, objetCustom,
+            adressePrecise, quartier, commune, dateManif, heureDebut, heureFin,
+            nbParticipants, animationSonore, materiel, securite, engagements, piecesJointes
+        });
 
         const formattedDateRedaction = formatDateFR(dateRedaction);
         const formattedDateManif = formatDateFR(dateManif);
