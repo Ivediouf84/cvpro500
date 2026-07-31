@@ -370,51 +370,70 @@
                 </div>
             </div>
 
-            <!-- STEP 4: TRAITEMENT ET OPTIONS IA -->
-            <div class="form-card">
-                <h3><i class="fa-solid fa-robot" style="color: #C026D3;"></i> 4. Options du Traitement par l'Intelligence Artificielle</h3>
-                
-                <div class="ai-options-grid">
-                    <label class="ai-option-item">
-                        <input type="checkbox" id="opt-orthographe" checked>
-                        <span>Corriger automatiquement l'orthographe</span>
-                    </label>
-                    <label class="ai-option-item">
-                        <input type="checkbox" id="opt-langage-pro" checked>
-                        <span>Améliorer le langage professionnel</span>
-                    </label>
-                    <label class="ai-option-item">
-                        <input type="checkbox" id="opt-restructurer" checked>
-                        <span>Restructurer le document</span>
-                    </label>
-                    <label class="ai-option-item">
-                        <input type="checkbox" id="opt-ordre-jour" checked>
-                        <span>Créer un ordre du jour clair</span>
-                    </label>
-                    <label class="ai-option-item">
-                        <input type="checkbox" id="opt-decisions" checked>
-                        <span>Identifier les décisions importantes</span>
-                    </label>
-                    <label class="ai-option-item">
-                        <input type="checkbox" id="opt-participants" checked>
-                        <span>Extraire le tableau des participants</span>
-                    </label>
-                    <label class="ai-option-item">
-                        <input type="checkbox" id="opt-actions" checked>
-                        <span>Créer le tableau des actions à réaliser</span>
-                    </label>
-                    <label class="ai-option-item">
-                        <input type="checkbox" id="opt-resume" checked>
-                        <span>Résumer les discussions longues</span>
-                    </label>
+                <!-- STEP 3.5: UPLOAD FEUILLE DE PRÉSENCE SCANNEE (MULTI-IMAGES) -->
+                <div class="form-card" style="border: 1px dashed var(--primary); background: rgba(99, 102, 241, 0.03);">
+                    <h3><i class="fa-solid fa-file-image" style="color: #6366f1;"></i> 4. Feuille de Présence Émargée (Photos / Documents)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Insérez une ou plusieurs photos (JPG, PNG) ou documents (PDF, Word) de votre feuille de présence physique. L'IA (Groq) va extraire automatiquement les noms, fonctions et numéros de téléphone pour remplir le tableau ci-dessous, et les images seront annexées au document final.
+                    </p>
+
+                    <input type="file" id="presence-sheet-files" accept="image/*,application/pdf,.pdf,.doc,.docx" multiple style="display: none;" onchange="handlePresenceSheetUpload(event)">
+
+                    <div onclick="document.getElementById('presence-sheet-files').click()" style="border: 2px dashed var(--primary); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; cursor: pointer; background: var(--surface); transition: var(--transition);">
+                        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.2rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                        <div style="font-weight: 700; color: var(--title-color);">Cliquez ou glissez pour ajouter vos photos / documents de présence</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Accepte plusieurs images (JPG, PNG), PDF et Word</div>
+                    </div>
+
+                    <!-- Preview thumbnails container -->
+                    <div id="presence-sheet-previews" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1rem;"></div>
                 </div>
 
-                <div style="margin-top: 1.5rem; text-align: center;">
-                    <button onclick="generatePvWithAI()" class="btn btn-tri-color" style="padding: 0.9rem 2.2rem; font-size: 1.1rem;">
-                        ✨ Générer le Procès-Verbal avec IA
-                    </button>
+                <!-- STEP 4: TRAITEMENT ET OPTIONS IA -->
+                <div class="form-card">
+                    <h3><i class="fa-solid fa-robot" style="color: #C026D3;"></i> 5. Options du Traitement par l'Intelligence Artificielle (Groq)</h3>
+                    
+                    <div class="ai-options-grid">
+                        <label class="ai-option-item">
+                            <input type="checkbox" id="opt-orthographe" checked>
+                            <span>Corriger automatiquement l'orthographe</span>
+                        </label>
+                        <label class="ai-option-item">
+                            <input type="checkbox" id="opt-langage-pro" checked>
+                            <span>Améliorer le langage professionnel</span>
+                        </label>
+                        <label class="ai-option-item">
+                            <input type="checkbox" id="opt-restructurer" checked>
+                            <span>Restructurer le document</span>
+                        </label>
+                        <label class="ai-option-item">
+                            <input type="checkbox" id="opt-ordre-jour" checked>
+                            <span>Créer un ordre du jour clair</span>
+                        </label>
+                        <label class="ai-option-item">
+                            <input type="checkbox" id="opt-decisions" checked>
+                            <span>Identifier les décisions importantes</span>
+                        </label>
+                        <label class="ai-option-item">
+                            <input type="checkbox" id="opt-participants" checked>
+                            <span>Extraire le tableau des participants par IA (Groq)</span>
+                        </label>
+                        <label class="ai-option-item">
+                            <input type="checkbox" id="opt-actions" checked>
+                            <span>Créer le tableau des actions à réaliser</span>
+                        </label>
+                        <label class="ai-option-item">
+                            <input type="checkbox" id="opt-resume" checked>
+                            <span>Résumer les discussions longues</span>
+                        </label>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; text-align: center;">
+                        <button onclick="generatePvWithAI()" class="btn btn-tri-color" style="padding: 0.9rem 2.2rem; font-size: 1.1rem;">
+                            ✨ Générer le Procès-Verbal avec IA (Groq)
+                        </button>
+                    </div>
                 </div>
-            </div>
 
             <!-- STEP 5: PREVISUALISATION A4 & EXPORTATION -->
             <div id="preview-section" style="margin-top: 2rem;">
@@ -544,20 +563,28 @@
                         <table class="pv-table" id="pv-render-emargement-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 8%;">N°</th>
-                                    <th style="width: 32%;">Nom & Prénom du Participant</th>
-                                    <th style="width: 25%;">Fonction / Organisme</th>
-                                    <th style="width: 15%;">Présence</th>
-                                    <th style="width: 20%;">Émargement / Signature</th>
+                                    <th style="width: 6%;">N°</th>
+                                    <th style="width: 34%;">Nom & Prénom du Participant</th>
+                                    <th style="width: 22%;">Fonction / Qualité</th>
+                                    <th style="width: 20%;">Téléphone</th>
+                                    <th style="width: 18%;">Émargement / Signature</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td>1</td><td><input type="text" placeholder="Nom Prénom 1" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td>Présent(e)</td><td style="height:30px;"></td></tr>
-                                <tr><td>2</td><td><input type="text" placeholder="Nom Prénom 2" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td>Présent(e)</td><td style="height:30px;"></td></tr>
-                                <tr><td>3</td><td><input type="text" placeholder="Nom Prénom 3" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td>Présent(e)</td><td style="height:30px;"></td></tr>
-                                <tr><td>4</td><td><input type="text" placeholder="Nom Prénom 4" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td>Excusé(e)</td><td style="height:30px;"></td></tr>
+                                <tr><td>1</td><td><input type="text" placeholder="Nom Prénom 1" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="+221 77..." style="border:none; width:100%; font-size:9pt;"></td><td style="height:30px;"></td></tr>
+                                <tr><td>2</td><td><input type="text" placeholder="Nom Prénom 2" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="+221 78..." style="border:none; width:100%; font-size:9pt;"></td><td style="height:30px;"></td></tr>
+                                <tr><td>3</td><td><input type="text" placeholder="Nom Prénom 3" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="Fonction" style="border:none; width:100%; font-size:9pt;"></td><td><input type="text" placeholder="+221 76..." style="border:none; width:100%; font-size:9pt;"></td><td style="height:30px;"></td></tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- ANNEXE VISUELLE : SCANS DE LA FEUILLE DE PRÉSENCE (Si importés) -->
+                    <div id="pv-annexe-scans-container" style="display: none; margin-top: 2.5rem; page-break-before: always; border-top: 2px dashed #cbd5e1; padding-top: 1.5rem;">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <span style="background: #1e3a8a; color: white; padding: 3px 12px; font-size: 8pt; font-weight: 800; border-radius: 12px; text-transform: uppercase;">Annexe Visuelle</span>
+                            <h3 style="margin: 0.5rem 0 0 0; font-size: 13pt; font-weight: 900; color: #0f172a; text-transform: uppercase;">FEUILLE(S) DE PRÉSENCE ÉMARGÉE(S) SCANNEE(S)</h3>
+                        </div>
+                        <div id="pv-annexe-scans-gallery" style="display: flex; flex-direction: column; gap: 20px; align-items: center;"></div>
                     </div>
 
                 </div>

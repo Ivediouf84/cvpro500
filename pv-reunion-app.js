@@ -532,6 +532,87 @@ function injectAiParsedData(data) {
     } else {
         if (actionsContainer) actionsContainer.style.display = 'none';
     }
+
+    // 6. Participants (Tableau d'émargement avec téléphone)
+    const emargementTbody = document.querySelector('#pv-render-emargement-table tbody');
+    if (data.participants && Array.isArray(data.participants) && data.participants.length > 0) {
+        if (emargementTbody) {
+            emargementTbody.innerHTML = data.participants.map((p, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><input type="text" value="${escapeHtml((p.prenom || '') + ' ' + (p.nom || ''))}" style="border:none; width:100%; font-size:9pt;"></td>
+                    <td><input type="text" value="${escapeHtml(p.role || 'Membre')}" style="border:none; width:100%; font-size:9pt;"></td>
+                    <td><input type="text" value="${escapeHtml(p.telephone || '')}" placeholder="+221 77..." style="border:none; width:100%; font-size:9pt;"></td>
+                    <td style="height:30px;"></td>
+                </tr>
+            `).join('');
+        }
+    }
+}
+
+// Global array storing presence sheet scans
+let uploadedPresenceSheets = [];
+
+function handlePresenceSheetUpload(event) {
+    const files = Array.from(event.target.files);
+    if (!files || files.length === 0) return;
+
+    const previewContainer = document.getElementById('presence-sheet-previews');
+    const galleryContainer = document.getElementById('pv-annexe-scans-gallery');
+    const annexeSection = document.getElementById('pv-annexe-scans-container');
+
+    files.forEach(file => {
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgDataUrl = e.target.result;
+                uploadedPresenceSheets.push(imgDataUrl);
+
+                if (previewContainer) {
+                    const thumb = document.createElement('div');
+                    thumb.style.cssText = "position: relative; width: 80px; height: 100px; border-radius: 6px; overflow: hidden; border: 2px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.2);";
+                    thumb.innerHTML = `
+                        <img src="${imgDataUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <button onclick="removePresenceSheet(this, '${imgDataUrl}')" style="position: absolute; top: 2px; right: 2px; background: rgba(225,29,72,0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+                    `;
+                    previewContainer.appendChild(thumb);
+                }
+
+                if (galleryContainer) {
+                    const docImg = document.createElement('img');
+                    docImg.src = imgDataUrl;
+                    docImg.style.cssText = "max-width: 100%; max-height: 250mm; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); page-break-inside: avoid !important;";
+                    galleryContainer.appendChild(docImg);
+                }
+
+                if (annexeSection) {
+                    annexeSection.style.display = 'block';
+                }
+            };
+            reader.readAsDataURL(file);
+        } else {
+            showToast(`✅ Document ${file.name} ajouté pour l'analyse.`);
+        }
+    });
+
+    showToast(`📸 ${files.length} fichier(s) de présence importé(s) avec succès !`);
+}
+
+function removePresenceSheet(btnEl, imgUrl) {
+    if (btnEl && btnEl.parentElement) {
+        btnEl.parentElement.remove();
+    }
+    uploadedPresenceSheets = uploadedPresenceSheets.filter(url => url !== imgUrl);
+    const galleryContainer = document.getElementById('pv-annexe-scans-gallery');
+    if (galleryContainer) {
+        galleryContainer.innerHTML = uploadedPresenceSheets.map(url => `
+            <img src="${url}" style="max-width: 100%; max-height: 250mm; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); page-break-inside: avoid !important;">
+        `).join('');
+    }
+    if (uploadedPresenceSheets.length === 0) {
+        const annexeSection = document.getElementById('pv-annexe-scans-container');
+        if (annexeSection) annexeSection.style.display = 'none';
+    }
 }
 
 // Exhaustive & Smart parsing function ensuring metadata is extracted and agenda matches discussions 1-to-1
