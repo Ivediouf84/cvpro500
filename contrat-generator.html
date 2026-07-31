@@ -292,7 +292,7 @@
         .document-paper {
             background: #ffffff;
             color: #1e293b;
-            padding: 2.5rem 2rem;
+            padding: 12mm 16mm;
             border-radius: var(--radius-md);
             min-height: 700px;
             max-height: 800px;
@@ -302,6 +302,18 @@
             font-size: 9.5pt;
             line-height: 1.45;
             outline: none;
+        }
+        .document-paper p,
+        .document-paper h1,
+        .document-paper h2,
+        .document-paper h3,
+        .document-paper ul,
+        .document-paper li,
+        .document-paper table,
+        .document-paper tr,
+        .signature-block-grid {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
         .document-paper h1 {
             text-align: center;
@@ -1005,7 +1017,7 @@
         }
 
         // Export PDF using html2pdf.js directly on target paper with temporary style expansion
-        function exportPDF() {
+        async function exportPDF() {
             const paper = document.getElementById('contrat-paper');
             if (!paper) return;
 
@@ -1019,30 +1031,35 @@
             paper.style.overflowY = 'visible';
             paper.style.boxShadow = 'none';
 
+            const currentScrollY = window.scrollY;
+            window.scrollTo(0, 0);
+
             const opt = {
-                margin:       [0.4, 0.4, 0.4, 0.4],
+                margin:       [6, 8, 6, 8],
                 filename:     'Contrat_de_Location_NovaDoc.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { 
                     scale: 2, 
                     useCORS: true, 
                     logging: false,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    scrollX: 0,
+                    scrollY: 0
                 },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'], avoid: ['p', 'h1', 'h2', 'h3', 'ul', 'li', 'table', 'tr', '.signature-block-grid'] }
             };
 
-            html2pdf().set(opt).from(paper).save().then(() => {
-                // Restore original paper scroll styles
-                paper.style.maxHeight = origMaxHeight;
-                paper.style.overflowY = origOverflowY;
-                paper.style.boxShadow = origBoxShadow;
-            }).catch(err => {
+            try {
+                await html2pdf().set(opt).from(paper).save();
+            } catch (err) {
                 console.error("PDF generation error:", err);
+            } finally {
                 paper.style.maxHeight = origMaxHeight;
                 paper.style.overflowY = origOverflowY;
                 paper.style.boxShadow = origBoxShadow;
-            });
+                window.scrollTo(0, currentScrollY);
+            }
         }
 
         // Export Word (.docx / .doc blob)
