@@ -40,6 +40,9 @@ const initApp = async () => {
         docEl.style.outline = "none";
     }
 
+    const scaleWrapper = document.getElementById('cv-scale-wrapper');
+    const emptyUploadCard = document.getElementById('cv-empty-upload-card');
+
     // Load AI generated HTML or JSON
     const importedDataStr = localStorage.getItem('importedCVData');
     const importedHtml = localStorage.getItem('importedCVHtml');
@@ -48,29 +51,26 @@ const initApp = async () => {
             const parsed = JSON.parse(importedDataStr);
             renderParsedJsonToHtml(parsed);
             localStorage.removeItem('importedCVData');
+            if (scaleWrapper) scaleWrapper.style.display = 'block';
+            if (emptyUploadCard) emptyUploadCard.style.display = 'none';
         } catch (e) {
             console.error("Error generating HTML from imported JSON", e);
         }
     } else if (importedHtml && importedHtml.trim().length > 50) {
         if (docEl) docEl.innerHTML = importedHtml;
         triggerCloudSaveHtml(importedHtml);
+        if (scaleWrapper) scaleWrapper.style.display = 'block';
+        if (emptyUploadCard) emptyUploadCard.style.display = 'none';
     } else {
-        // Render default demo CV template (Ibou Diouf) so the page is NEVER blank
-        renderDefaultDemoCv();
+        // Show empty upload card FIRST when page loads without imported CV
+        if (scaleWrapper) scaleWrapper.style.display = 'none';
+        if (emptyUploadCard) emptyUploadCard.style.display = 'flex';
     }
     
     // Setup photo upload listener if there is a placeholder
     setupPhotoUploader();
     updateCVStyles();
     setupDragAndDropImport();
-
-    // Ensure the CV container is visible on screen
-    const scaleWrapper = document.getElementById('cv-scale-wrapper');
-    const emptyUploadCard = document.getElementById('cv-empty-upload-card');
-    if (docEl && docEl.innerHTML.trim().length > 50) {
-        if (scaleWrapper) scaleWrapper.style.display = 'block';
-        if (emptyUploadCard) emptyUploadCard.style.display = 'none';
-    }
 
     // Check for SenePay payment success redirect AFTER rendering is 100% complete
     const urlParams = new URLSearchParams(window.location.search);
@@ -610,9 +610,9 @@ window.zoomIn = zoomIn;
 window.zoomOut = zoomOut;
 
 // Payment/Export logic
-function exportPDF() {
-    const originalDoc = document.getElementById('cv-document');
-    if (!originalDoc) {
+async function exportPDF() {
+    const paper = document.getElementById('cv-document');
+    if (!paper) {
         alert("Aucun document à exporter.");
         return;
     }
@@ -623,44 +623,19 @@ function exportPDF() {
     if (scaleWrapper) scaleWrapper.style.display = 'block';
     if (emptyUploadCard) emptyUploadCard.style.display = 'none';
 
-    // Create a temporary high-res A4 container at top:0, left:0
-    const container = document.createElement('div');
-    container.id = 'temp-pdf-ai-export-container';
-    container.style.cssText = `
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 210mm !important;
-        height: 296mm !important;
-        max-height: 296mm !important;
-        background: #ffffff !important;
-        color: #000000 !important;
-        z-index: 9999999 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-        overflow: hidden !important;
-    `;
+    const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
+    const origBoxShadow = paper.style.boxShadow;
 
-    const clone = originalDoc.cloneNode(true);
-    clone.style.cssText = `
-        width: 210mm !important;
-        min-height: 296mm !important;
-        max-height: 296mm !important;
-        transform: none !important;
-        -webkit-transform: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        box-sizing: border-box !important;
-        background: #ffffff !important;
-        overflow: hidden !important;
-    `;
+    if (scaleWrapper) {
+        scaleWrapper.style.transform = 'none';
+    }
+    paper.style.boxShadow = 'none';
 
-    clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    const currentScrollY = window.scrollY;
+    window.scrollTo(0, 0);
 
-    container.appendChild(clone);
-    document.body.appendChild(container);
+    const editables = paper.querySelectorAll('[contenteditable]');
+    editables.forEach(el => el.setAttribute('contenteditable', 'false'));
 
     const opt = {
         margin: 0,
@@ -672,25 +647,27 @@ function exportPDF() {
             logging: false, 
             backgroundColor: '#ffffff', 
             scrollX: 0, 
-            scrollY: 0, 
-            windowWidth: 794 
+            scrollY: 0
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(container).save().then(() => {
-        if (container && container.parentNode) {
-            container.parentNode.removeChild(container);
-        }
-        closePaymentModal();
-    }).catch(err => {
+    const restoreStyles = () => {
+        if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
+        paper.style.boxShadow = origBoxShadow;
+        editables.forEach(el => el.setAttribute('contenteditable', 'true'));
+        window.scrollTo(0, currentScrollY);
+    };
+
+    try {
+        await html2pdf().set(opt).from(paper).save();
+    } catch (err) {
         console.error("PDF generation error:", err);
-        if (container && container.parentNode) {
-            container.parentNode.removeChild(container);
-        }
         alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
-    });
+    } finally {
+        restoreStyles();
+        closePaymentModal();
+    }
 }
 window.exportPDF = exportPDF;
 
