@@ -448,13 +448,6 @@ DÉTAILS DU FORMULAIRE :
         </div>
         `;
 
-            ${piecesJointes.length > 0 ? `
-            <div style="margin-top: 2rem; border-top: 1px dashed #cccccc; padding-top: 8px; font-size: 9.5pt; color: #444;">
-                <strong><u>Pièces Jointes annexées :</u></strong> ${piecesJointes.join(' ; ')}
-            </div>` : ''}
-        </div>
-        `;
-
         // Render in document editor
         const docOutput = document.getElementById('doc-autorisation-output');
         if (docOutput) {
