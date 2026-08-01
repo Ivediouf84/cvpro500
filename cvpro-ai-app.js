@@ -625,26 +625,10 @@ async function exportPDF() {
 
     // Create an isolated container at absolute top-left (0,0) to prevent mobile offset
     const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'fixed';
-    tempContainer.style.left = '0';
-    tempContainer.style.top = '0';
-    tempContainer.style.width = '210mm';
-    tempContainer.style.minWidth = '210mm';
-    tempContainer.style.height = '297mm';
-    tempContainer.style.zIndex = '-999999';
-    tempContainer.style.background = '#ffffff';
-    tempContainer.style.overflow = 'hidden';
+    tempContainer.setAttribute('style', 'position: fixed !important; left: 0 !important; top: 0 !important; width: 210mm !important; height: 297mm !important; margin: 0 !important; padding: 0 !important; z-index: -999999 !important; background: #ffffff !important; overflow: hidden !important;');
 
     const clonedPaper = paper.cloneNode(true);
-    clonedPaper.style.transform = 'none';
-    clonedPaper.style.width = '210mm';
-    clonedPaper.style.minWidth = '210mm';
-    clonedPaper.style.maxWidth = '210mm';
-    clonedPaper.style.height = '297mm';
-    clonedPaper.style.maxHeight = '297mm';
-    clonedPaper.style.margin = '0';
-    clonedPaper.style.boxShadow = 'none';
-    clonedPaper.style.overflow = 'hidden';
+    clonedPaper.setAttribute('style', 'position: absolute !important; left: 0 !important; top: 0 !important; margin: 0 !important; padding: 0 !important; margin-left: 0 !important; margin-right: 0 !important; width: 210mm !important; min-width: 210mm !important; max-width: 210mm !important; height: 297mm !important; max-height: 297mm !important; transform: none !important; box-shadow: none !important; box-sizing: border-box !important; overflow: hidden !important;');
 
     // Remove contenteditable on clone
     clonedPaper.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'false'));
@@ -663,7 +647,10 @@ async function exportPDF() {
             backgroundColor: '#ffffff', 
             scrollX: 0, 
             scrollY: 0,
-            windowWidth: 1024
+            x: 0,
+            y: 0,
+            windowWidth: 794,
+            windowHeight: 1123
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
