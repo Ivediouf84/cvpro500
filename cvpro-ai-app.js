@@ -623,78 +623,47 @@ async function exportPDF() {
     if (scaleWrapper) scaleWrapper.style.display = 'block';
     if (emptyUploadCard) emptyUploadCard.style.display = 'none';
 
-    const previewArea = paper.closest('.preview-scroll-area') || paper.parentElement;
-
-    // Save original styles
     const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
-    const origWrapperWidth = scaleWrapper ? scaleWrapper.style.width : '';
-    const origWrapperMargin = scaleWrapper ? scaleWrapper.style.margin : '';
-    const origPaperMargin = paper.style.margin;
-    const origPaperBoxShadow = paper.style.boxShadow;
-    const origPreviewPadding = previewArea ? previewArea.style.padding : '';
-    const origPreviewOverflow = previewArea ? previewArea.style.overflow : '';
+    const origPaperShadow = paper.style.boxShadow;
 
-    const currentScrollX = window.scrollX;
-    const currentScrollY = window.scrollY;
-    window.scrollTo(0, 0);
-    if (previewArea && previewArea.scrollTo) previewArea.scrollTo(0, 0);
-
-    // Disable scaling transform and reset left margins so html2canvas captures from (0,0)
-    if (scaleWrapper) {
-        scaleWrapper.style.transform = 'none';
-        scaleWrapper.style.width = '210mm';
-        scaleWrapper.style.margin = '0';
-    }
-    if (previewArea) {
-        previewArea.style.padding = '0';
-        previewArea.style.overflow = 'visible';
-    }
-    paper.style.margin = '0';
+    if (scaleWrapper) scaleWrapper.style.transform = 'none';
     paper.style.boxShadow = 'none';
 
     // Remove contenteditable focus lines temporarily
     const editables = paper.querySelectorAll('[contenteditable]');
     editables.forEach(el => el.setAttribute('contenteditable', 'false'));
 
-    const opt = {
-        margin: 0,
-        filename: 'CV_Professionnel_IA.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, 
-            logging: false, 
-            backgroundColor: '#ffffff', 
-            scrollX: 0, 
-            scrollY: 0,
-            windowWidth: 800
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    const restoreStyles = () => {
-        if (scaleWrapper) {
-            scaleWrapper.style.transform = origWrapperTransform;
-            scaleWrapper.style.width = origWrapperWidth;
-            scaleWrapper.style.margin = origWrapperMargin;
-        }
-        if (previewArea) {
-            previewArea.style.padding = origPreviewPadding;
-            previewArea.style.overflow = origPreviewOverflow;
-        }
-        paper.style.margin = origPaperMargin;
-        paper.style.boxShadow = origPaperBoxShadow;
-        editables.forEach(el => el.setAttribute('contenteditable', 'true'));
-        window.scrollTo(currentScrollX, currentScrollY);
-    };
-
     try {
-        await html2pdf().set(opt).from(paper).save();
+        const canvas = await html2canvas(paper, {
+            scale: 3,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const jsPDF = window.jspdf ? window.jspdf.jsPDF : (window.jsPDF || null);
+
+        if (jsPDF) {
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+            pdf.save('CV_Professionnel_IA.pdf');
+        } else {
+            await html2pdf().set({
+                margin: 0,
+                filename: 'CV_Professionnel_IA.pdf',
+                image: { type: 'png', quality: 1.0 },
+                html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(paper).save();
+        }
     } catch (err) {
         console.error("PDF generation error:", err);
         alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
     } finally {
-        restoreStyles();
+        if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
+        paper.style.boxShadow = origPaperShadow;
+        editables.forEach(el => el.setAttribute('contenteditable', 'true'));
         closePaymentModal();
     }
 }
