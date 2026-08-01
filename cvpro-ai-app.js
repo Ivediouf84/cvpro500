@@ -624,13 +624,26 @@ async function exportPDF() {
     if (emptyUploadCard) emptyUploadCard.style.display = 'none';
 
     const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
+    const origWrapperWidth = scaleWrapper ? scaleWrapper.style.width : '';
+    const origWrapperMaxWidth = scaleWrapper ? scaleWrapper.style.maxWidth : '';
+    const origPaperWidth = paper.style.width;
+    const origPaperMinWidth = paper.style.minWidth;
+    const origPaperMaxWidth = paper.style.maxWidth;
+    const origPaperMargin = paper.style.margin;
     const origBoxShadow = paper.style.boxShadow;
     const origMaxHeight = paper.style.maxHeight;
     const origOverflow = paper.style.overflow;
 
+    // Force full desktop A4 dimensions during PDF capture on mobile
     if (scaleWrapper) {
         scaleWrapper.style.transform = 'none';
+        scaleWrapper.style.width = '794px';
+        scaleWrapper.style.maxWidth = '794px';
     }
+    paper.style.width = '794px';
+    paper.style.minWidth = '794px';
+    paper.style.maxWidth = '794px';
+    paper.style.margin = '0 auto';
     paper.style.boxShadow = 'none';
     paper.style.maxHeight = '296mm';
     paper.style.overflow = 'hidden';
@@ -651,14 +664,24 @@ async function exportPDF() {
             logging: false, 
             backgroundColor: '#ffffff', 
             scrollX: 0, 
-            scrollY: 0
+            scrollY: 0,
+            windowWidth: 1024,
+            windowHeight: 1400
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     const restoreStyles = () => {
-        if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
+        paper.style.width = origPaperWidth;
+        paper.style.minWidth = origPaperMinWidth;
+        paper.style.maxWidth = origPaperMaxWidth;
+        paper.style.margin = origPaperMargin;
+        if (scaleWrapper) {
+            scaleWrapper.style.transform = origWrapperTransform;
+            scaleWrapper.style.width = origWrapperWidth;
+            scaleWrapper.style.maxWidth = origWrapperMaxWidth;
+        }
         paper.style.boxShadow = origBoxShadow;
         paper.style.maxHeight = origMaxHeight;
         paper.style.overflow = origOverflow;
