@@ -532,36 +532,3 @@ async function exportAutorisationPDFDirect() {
         window.scrollTo(0, currentScrollY);
     }
 }
-
-function exportAutorisationWord() {
-    const docEl = document.getElementById('doc-autorisation-output');
-    if (!docEl) return;
-
-    const htmlContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head><meta charset='utf-8'><title>Demande d'Autorisation</title>
-        <style>
-            body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; }
-            h1, h2, h3 { font-family: 'Arial', sans-serif; }
-            strong { color: #000000; }
-        </style>
-        </head>
-        <body>
-            ${docEl.innerHTML}
-        </body>
-        </html>
-    `;
-
-    const blob = new Blob(['\ufeff' + htmlContent], {
-        type: 'application/msword'
-    });
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'demande_autorisation_manifestation.doc';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
