@@ -623,18 +623,38 @@ async function exportPDF() {
     if (scaleWrapper) scaleWrapper.style.display = 'block';
     if (emptyUploadCard) emptyUploadCard.style.display = 'none';
 
-    // Create an isolated container at absolute top-left (0,0) to prevent mobile offset
-    const tempContainer = document.createElement('div');
-    tempContainer.setAttribute('style', 'position: fixed !important; left: 0 !important; top: 0 !important; width: 210mm !important; height: 297mm !important; margin: 0 !important; padding: 0 !important; z-index: -999999 !important; background: #ffffff !important; overflow: hidden !important;');
+    const previewArea = paper.closest('.preview-scroll-area') || paper.parentElement;
 
-    const clonedPaper = paper.cloneNode(true);
-    clonedPaper.setAttribute('style', 'position: absolute !important; left: 0 !important; top: 0 !important; margin: 0 !important; padding: 0 !important; margin-left: 0 !important; margin-right: 0 !important; width: 210mm !important; min-width: 210mm !important; max-width: 210mm !important; height: 297mm !important; max-height: 297mm !important; transform: none !important; box-shadow: none !important; box-sizing: border-box !important; overflow: hidden !important;');
+    // Save original styles
+    const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
+    const origWrapperWidth = scaleWrapper ? scaleWrapper.style.width : '';
+    const origWrapperMargin = scaleWrapper ? scaleWrapper.style.margin : '';
+    const origPaperMargin = paper.style.margin;
+    const origPaperBoxShadow = paper.style.boxShadow;
+    const origPreviewPadding = previewArea ? previewArea.style.padding : '';
+    const origPreviewOverflow = previewArea ? previewArea.style.overflow : '';
 
-    // Remove contenteditable on clone
-    clonedPaper.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'false'));
+    const currentScrollX = window.scrollX;
+    const currentScrollY = window.scrollY;
+    window.scrollTo(0, 0);
+    if (previewArea && previewArea.scrollTo) previewArea.scrollTo(0, 0);
 
-    tempContainer.appendChild(clonedPaper);
-    document.body.appendChild(tempContainer);
+    // Disable scaling transform and reset left margins so html2canvas captures from (0,0)
+    if (scaleWrapper) {
+        scaleWrapper.style.transform = 'none';
+        scaleWrapper.style.width = '210mm';
+        scaleWrapper.style.margin = '0';
+    }
+    if (previewArea) {
+        previewArea.style.padding = '0';
+        previewArea.style.overflow = 'visible';
+    }
+    paper.style.margin = '0';
+    paper.style.boxShadow = 'none';
+
+    // Remove contenteditable focus lines temporarily
+    const editables = paper.querySelectorAll('[contenteditable]');
+    editables.forEach(el => el.setAttribute('contenteditable', 'false'));
 
     const opt = {
         margin: 0,
@@ -647,23 +667,34 @@ async function exportPDF() {
             backgroundColor: '#ffffff', 
             scrollX: 0, 
             scrollY: 0,
-            x: 0,
-            y: 0,
-            windowWidth: 794,
-            windowHeight: 1123
+            windowWidth: 800
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
+    const restoreStyles = () => {
+        if (scaleWrapper) {
+            scaleWrapper.style.transform = origWrapperTransform;
+            scaleWrapper.style.width = origWrapperWidth;
+            scaleWrapper.style.margin = origWrapperMargin;
+        }
+        if (previewArea) {
+            previewArea.style.padding = origPreviewPadding;
+            previewArea.style.overflow = origPreviewOverflow;
+        }
+        paper.style.margin = origPaperMargin;
+        paper.style.boxShadow = origPaperBoxShadow;
+        editables.forEach(el => el.setAttribute('contenteditable', 'true'));
+        window.scrollTo(currentScrollX, currentScrollY);
+    };
+
     try {
-        await html2pdf().set(opt).from(clonedPaper).save();
+        await html2pdf().set(opt).from(paper).save();
     } catch (err) {
         console.error("PDF generation error:", err);
         alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
     } finally {
-        if (document.body.contains(tempContainer)) {
-            document.body.removeChild(tempContainer);
-        }
+        restoreStyles();
         closePaymentModal();
     }
 }
