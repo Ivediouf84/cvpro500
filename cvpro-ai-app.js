@@ -623,36 +623,34 @@ async function exportPDF() {
     if (scaleWrapper) scaleWrapper.style.display = 'block';
     if (emptyUploadCard) emptyUploadCard.style.display = 'none';
 
-    const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
-    const origWrapperWidth = scaleWrapper ? scaleWrapper.style.width : '';
-    const origWrapperMaxWidth = scaleWrapper ? scaleWrapper.style.maxWidth : '';
-    const origPaperWidth = paper.style.width;
-    const origPaperMinWidth = paper.style.minWidth;
-    const origPaperMaxWidth = paper.style.maxWidth;
-    const origPaperMargin = paper.style.margin;
-    const origBoxShadow = paper.style.boxShadow;
-    const origMaxHeight = paper.style.maxHeight;
-    const origOverflow = paper.style.overflow;
+    // Create an isolated container at absolute top-left (0,0) to prevent mobile offset
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'fixed';
+    tempContainer.style.left = '0';
+    tempContainer.style.top = '0';
+    tempContainer.style.width = '210mm';
+    tempContainer.style.minWidth = '210mm';
+    tempContainer.style.height = '297mm';
+    tempContainer.style.zIndex = '-999999';
+    tempContainer.style.background = '#ffffff';
+    tempContainer.style.overflow = 'hidden';
 
-    // Force full desktop A4 dimensions during PDF capture on mobile
-    if (scaleWrapper) {
-        scaleWrapper.style.transform = 'none';
-        scaleWrapper.style.width = '794px';
-        scaleWrapper.style.maxWidth = '794px';
-    }
-    paper.style.width = '794px';
-    paper.style.minWidth = '794px';
-    paper.style.maxWidth = '794px';
-    paper.style.margin = '0 auto';
-    paper.style.boxShadow = 'none';
-    paper.style.maxHeight = '296mm';
-    paper.style.overflow = 'hidden';
+    const clonedPaper = paper.cloneNode(true);
+    clonedPaper.style.transform = 'none';
+    clonedPaper.style.width = '210mm';
+    clonedPaper.style.minWidth = '210mm';
+    clonedPaper.style.maxWidth = '210mm';
+    clonedPaper.style.height = '297mm';
+    clonedPaper.style.maxHeight = '297mm';
+    clonedPaper.style.margin = '0';
+    clonedPaper.style.boxShadow = 'none';
+    clonedPaper.style.overflow = 'hidden';
 
-    const currentScrollY = window.scrollY;
-    window.scrollTo(0, 0);
+    // Remove contenteditable on clone
+    clonedPaper.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'false'));
 
-    const editables = paper.querySelectorAll('[contenteditable]');
-    editables.forEach(el => el.setAttribute('contenteditable', 'false'));
+    tempContainer.appendChild(clonedPaper);
+    document.body.appendChild(tempContainer);
 
     const opt = {
         margin: 0,
@@ -665,37 +663,20 @@ async function exportPDF() {
             backgroundColor: '#ffffff', 
             scrollX: 0, 
             scrollY: 0,
-            windowWidth: 1024,
-            windowHeight: 1400
+            windowWidth: 1024
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    const restoreStyles = () => {
-        paper.style.width = origPaperWidth;
-        paper.style.minWidth = origPaperMinWidth;
-        paper.style.maxWidth = origPaperMaxWidth;
-        paper.style.margin = origPaperMargin;
-        if (scaleWrapper) {
-            scaleWrapper.style.transform = origWrapperTransform;
-            scaleWrapper.style.width = origWrapperWidth;
-            scaleWrapper.style.maxWidth = origWrapperMaxWidth;
-        }
-        paper.style.boxShadow = origBoxShadow;
-        paper.style.maxHeight = origMaxHeight;
-        paper.style.overflow = origOverflow;
-        editables.forEach(el => el.setAttribute('contenteditable', 'true'));
-        window.scrollTo(0, currentScrollY);
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     try {
-        await html2pdf().set(opt).from(paper).save();
+        await html2pdf().set(opt).from(clonedPaper).save();
     } catch (err) {
         console.error("PDF generation error:", err);
         alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
     } finally {
-        restoreStyles();
+        if (document.body.contains(tempContainer)) {
+            document.body.removeChild(tempContainer);
+        }
         closePaymentModal();
     }
 }
