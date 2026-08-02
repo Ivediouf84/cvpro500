@@ -1052,9 +1052,22 @@ async function generatePDF() {
 
     const scaleWrapper = document.getElementById('cv-scale-wrapper');
     const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
+    const origWrapperWidth = scaleWrapper ? scaleWrapper.style.width : '';
     const origPaperShadow = paper.style.boxShadow;
+    const origPaperWidth = paper.style.width;
 
-    if (scaleWrapper) scaleWrapper.style.transform = 'none';
+    // Temporarily set desktop meta-viewport on mobile so html2canvas computes layout at 1024px
+    const metaViewport = document.querySelector('meta[name="viewport"]');
+    const origMetaContent = metaViewport ? metaViewport.getAttribute('content') : '';
+    if (metaViewport) {
+        metaViewport.setAttribute('content', 'width=1024, initial-scale=1.0');
+    }
+
+    if (scaleWrapper) {
+        scaleWrapper.style.transform = 'none';
+        scaleWrapper.style.width = '794px';
+    }
+    paper.style.width = '794px';
     paper.style.boxShadow = 'none';
 
     // Remove contenteditable focus lines temporarily
@@ -1066,10 +1079,11 @@ async function generatePDF() {
         filename:     fileName,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { 
-            scale: 2.5, 
+            scale: 2, 
             useCORS: true, 
             logging: false,
-            backgroundColor: '#ffffff'
+            backgroundColor: '#ffffff',
+            windowWidth: 1024
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
@@ -1084,7 +1098,14 @@ async function generatePDF() {
         console.error("PDF export error:", err);
         alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
     } finally {
-        if (scaleWrapper) scaleWrapper.style.transform = origWrapperTransform;
+        if (metaViewport && origMetaContent) {
+            metaViewport.setAttribute('content', origMetaContent);
+        }
+        if (scaleWrapper) {
+            scaleWrapper.style.transform = origWrapperTransform;
+            scaleWrapper.style.width = origWrapperWidth;
+        }
+        paper.style.width = origPaperWidth;
         paper.style.boxShadow = origPaperShadow;
         editables.forEach(el => el.setAttribute('contenteditable', 'true'));
     }
