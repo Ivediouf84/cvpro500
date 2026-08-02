@@ -136,6 +136,29 @@ function getSelectedCheckboxes(name) {
     return Array.from(checkboxes).map(cb => cb.value);
 }
 
+function formatTitleCase(str) {
+    if (!str) return '';
+    return str.trim().split(/\s+/).map(word => {
+        const lower = word.toLowerCase();
+        if (['de', 'du', 'des', 'la', 'le', 'en', 'au', 'aux'].includes(lower)) {
+            return lower;
+        }
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
+}
+
+function fixCommonSpelling(str) {
+    if (!str) return '';
+    let res = str;
+    res = res.replace(/\bcoodonnateur\b/gi, 'Coordonnateur');
+    res = res.replace(/\bcordonnateur\b/gi, 'Coordonnateur');
+    res = res.replace(/\bcoordonateur\b/gi, 'Coordonnateur');
+    res = res.replace(/\bse du cndn\b/gi, 'Secrétaire du CNDN');
+    res = res.replace(/\bmarche\b/gi, 'Marché');
+    res = res.replace(/\bpastef\b/gi, 'PASTEF');
+    return res;
+}
+
 function getSenegalPolitesseFormulas(civilite) {
     let appel = civilite;
     let politesse = `Veuillez agréer, ${civilite}, l'assurance de ma très haute considération.`;
@@ -171,118 +194,161 @@ async function generateInvitationDocument(event) {
 
     uploadedInvitationLogoDataUrl = uploadedInvitationLogoDataUrl || localStorage.getItem('invitation_uploaded_logo') || '';
 
-    const orgNom = document.getElementById('inv-org-nom')?.value.trim() || 'Organisation';
-    const orgAdresse = document.getElementById('inv-org-adresse')?.value.trim() || 'Dakar, Sénégal';
+    const rawOrgNom = document.getElementById('inv-org-nom')?.value.trim() || 'Organisation';
+    const rawOrgAdresse = document.getElementById('inv-org-adresse')?.value.trim() || 'Dakar, Sénégal';
     const orgTel = document.getElementById('inv-org-tel')?.value.trim() || '';
 
     const civilite = document.getElementById('inv-civilite')?.value || 'Monsieur le Ministre';
-    const autoriteNom = document.getElementById('inv-autorite-nom')?.value.trim() || '';
-    const autoriteFonction = document.getElementById('inv-autorite-fonction')?.value.trim() || '';
-    const autoriteInstitution = document.getElementById('inv-autorite-institution')?.value.trim() || '';
-    const autoriteAdresse = document.getElementById('inv-autorite-adresse')?.value.trim() || 'Dakar';
+    const rawAutoriteNom = document.getElementById('inv-autorite-nom')?.value.trim() || '';
+    const rawAutoriteFonction = document.getElementById('inv-autorite-fonction')?.value.trim() || '';
+    const rawAutoriteInstitution = document.getElementById('inv-autorite-institution')?.value.trim() || '';
+    const rawAutoriteAdresse = document.getElementById('inv-autorite-adresse')?.value.trim() || 'Dakar';
 
-    const activiteTitle = document.getElementById('inv-activite-title')?.value.trim() || 'Événement Officiel';
+    const rawActiviteTitle = document.getElementById('inv-activite-title')?.value.trim() || 'Événement Officiel';
     const activiteType = document.getElementById('inv-activite-type')?.value || 'Cérémonie';
-    const objetCustom = document.getElementById('inv-objet')?.value.trim() || `Invitation officielle à la cérémonie de ${activiteTitle}`;
+    const rawObjetCustom = document.getElementById('inv-objet')?.value.trim() || `Invitation officielle à la cérémonie de ${rawActiviteTitle}`;
     const description = document.getElementById('inv-description')?.value.trim() || '';
 
     const dateEvent = document.getElementById('inv-date')?.value || '';
     const heureEvent = document.getElementById('inv-heure')?.value || '09:00';
-    const lieuEvent = document.getElementById('inv-lieu')?.value.trim() || 'Dakar';
-    const adresseComplete = document.getElementById('inv-adresse-complete')?.value.trim() || '';
+    const rawLieuEvent = document.getElementById('inv-lieu')?.value.trim() || 'Dakar';
+    const rawAdresseComplete = document.getElementById('inv-adresse-complete')?.value.trim() || '';
 
     const rolesAttendus = getSelectedCheckboxes('role_attendu');
     const rolePrecision = document.getElementById('inv-role-precision')?.value.trim() || '';
 
-    const signataireNom = document.getElementById('inv-signataire-nom')?.value.trim() || 'Le Signataire';
-    const signataireQualite = document.getElementById('inv-signataire-qualite')?.value.trim() || 'Le Président';
+    const rawSignataireNom = document.getElementById('inv-signataire-nom')?.value.trim() || 'Le Signataire';
+    const rawSignataireQualite = document.getElementById('inv-signataire-qualite')?.value.trim() || 'Le Coordonnateur';
     const dateRedaction = document.getElementById('inv-date-redaction')?.value || new Date().toISOString().split('T')[0];
+
+    // Clean & Auto-correct Spelling and Capitalization
+    const orgNom = fixCommonSpelling(formatTitleCase(rawOrgNom));
+    const orgAdresse = fixCommonSpelling(formatTitleCase(rawOrgAdresse));
+    const autoriteNom = fixCommonSpelling(formatTitleCase(rawAutoriteNom));
+    const autoriteFonction = fixCommonSpelling(formatTitleCase(rawAutoriteFonction));
+    const autoriteInstitution = fixCommonSpelling(formatTitleCase(rawAutoriteInstitution));
+    const autoriteAdresse = fixCommonSpelling(formatTitleCase(rawAutoriteAdresse));
+    const activiteTitle = fixCommonSpelling(formatTitleCase(rawActiviteTitle));
+    const objetCustom = fixCommonSpelling(rawObjetCustom);
+    const lieuEvent = fixCommonSpelling(formatTitleCase(rawLieuEvent));
+    const adresseComplete = fixCommonSpelling(formatTitleCase(rawAdresseComplete));
+    const signataireNom = fixCommonSpelling(rawSignataireNom.toUpperCase());
+    const signataireQualite = fixCommonSpelling(formatTitleCase(rawSignataireQualite));
 
     const formattedDateRedaction = formatDateFR(dateRedaction);
     const formattedDateEvent = formatDateFR(dateEvent);
 
     const { appel, politesse } = getSenegalPolitesseFormulas(civilite);
-
     const rolesFormattedText = rolesAttendus.length > 0 ? rolesAttendus.join(' et ') : "Invité d'honneur";
 
-    const htmlDoc = `
-    <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000000; line-height: 1.65; padding: 20mm 20mm; background: #ffffff; min-height: 297mm; box-sizing: border-box;">
-        <!-- En-tête : Logo & Organisation à gauche / Date à droite -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; border-bottom: 2px solid #1e3a8a; padding-bottom: 1rem;">
-            <div style="max-width: 55%;">
-                ${uploadedInvitationLogoDataUrl ? `<img src="${uploadedInvitationLogoDataUrl}" style="max-height: 80px; max-width: 170px; object-fit: contain; display: block; margin-bottom: 8px;">` : ''}
-                <div style="font-weight: bold; font-size: 12pt; text-transform: uppercase; color: #1e3a8a;">${orgNom}</div>
-                ${orgAdresse ? `<div style="font-size: 10pt; color: #334155;">${orgAdresse}</div>` : ''}
-                ${orgTel ? `<div style="font-size: 10pt; color: #334155;">Tél : ${orgTel}</div>` : ''}
+    let htmlDoc = '';
+
+    try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-invitation`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            },
+            body: JSON.stringify({
+                orgNom, orgAdresse, orgTel,
+                civilite, autoriteNom, autoriteFonction, autoriteInstitution, autoriteAdresse,
+                activiteTitle, activiteType, objetCustom, description,
+                dateEvent, heureEvent, lieuEvent, adresseComplete,
+                rolesAttendus, rolePrecision,
+                signataireNom, signataireQualite, dateRedaction
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.htmlContent) {
+                htmlDoc = data.htmlContent;
+            }
+        }
+    } catch (err) {
+        console.warn("Supabase Edge Function fallback to local generator:", err);
+    }
+
+    if (!htmlDoc) {
+        htmlDoc = `
+        <div style="font-family: 'Times New Roman', Times, serif; font-size: 11.5pt; color: #000000; line-height: 1.55; padding: 12mm 20mm 15mm 20mm; background: #ffffff; min-height: 296.5mm; max-height: 296.5mm; overflow: hidden; box-sizing: border-box;">
+            <!-- En-tête : Logo & Organisation à gauche / Date à droite -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.4rem; border-bottom: 2px solid #1e3a8a; padding-bottom: 0.6rem;">
+                <div style="max-width: 58%;">
+                    ${uploadedInvitationLogoDataUrl ? `<img src="${uploadedInvitationLogoDataUrl}" style="max-height: 70px; max-width: 160px; object-fit: contain; display: block; margin-bottom: 6px;">` : ''}
+                    <div style="font-weight: bold; font-size: 11.5pt; text-transform: uppercase; color: #1e3a8a;">${orgNom}</div>
+                    ${orgAdresse ? `<div style="font-size: 9.5pt; color: #334155;">${orgAdresse}</div>` : ''}
+                    ${orgTel ? `<div style="font-size: 9.5pt; color: #334155;">Tél : ${orgTel}</div>` : ''}
+                </div>
+                <div style="text-align: right; font-size: 10.5pt; color: #1e293b; padding-top: 4px;">
+                    <strong>Fait à Dakar, le ${formattedDateRedaction}</strong>
+                </div>
             </div>
-            <div style="text-align: right; font-size: 11pt; color: #1e293b;">
-                <strong>Fait à Dakar, le ${formattedDateRedaction}</strong>
+
+            <!-- Destinataire (Bloc Administrateur) -->
+            <div style="margin-left: 45%; margin-bottom: 1.6rem; font-size: 11.5pt; line-height: 1.45;">
+                <strong>À ${civilite}${autoriteNom ? ' ' + autoriteNom : ''}</strong><br>
+                ${autoriteFonction ? `<span>${autoriteFonction}</span><br>` : ''}
+                ${autoriteInstitution ? `<span><strong>${autoriteInstitution}</strong></span><br>` : ''}
+                ${autoriteAdresse ? `<span style="font-size: 10.5pt; color: #334155;">${autoriteAdresse}</span>` : ''}
+            </div>
+
+            <!-- Objet -->
+            <div style="margin-bottom: 1.4rem; font-size: 11.5pt; background: #f8fafc; padding: 0.5rem 0.9rem; border-left: 4px solid #1e3a8a; border-radius: 4px;">
+                <strong><u>OBJET :</u> ${objetCustom}</strong>
+            </div>
+
+            <!-- Formule d'Appel -->
+            <div style="margin-bottom: 1rem; font-weight: bold;">
+                ${appel},
+            </div>
+
+            <!-- Corps de la lettre -->
+            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.1rem; text-indent: 1.5rem;">
+                C'est avec un immense honneur et un profond respect que nous venons, au nom de la structure <strong>${orgNom}</strong>, solliciter votre très haute bienveillance afin de prendre part au <strong>${activiteTitle}</strong> (${activiteType}).
+            </div>
+
+            ${description ? `
+            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.1rem;">
+                ${description}
+            </div>
+            ` : ''}
+
+            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.1rem;">
+                Eu égard à votre engagement remarquable et à votre leadership éclairé au service du développement, nous serions particulièrement honorés de vous compter parmi nous en qualité de <strong>${rolesFormattedText}</strong>. ${rolePrecision ? `À ce titre, il vous sera réservé l'opportunité de ${rolePrecision}.` : ''}
+            </div>
+
+            <!-- Fiche Synthétique de l'événement -->
+            <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.75rem 0.9rem; margin: 1.1rem 0; font-size: 10.5pt; font-family: Arial, sans-serif;">
+                <div style="font-weight: bold; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase;">
+                    <i class="fa-solid fa-calendar-check"></i> Informations Pratiques sur la Cérémonie
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                    <div><strong>• Date :</strong> Le ${formattedDateEvent}</div>
+                    <div><strong>• Heure :</strong> À partir de ${heureEvent}</div>
+                    <div><strong>• Lieu :</strong> ${lieuEvent}</div>
+                    <div><strong>• Adresse :</strong> ${adresseComplete || orgAdresse}</div>
+                </div>
+            </div>
+
+            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.3rem;">
+                Convaincus de l'impact majeur de votre présence solennelle sur le succès de cette manifestation, nous restons à votre entière disposition pour tout renseignement complémentaire.
+            </div>
+
+            <!-- Formule de politesse -->
+            <div style="margin-bottom: 2rem;">
+                ${politesse}
+            </div>
+
+            <!-- Signature (Sans la mention Pour l'Organisation) -->
+            <div style="margin-left: 55%; text-align: center; margin-top: 1rem;">
+                <div style="font-style: italic; font-weight: bold; font-size: 11pt; color: #1e293b; margin-bottom: 2.2rem;">${signataireQualite}</div>
+                <div style="font-weight: bold; font-size: 11.5pt; text-decoration: underline; text-transform: uppercase; color: #0f172a;">${signataireNom}</div>
             </div>
         </div>
-
-        <!-- Destinataire (Bloc Administrateur) -->
-        <div style="margin-left: 45%; margin-bottom: 2.2rem; font-size: 12pt; line-height: 1.5;">
-            <strong>À ${civilite}${autoriteNom ? ' ' + autoriteNom : ''}</strong><br>
-            ${autoriteFonction ? `<span>${autoriteFonction}</span><br>` : ''}
-            ${autoriteInstitution ? `<span><strong>${autoriteInstitution}</strong></span><br>` : ''}
-            ${autoriteAdresse ? `<span style="font-size: 11pt; color: #334155;">${autoriteAdresse}</span>` : ''}
-        </div>
-
-        <!-- Objet -->
-        <div style="margin-bottom: 1.8rem; font-size: 12pt; background: #f8fafc; padding: 0.6rem 1rem; border-left: 4px solid #1e3a8a; border-radius: 4px;">
-            <strong><u>OBJET :</u> ${objetCustom}</strong>
-        </div>
-
-        <!-- Formule d'Appel -->
-        <div style="margin-bottom: 1.2rem; font-weight: bold;">
-            ${appel},
-        </div>
-
-        <!-- Corps de la lettre -->
-        <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.5rem; text-indent: 1.5rem;">
-            C'est avec un immense honneur et un profond respect que nous venons, au nom de la structure <strong>${orgNom}</strong>, solliciter votre très haute bienveillance afin de prendre part au <strong>${activiteTitle}</strong> (${activiteType}).
-        </div>
-
-        ${description ? `
-        <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.5rem;">
-            ${description}
-        </div>
-        ` : ''}
-
-        <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.5rem;">
-            Eu égard à votre engagement remarquable et à votre leadership éclairé au service du développement, nous serions particulièrement honorés de vous compter parmi nous en qualité de <strong>${rolesFormattedText}</strong>. ${rolePrecision ? `À ce titre, il vous sera réservé l'opportunité de ${rolePrecision}.` : ''}
-        </div>
-
-        <!-- Fiche Synthétique de l'événement -->
-        <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1rem; margin: 1.5rem 0; font-size: 11pt; font-family: Arial, sans-serif;">
-            <div style="font-weight: bold; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase;">
-                <i class="fa-solid fa-calendar-check"></i> Informations Pratiques sur la Cérémonie
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <div><strong>• Date :</strong> Le ${formattedDateEvent}</div>
-                <div><strong>• Heure :</strong> À partir de ${heureEvent}</div>
-                <div><strong>• Lieu :</strong> ${lieuEvent}</div>
-                <div><strong>• Adresse :</strong> ${adresseComplete || orgAdresse}</div>
-            </div>
-        </div>
-
-        <div style="text-align: justify; text-justify: inter-word; margin-bottom: 2rem;">
-            Convaincus de l'impact majeur de votre présence solennelle sur le succès de cette manifestation, nous restons à votre entière disposition pour tout renseignement complémentaire.
-        </div>
-
-        <!-- Formule de politesse -->
-        <div style="margin-bottom: 3rem;">
-            ${politesse}
-        </div>
-
-        <!-- Signature -->
-        <div style="margin-left: 55%; text-align: center;">
-            <div style="font-weight: bold; font-size: 11pt; color: #1e293b;">Pour l'Organisation,</div>
-            <div style="font-style: italic; font-size: 10.5pt; color: #475569; margin-bottom: 2.5rem;">${signataireQualite}</div>
-            <div style="font-weight: bold; font-size: 12pt; text-decoration: underline; text-transform: uppercase; color: #0f172a;">${signataireNom}</div>
-        </div>
-    </div>
-    `;
+        `;
+    }
 
     localStorage.setItem('invitation_doc_html', htmlDoc);
 
@@ -325,7 +391,6 @@ async function processInvitationPayment() {
         if (data.url) {
             window.location.href = data.url;
         } else {
-            // Fallback direct export if SenePay test mode
             closeInvitationPaymentModal();
             exportInvitationPDFDirect();
         }
@@ -349,6 +414,10 @@ async function exportInvitationPDFDirect() {
     }
 
     const origWidth = paper.style.width;
+    const origHeight = paper.style.height;
+    const origMaxHeight = paper.style.maxHeight;
+    const origMinHeight = paper.style.minHeight;
+    const origOverflow = paper.style.overflow;
     const origBackground = paper.style.background;
     const origColor = paper.style.color;
     const origPadding = paper.style.padding;
@@ -356,10 +425,14 @@ async function exportInvitationPDFDirect() {
     const origBoxSizing = paper.style.boxSizing;
 
     paper.style.width = '210mm';
+    paper.style.height = '296.5mm';
+    paper.style.maxHeight = '296.5mm';
+    paper.style.minHeight = '296.5mm';
+    paper.style.overflow = 'hidden';
     paper.style.boxSizing = 'border-box';
     paper.style.background = '#ffffff';
     paper.style.color = '#1e293b';
-    paper.style.padding = '20mm 20mm';
+    paper.style.padding = '12mm 20mm 15mm 20mm';
     paper.style.boxShadow = 'none';
 
     const opt = {
@@ -367,7 +440,8 @@ async function exportInvitationPDFDirect() {
         filename: 'Lettre_d_Invitation_Officielle.pdf',
         image: { type: 'jpeg', quality: 1.0 },
         html2canvas: { scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 794 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     try {
@@ -377,6 +451,10 @@ async function exportInvitationPDFDirect() {
         alert("Erreur lors du téléchargement du PDF. Veuillez réessayer.");
     } finally {
         paper.style.width = origWidth;
+        paper.style.height = origHeight;
+        paper.style.maxHeight = origMaxHeight;
+        paper.style.minHeight = origMinHeight;
+        paper.style.overflow = origOverflow;
         paper.style.boxSizing = origBoxSizing;
         paper.style.background = origBackground;
         paper.style.color = origColor;
