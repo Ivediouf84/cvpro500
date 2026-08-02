@@ -321,19 +321,21 @@ async function exportBothPDFs() {
         const origColor = sourceEl.style.color;
         const origPadding = sourceEl.style.padding;
         const origBoxShadow = sourceEl.style.boxShadow;
+        const origBoxSizing = sourceEl.style.boxSizing;
 
         sourceEl.style.width = '210mm';
+        sourceEl.style.boxSizing = 'border-box';
         sourceEl.style.background = '#ffffff';
         sourceEl.style.color = '#1e293b';
-        sourceEl.style.padding = '35px 30px';
+        sourceEl.style.padding = '20mm 20mm';
         sourceEl.style.boxShadow = 'none';
 
         const opt = {
-            margin: [0.4, 0.4, 0.4, 0.4],
+            margin: 0,
             filename: filename,
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 794 },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
         try {
@@ -343,6 +345,7 @@ async function exportBothPDFs() {
             alert("Erreur lors du téléchargement du PDF. Veuillez réessayer.");
         } finally {
             sourceEl.style.width = origWidth;
+            sourceEl.style.boxSizing = origBoxSizing;
             sourceEl.style.background = origBackground;
             sourceEl.style.color = origColor;
             sourceEl.style.padding = origPadding;
