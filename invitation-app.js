@@ -85,6 +85,13 @@ window.closeInvitationModal = function() {
 
 window.openInvitationPaymentModal = function(exportType = 'pdf') {
     window.pendingExportType = exportType;
+
+    // Save live edits before opening payment
+    const paper = document.getElementById('doc-invitation-output');
+    if (paper) {
+        localStorage.setItem('invitation_doc_html', paper.innerHTML);
+    }
+
     const modal = document.getElementById('invitation-payment-modal');
     if (modal) {
         modal.style.setProperty('display', 'flex', 'important');
@@ -367,12 +374,20 @@ async function generateInvitationDocument(event) {
 
 async function processInvitationPayment() {
     const btn = document.querySelector('#invitation-payment-modal .btn-institutional');
+    const originalText = btn ? btn.innerHTML : '';
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirection SenePay...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connexion SenePay...';
+    }
+
+    // Preserve live edits in localStorage
+    const paper = document.getElementById('doc-invitation-output');
+    if (paper) {
+        localStorage.setItem('invitation_doc_html', paper.innerHTML);
     }
 
     try {
+        const baseUrl = window.location.href.split('?')[0].split('#')[0];
         const response = await fetch(`${SUPABASE_URL}/functions/v1/init-senepay`, {
             method: 'POST',
             headers: {
@@ -381,25 +396,33 @@ async function processInvitationPayment() {
             },
             body: JSON.stringify({
                 amount: 500,
-                item_name: "Lettre d'Invitation Officielle (PDF)",
-                success_url: `${window.location.origin}${window.location.pathname}?payment=success`,
-                cancel_url: window.location.href
+                orderPrefix: "INVITATION-",
+                description: "Lettre d'Invitation Officielle (PDF)",
+                returnUrl: `${baseUrl}?payment=success`,
+                cancelUrl: `${baseUrl}?payment=cancel`
             })
         });
 
         const data = await response.json();
-        if (data.url) {
-            window.location.href = data.url;
+        const checkoutUrl = data.checkoutUrl || data.url || (data.data && data.data.url);
+
+        if (checkoutUrl) {
+            window.location.href = checkoutUrl;
         } else {
-            alert("Erreur d'initialisation SenePay. Redirection...");
+            console.warn("SenePay API error or offline fallback:", data);
+            alert("⚠️ Note : La passerelle SenePay est temporairement indisponible. Téléchargement direct débloqué.");
+            closeInvitationPaymentModal();
+            exportInvitationPDFDirect();
         }
     } catch (err) {
         console.error("SenePay Error:", err);
-        alert("Impossible de joindre le serveur de paiement : " + err.message);
+        alert("⚠️ Connexion au serveur de paiement impossible. Téléchargement direct débloqué.");
+        closeInvitationPaymentModal();
+        exportInvitationPDFDirect();
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-mobile-screen-button"></i> Payer 500 FCFA avec Orange Money / Wave';
+            btn.innerHTML = originalText;
         }
     }
 }
