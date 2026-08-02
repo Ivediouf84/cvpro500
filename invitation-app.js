@@ -32,16 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const isPaymentSuccess = urlParams.get('payment') === 'success' || urlParams.get('payment_success') === 'invitation';
     
-    if (!isPaymentSuccess) {
-        setTimeout(() => {
-            const modal = document.getElementById('invitation-modal');
-            const resSec = document.getElementById('invitation-results-section');
-            if (modal && (!resSec || resSec.style.display !== 'block')) {
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            }
-        }, 100);
-    } else {
+    if (isPaymentSuccess) {
         alert("✅ Paiement de 500 FCFA réussi avec SenePay ! Votre Lettre d'Invitation va être téléchargée.");
         window.history.replaceState({}, document.title, window.location.pathname);
         
@@ -53,11 +44,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const resSec = document.getElementById('invitation-results-section');
             if (landingSec) landingSec.style.display = 'none';
             if (resSec) resSec.style.display = 'block';
+            
+            setTimeout(() => {
+                exportInvitationPDFDirect();
+            }, 600);
         }
-        
+    } else {
         setTimeout(() => {
-            exportInvitationPDFDirect();
-        }, 800);
+            const modal = document.getElementById('invitation-modal');
+            const resSec = document.getElementById('invitation-results-section');
+            if (modal && (!resSec || resSec.style.display !== 'block')) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }, 100);
     }
 });
 
@@ -272,11 +272,11 @@ async function generateInvitationDocument(event) {
 
     if (!htmlDoc) {
         htmlDoc = `
-        <div style="font-family: 'Times New Roman', Times, serif; font-size: 11.5pt; color: #000000; line-height: 1.55; padding: 12mm 20mm 15mm 20mm; background: #ffffff; min-height: 296.5mm; max-height: 296.5mm; overflow: hidden; box-sizing: border-box;">
+        <div style="font-family: 'Times New Roman', Times, serif; font-size: 11.5pt; color: #0f172a; line-height: 1.6; padding: 8mm 15mm 10mm 15mm; background: #ffffff; min-height: 297mm; box-sizing: border-box;">
             <!-- En-tête : Logo & Organisation à gauche / Date à droite -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.4rem; border-bottom: 2px solid #1e3a8a; padding-bottom: 0.6rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; border-bottom: 2px solid #1e3a8a; padding-bottom: 0.5rem;">
                 <div style="max-width: 58%;">
-                    ${uploadedInvitationLogoDataUrl ? `<img src="${uploadedInvitationLogoDataUrl}" style="max-height: 70px; max-width: 160px; object-fit: contain; display: block; margin-bottom: 6px;">` : ''}
+                    ${uploadedInvitationLogoDataUrl ? `<img src="${uploadedInvitationLogoDataUrl}" style="max-height: 65px; max-width: 150px; object-fit: contain; display: block; margin-bottom: 4px;">` : ''}
                     <div style="font-weight: bold; font-size: 11.5pt; text-transform: uppercase; color: #1e3a8a;">${orgNom}</div>
                     ${orgAdresse ? `<div style="font-size: 9.5pt; color: #334155;">${orgAdresse}</div>` : ''}
                     ${orgTel ? `<div style="font-size: 9.5pt; color: #334155;">Tél : ${orgTel}</div>` : ''}
@@ -287,7 +287,7 @@ async function generateInvitationDocument(event) {
             </div>
 
             <!-- Destinataire (Bloc Administrateur) -->
-            <div style="margin-left: 45%; margin-bottom: 1.6rem; font-size: 11.5pt; line-height: 1.45;">
+            <div style="margin-left: 45%; margin-bottom: 1.5rem; font-size: 11.5pt; line-height: 1.45;">
                 <strong>À ${civilite}${autoriteNom ? ' ' + autoriteNom : ''}</strong><br>
                 ${autoriteFonction ? `<span>${autoriteFonction}</span><br>` : ''}
                 ${autoriteInstitution ? `<span><strong>${autoriteInstitution}</strong></span><br>` : ''}
@@ -295,7 +295,7 @@ async function generateInvitationDocument(event) {
             </div>
 
             <!-- Objet -->
-            <div style="margin-bottom: 1.4rem; font-size: 11.5pt; background: #f8fafc; padding: 0.5rem 0.9rem; border-left: 4px solid #1e3a8a; border-radius: 4px;">
+            <div style="margin-bottom: 1.3rem; font-size: 11.5pt; background: #f8fafc; padding: 0.5rem 0.9rem; border-left: 4px solid #1e3a8a; border-radius: 4px;">
                 <strong><u>OBJET :</u> ${objetCustom}</strong>
             </div>
 
@@ -369,7 +369,7 @@ async function processInvitationPayment() {
     const btn = document.querySelector('#invitation-payment-modal .btn-institutional');
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Traitement SenePay...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Redirection SenePay...';
     }
 
     try {
@@ -391,17 +391,15 @@ async function processInvitationPayment() {
         if (data.url) {
             window.location.href = data.url;
         } else {
-            closeInvitationPaymentModal();
-            exportInvitationPDFDirect();
+            alert("Erreur d'initialisation SenePay. Redirection...");
         }
     } catch (err) {
         console.error("SenePay Error:", err);
-        closeInvitationPaymentModal();
-        exportInvitationPDFDirect();
+        alert("Impossible de joindre le serveur de paiement : " + err.message);
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-mobile-screen-button"></i> Payer avec Orange Money / Wave';
+            btn.innerHTML = '<i class="fa-solid fa-mobile-screen-button"></i> Payer 500 FCFA avec Orange Money / Wave';
         }
     }
 }
@@ -413,35 +411,20 @@ async function exportInvitationPDFDirect() {
         return;
     }
 
-    const origWidth = paper.style.width;
-    const origHeight = paper.style.height;
-    const origMaxHeight = paper.style.maxHeight;
-    const origMinHeight = paper.style.minHeight;
-    const origOverflow = paper.style.overflow;
-    const origBackground = paper.style.background;
-    const origColor = paper.style.color;
-    const origPadding = paper.style.padding;
-    const origBoxShadow = paper.style.boxShadow;
-    const origBoxSizing = paper.style.boxSizing;
-
-    paper.style.width = '210mm';
-    paper.style.height = '296.5mm';
-    paper.style.maxHeight = '296.5mm';
-    paper.style.minHeight = '296.5mm';
-    paper.style.overflow = 'hidden';
-    paper.style.boxSizing = 'border-box';
-    paper.style.background = '#ffffff';
-    paper.style.color = '#1e293b';
-    paper.style.padding = '12mm 20mm 15mm 20mm';
-    paper.style.boxShadow = 'none';
+    paper.scrollIntoView({ behavior: 'instant', block: 'start' });
 
     const opt = {
         margin: 0,
         filename: 'Lettre_d_Invitation_Officielle.pdf',
         image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 794 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        html2canvas: { 
+            scale: 3, 
+            useCORS: true, 
+            logging: false, 
+            backgroundColor: '#ffffff',
+            windowWidth: 794
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     try {
@@ -449,17 +432,6 @@ async function exportInvitationPDFDirect() {
     } catch (err) {
         console.error("PDF export error:", err);
         alert("Erreur lors du téléchargement du PDF. Veuillez réessayer.");
-    } finally {
-        paper.style.width = origWidth;
-        paper.style.height = origHeight;
-        paper.style.maxHeight = origMaxHeight;
-        paper.style.minHeight = origMinHeight;
-        paper.style.overflow = origOverflow;
-        paper.style.boxSizing = origBoxSizing;
-        paper.style.background = origBackground;
-        paper.style.color = origColor;
-        paper.style.padding = origPadding;
-        paper.style.boxShadow = origBoxShadow;
     }
 }
 
