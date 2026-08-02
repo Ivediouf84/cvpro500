@@ -178,7 +178,7 @@
             .wizard-panel { width: 100%; max-width: 100%; height: auto; min-height: 60vh; border-right: none; border-bottom: 2px solid var(--primary); }
             .wizard-content { overflow: visible; }
             .preview-panel { height: auto; min-height: 60vh; overflow: visible; }
-            .cv-page-container { transform: scale(0.6); }
+            #cv-scale-wrapper { transform: scale(0.6); transform-origin: top center; }
         }
         @media (max-width: 600px) {
             .form-row { flex-direction: row; gap: 0.35rem; margin-bottom: 0.3rem; }
@@ -191,8 +191,8 @@
             .dynamic-item { padding: 0.4rem 0.5rem; padding-right: 1.6rem; }
             .dynamic-list { gap: 0.35rem; }
             .step-title { margin-bottom: 0.35rem; font-size: 0.95rem; }
-            .cv-page-container { transform: scale(0.4); transform-origin: top center; transition: transform 0.3s ease; }
-            .cv-page-container.zoomed { transform: scale(0.9); z-index: 50; position: relative; margin-bottom: 500px; }
+            #cv-scale-wrapper { transform: scale(0.42); transform-origin: top center; transition: transform 0.3s ease; }
+            #cv-scale-wrapper.zoomed { transform: scale(0.9); z-index: 50; position: relative; margin-bottom: 500px; }
         }
         
         /* Payment Modal */

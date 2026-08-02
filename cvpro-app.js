@@ -1055,19 +1055,17 @@ async function generatePDF() {
     const origWrapperWidth = scaleWrapper ? scaleWrapper.style.width : '';
     const origPaperShadow = paper.style.boxShadow;
     const origPaperWidth = paper.style.width;
+    const origPaperMinHeight = paper.style.minHeight;
+    const origPaperOverflow = paper.style.overflow;
 
-    // Temporarily set desktop meta-viewport on mobile so html2canvas computes layout at 1024px
-    const metaViewport = document.querySelector('meta[name="viewport"]');
-    const origMetaContent = metaViewport ? metaViewport.getAttribute('content') : '';
-    if (metaViewport) {
-        metaViewport.setAttribute('content', 'width=1024, initial-scale=1.0');
-    }
-
+    // Temporarily set fixed A4 dimensions and disable wrapper scaling
     if (scaleWrapper) {
         scaleWrapper.style.transform = 'none';
-        scaleWrapper.style.width = '794px';
+        scaleWrapper.style.width = '210mm';
     }
-    paper.style.width = '794px';
+    paper.style.width = '210mm';
+    paper.style.minHeight = '297mm';
+    paper.style.overflow = 'visible';
     paper.style.boxShadow = 'none';
 
     // Remove contenteditable focus lines temporarily
@@ -1077,13 +1075,13 @@ async function generatePDF() {
     const opt = {
         margin:       0,
         filename:     fileName,
-        image:        { type: 'jpeg', quality: 0.98 },
+        image:        { type: 'jpeg', quality: 1.0 },
         html2canvas:  { 
-            scale: 2, 
+            scale: 3, 
             useCORS: true, 
             logging: false,
             backgroundColor: '#ffffff',
-            windowWidth: 1024
+            windowWidth: 794
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
@@ -1098,14 +1096,13 @@ async function generatePDF() {
         console.error("PDF export error:", err);
         alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
     } finally {
-        if (metaViewport && origMetaContent) {
-            metaViewport.setAttribute('content', origMetaContent);
-        }
         if (scaleWrapper) {
             scaleWrapper.style.transform = origWrapperTransform;
             scaleWrapper.style.width = origWrapperWidth;
         }
         paper.style.width = origPaperWidth;
+        paper.style.minHeight = origPaperMinHeight;
+        paper.style.overflow = origPaperOverflow;
         paper.style.boxShadow = origPaperShadow;
         editables.forEach(el => el.setAttribute('contenteditable', 'true'));
     }
