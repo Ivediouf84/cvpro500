@@ -316,35 +316,37 @@ async function exportBothPDFs() {
     async function generateAndDownloadPdf(sourceEl, filename) {
         if (!sourceEl || !sourceEl.innerHTML.trim()) return;
 
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'fixed';
-        tempContainer.style.top = '0';
-        tempContainer.style.left = '0';
-        tempContainer.style.zIndex = '-9999';
-        tempContainer.style.width = '750px';
-        tempContainer.style.background = '#ffffff';
-        tempContainer.style.color = '#1e293b';
-        tempContainer.style.padding = '35px 30px';
-        tempContainer.style.fontFamily = "'Times New Roman', Times, serif";
-        tempContainer.style.fontSize = '11.5pt';
-        tempContainer.style.lineHeight = '1.6';
-        tempContainer.innerHTML = sourceEl.innerHTML;
-        document.body.appendChild(tempContainer);
+        const origWidth = sourceEl.style.width;
+        const origBackground = sourceEl.style.background;
+        const origColor = sourceEl.style.color;
+        const origPadding = sourceEl.style.padding;
+        const origBoxShadow = sourceEl.style.boxShadow;
+
+        sourceEl.style.width = '210mm';
+        sourceEl.style.background = '#ffffff';
+        sourceEl.style.color = '#1e293b';
+        sourceEl.style.padding = '35px 30px';
+        sourceEl.style.boxShadow = 'none';
 
         const opt = {
             margin: [0.4, 0.4, 0.4, 0.4],
             filename: filename,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 794 },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
 
         try {
-            await html2pdf().set(opt).from(tempContainer).save();
+            await html2pdf().set(opt).from(sourceEl).save();
+        } catch (err) {
+            console.error("PDF export error:", err);
+            alert("Erreur lors du téléchargement du PDF. Veuillez réessayer.");
         } finally {
-            if (document.body.contains(tempContainer)) {
-                document.body.removeChild(tempContainer);
-            }
+            sourceEl.style.width = origWidth;
+            sourceEl.style.background = origBackground;
+            sourceEl.style.color = origColor;
+            sourceEl.style.padding = origPadding;
+            sourceEl.style.boxShadow = origBoxShadow;
         }
     }
 
