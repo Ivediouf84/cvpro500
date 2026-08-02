@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Générateur de Lettre d'Invitation Officielle - NovaDoc</title>
-    <link rel="stylesheet" href="styles.css?v=20260801_v45">
+    <link rel="stylesheet" href="styles.css?v=20260801_v46">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -159,12 +159,13 @@
             height: 17px;
         }
         .document-box {
-            background: #ffffff;
-            color: #0f172a;
+            background: #ffffff !important;
+            color: #0f172a !important;
             border-radius: var(--radius-md);
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             margin: 0 auto;
-            max-width: 210mm;
+            width: 100%;
+            max-width: 794px;
             min-height: 297mm;
             padding: 8mm 15mm 10mm 15mm;
             box-sizing: border-box;
@@ -174,12 +175,26 @@
             transition: outline 0.2s ease;
         }
         .document-box[contenteditable="true"]:hover {
-            outline: 2px dashed rgba(168, 85, 247, 0.4);
+            outline: 2px dashed #a855f7;
             cursor: text;
         }
         .document-box[contenteditable="true"]:focus {
-            outline: 2px solid #a855f7;
-            background: #ffffff;
+            outline: 2px solid #8b5cf6;
+            background: #ffffff !important;
+        }
+        @media (max-width: 768px) {
+            .doc-preview-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 1rem;
+            }
+            .document-box {
+                width: 794px !important;
+                min-width: 794px !important;
+                transform: scale(0.45);
+                transform-origin: top left;
+                margin-bottom: -600px;
+            }
         }
     </style>
 </head>
@@ -192,7 +207,7 @@
                 <img src="novadoc-logo-n.png?v=12" alt="NovaDoc Logo" style="height: 38px; width: auto; object-fit: contain;">
             </a>
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="index.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                <a href="index.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem; color: #ffffff !important; background: rgba(15, 23, 42, 0.8) !important; border: 1px solid rgba(168, 85, 247, 0.4) !important;">
                     <i class="fa-solid fa-arrow-left"></i> Tableau de bord
                 </a>
                 <button onclick="openInvitationModal(event)" class="btn-institutional">
@@ -224,13 +239,14 @@
         <!-- Document Results Section -->
         <div id="invitation-results-section" style="display: none; max-width: 950px; margin: 0 auto;">
             
-            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
+            <!-- Result Bar -->
+            <div style="background: #0f172a !important; color: #ffffff !important; border: 1px solid rgba(168, 85, 247, 0.35) !important; border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
                 <div>
-                    <h3 style="margin: 0 0 0.4rem 0; color: var(--text-main); font-size: 1.3rem;"><i class="fa-solid fa-check-circle" style="color: #10b981;"></i> Votre Lettre d'Invitation est prête !</h3>
-                    <p style="margin: 0; color: var(--text-muted); font-size: 0.95rem;">Vous pouvez modifier directement le texte ci-dessous avant de télécharger le PDF final.</p>
+                    <h3 style="margin: 0 0 0.4rem 0; color: #ffffff !important; font-size: 1.3rem;"><i class="fa-solid fa-check-circle" style="color: #10b981;"></i> Votre Lettre d'Invitation est prête !</h3>
+                    <p style="margin: 0; color: #94a3b8 !important; font-size: 0.95rem;">Vous pouvez modifier directement le texte ci-dessous avant de télécharger le PDF final.</p>
                 </div>
                 <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                    <button onclick="openInvitationModal(event)" class="btn btn-outline" style="padding: 0.65rem 1.2rem;">
+                    <button onclick="openInvitationModal(event)" class="btn btn-outline" style="padding: 0.65rem 1.2rem; color: #ffffff !important; background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important;">
                         <i class="fa-solid fa-pen"></i> Modifier le Formulaire
                     </button>
                     <button onclick="openInvitationPaymentModal('pdf')" class="btn-institutional" style="padding: 0.65rem 1.4rem;">
@@ -240,13 +256,13 @@
             </div>
 
             <!-- Banner Document Éditable -->
-            <div style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: var(--radius-md); padding: 0.85rem 1.2rem; margin-bottom: 1.5rem; color: #f8fafc; font-size: 0.95rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-                <i class="fa-solid fa-pen-to-square" style="color: #c084fc; font-size: 1.3rem; flex-shrink: 0;"></i>
-                <span><strong>✏️ Document Éditable en Direct :</strong> Cliquez simplement sur n'importe quel texte du document ci-dessous pour le modifier, corriger des fautes ou ajouter des détails avant l'exportation PDF.</span>
+            <div style="background: #1e1b4b !important; color: #ffffff !important; border: 1px solid #8b5cf6 !important; border-radius: var(--radius-md); padding: 0.9rem 1.3rem; margin-bottom: 1.5rem; font-size: 0.95rem; display: flex; align-items: center; gap: 0.8rem; box-shadow: 0 4px 14px rgba(0,0,0,0.3);">
+                <i class="fa-solid fa-pen-to-square" style="color: #c084fc; font-size: 1.35rem; flex-shrink: 0;"></i>
+                <span style="color: #ffffff !important;"><strong>✏️ Document Éditable en Direct :</strong> Cliquez directement sur n'importe quel texte de la lettre ci-dessous pour modifier, effacer ou ajouter des informations avant l'exportation PDF.</span>
             </div>
 
             <!-- PDF Container Preview (Editable) -->
-            <div id="doc-invitation-container" style="overflow-x: auto; padding: 1rem 0;">
+            <div id="doc-invitation-container" class="doc-preview-wrapper" style="padding: 1rem 0;">
                 <div id="doc-invitation-output" class="document-box" contenteditable="true" spellcheck="true"></div>
             </div>
         </div>
@@ -495,6 +511,6 @@
         </div>
     </div>
 
-    <script src="invitation-app.js?v=20260801_v45"></script>
+    <script src="invitation-app.js?v=20260801_v46"></script>
 </body>
 </html>

@@ -428,33 +428,64 @@ async function processInvitationPayment() {
 }
 
 async function exportInvitationPDFDirect() {
-    const paper = document.getElementById('doc-invitation-output');
-    if (!paper || !paper.innerHTML.trim()) {
+    const originalPaper = document.getElementById('doc-invitation-output');
+    if (!originalPaper || !originalPaper.innerHTML.trim()) {
         alert("Aucun document à exporter.");
         return;
     }
 
-    paper.scrollIntoView({ behavior: 'instant', block: 'start' });
+    // Save live edits
+    localStorage.setItem('invitation_doc_html', originalPaper.innerHTML);
+
+    // Create a temporary hidden container with fixed 794px width (A4)
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '0';
+    tempContainer.style.width = '794px';
+    tempContainer.style.background = '#ffffff';
+
+    // Clone the inner document
+    const clone = originalPaper.cloneNode(true);
+    clone.style.width = '794px';
+    clone.style.minWidth = '794px';
+    clone.style.maxWidth = '794px';
+    clone.style.minHeight = '1122px';
+    clone.style.maxHeight = '1122px';
+    clone.style.overflow = 'hidden';
+    clone.style.padding = '8mm 15mm 10mm 15mm';
+    clone.style.margin = '0';
+    clone.style.transform = 'none';
+    clone.style.boxSizing = 'border-box';
+    clone.style.background = '#ffffff';
+    clone.style.color = '#0f172a';
+    clone.removeAttribute('contenteditable');
+
+    tempContainer.appendChild(clone);
+    document.body.appendChild(tempContainer);
 
     const opt = {
         margin: 0,
         filename: 'Lettre_d_Invitation_Officielle.pdf',
         image: { type: 'jpeg', quality: 1.0 },
         html2canvas: { 
-            scale: 3, 
+            scale: 2, 
             useCORS: true, 
             logging: false, 
             backgroundColor: '#ffffff',
+            width: 794,
             windowWidth: 794
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     try {
-        await html2pdf().set(opt).from(paper).save();
+        await html2pdf().set(opt).from(clone).save();
     } catch (err) {
         console.error("PDF export error:", err);
         alert("Erreur lors du téléchargement du PDF. Veuillez réessayer.");
+    } finally {
+        document.body.removeChild(tempContainer);
     }
 }
 
