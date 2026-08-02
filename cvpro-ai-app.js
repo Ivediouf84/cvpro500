@@ -627,17 +627,21 @@ async function exportPDF() {
     const origWrapperWidth = scaleWrapper ? scaleWrapper.style.width : '';
     const origPaperShadow = paper.style.boxShadow;
     const origPaperWidth = paper.style.width;
+    const origPaperHeight = paper.style.height;
+    const origPaperMaxHeight = paper.style.maxHeight;
     const origPaperMinHeight = paper.style.minHeight;
     const origPaperOverflow = paper.style.overflow;
 
-    // Temporarily set fixed A4 dimensions and disable wrapper scaling
+    // Temporarily set strict single-page A4 dimensions (210mm x 296.5mm)
     if (scaleWrapper) {
         scaleWrapper.style.transform = 'none';
         scaleWrapper.style.width = '210mm';
     }
     paper.style.width = '210mm';
-    paper.style.minHeight = '297mm';
-    paper.style.overflow = 'visible';
+    paper.style.height = '296.5mm';
+    paper.style.maxHeight = '296.5mm';
+    paper.style.minHeight = '296.5mm';
+    paper.style.overflow = 'hidden';
     paper.style.boxShadow = 'none';
 
     // Remove contenteditable focus lines temporarily
@@ -655,7 +659,8 @@ async function exportPDF() {
             backgroundColor: '#ffffff',
             windowWidth: 794
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     try {
@@ -673,6 +678,8 @@ async function exportPDF() {
             scaleWrapper.style.width = origWrapperWidth;
         }
         paper.style.width = origPaperWidth;
+        paper.style.height = origPaperHeight;
+        paper.style.maxHeight = origPaperMaxHeight;
         paper.style.minHeight = origPaperMinHeight;
         paper.style.overflow = origPaperOverflow;
         paper.style.boxShadow = origPaperShadow;
