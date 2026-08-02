@@ -279,59 +279,59 @@ async function generateInvitationDocument(event) {
 
     if (!htmlDoc) {
         htmlDoc = `
-        <div style="font-family: 'Times New Roman', Times, serif; font-size: 11.5pt; color: #0f172a; line-height: 1.6; padding: 8mm 15mm 10mm 15mm; background: #ffffff; min-height: 297mm; box-sizing: border-box;">
+        <div style="font-family: 'Times New Roman', Times, serif; font-size: 11pt; color: #0f172a; line-height: 1.5; padding: 8mm 15mm 10mm 15mm; background: #ffffff; min-height: 297mm; box-sizing: border-box;">
             <!-- En-tête : Logo & Organisation à gauche / Date à droite -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; border-bottom: 2px solid #1e3a8a; padding-bottom: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 2px solid #1e3a8a; padding-bottom: 0.4rem;">
                 <div style="max-width: 58%;">
-                    ${uploadedInvitationLogoDataUrl ? `<img src="${uploadedInvitationLogoDataUrl}" style="max-height: 65px; max-width: 150px; object-fit: contain; display: block; margin-bottom: 4px;">` : ''}
-                    <div style="font-weight: bold; font-size: 11.5pt; text-transform: uppercase; color: #1e3a8a;">${orgNom}</div>
-                    ${orgAdresse ? `<div style="font-size: 9.5pt; color: #334155;">${orgAdresse}</div>` : ''}
-                    ${orgTel ? `<div style="font-size: 9.5pt; color: #334155;">Tél : ${orgTel}</div>` : ''}
+                    ${uploadedInvitationLogoDataUrl ? `<img src="${uploadedInvitationLogoDataUrl}" style="max-height: 60px; max-width: 140px; object-fit: contain; display: block; margin-bottom: 4px;">` : ''}
+                    <div style="font-weight: bold; font-size: 11pt; text-transform: uppercase; color: #1e3a8a;">${orgNom}</div>
+                    ${orgAdresse ? `<div style="font-size: 9pt; color: #334155;">${orgAdresse}</div>` : ''}
+                    ${orgTel ? `<div style="font-size: 9pt; color: #334155;">Tél : ${orgTel}</div>` : ''}
                 </div>
-                <div style="text-align: right; font-size: 10.5pt; color: #1e293b; padding-top: 4px;">
+                <div style="text-align: right; font-size: 10pt; color: #1e293b; padding-top: 2px;">
                     <strong>Fait à Dakar, le ${formattedDateRedaction}</strong>
                 </div>
             </div>
 
             <!-- Destinataire (Bloc Administrateur) -->
-            <div style="margin-left: 45%; margin-bottom: 1.5rem; font-size: 11.5pt; line-height: 1.45;">
+            <div style="margin-left: 45%; margin-bottom: 1.3rem; font-size: 11pt; line-height: 1.4;">
                 <strong>À ${civilite}${autoriteNom ? ' ' + autoriteNom : ''}</strong><br>
                 ${autoriteFonction ? `<span>${autoriteFonction}</span><br>` : ''}
                 ${autoriteInstitution ? `<span><strong>${autoriteInstitution}</strong></span><br>` : ''}
-                ${autoriteAdresse ? `<span style="font-size: 10.5pt; color: #334155;">${autoriteAdresse}</span>` : ''}
+                ${autoriteAdresse ? `<span style="font-size: 10pt; color: #334155;">${autoriteAdresse}</span>` : ''}
             </div>
 
             <!-- Objet -->
-            <div style="margin-bottom: 1.3rem; font-size: 11.5pt; background: #f8fafc; padding: 0.5rem 0.9rem; border-left: 4px solid #1e3a8a; border-radius: 4px;">
+            <div style="margin-bottom: 1.2rem; font-size: 11pt; background: #f8fafc; padding: 0.45rem 0.85rem; border-left: 4px solid #1e3a8a; border-radius: 4px;">
                 <strong><u>OBJET :</u> ${objetCustom}</strong>
             </div>
 
             <!-- Formule d'Appel -->
-            <div style="margin-bottom: 1rem; font-weight: bold;">
+            <div style="margin-bottom: 0.9rem; font-weight: bold;">
                 ${appel},
             </div>
 
             <!-- Corps de la lettre -->
-            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.1rem; text-indent: 1.5rem;">
+            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1rem; text-indent: 1.5rem;">
                 C'est avec un immense honneur et un profond respect que nous venons, au nom de la structure <strong>${orgNom}</strong>, solliciter votre très haute bienveillance afin de prendre part au <strong>${activiteTitle}</strong> (${activiteType}).
             </div>
 
             ${description ? `
-            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.1rem;">
+            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1rem;">
                 ${description}
             </div>
             ` : ''}
 
-            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.1rem;">
+            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1rem;">
                 Eu égard à votre engagement remarquable et à votre leadership éclairé au service du développement, nous serions particulièrement honorés de vous compter parmi nous en qualité de <strong>${rolesFormattedText}</strong>. ${rolePrecision ? `À ce titre, il vous sera réservé l'opportunité de ${rolePrecision}.` : ''}
             </div>
 
             <!-- Fiche Synthétique de l'événement -->
-            <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.75rem 0.9rem; margin: 1.1rem 0; font-size: 10.5pt; font-family: Arial, sans-serif;">
-                <div style="font-weight: bold; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase;">
+            <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.65rem 0.85rem; margin: 1rem 0; font-size: 10pt; font-family: Arial, sans-serif;">
+                <div style="font-weight: bold; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 5px; text-transform: uppercase;">
                     <i class="fa-solid fa-calendar-check"></i> Informations Pratiques sur la Cérémonie
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
                     <div><strong>• Date :</strong> Le ${formattedDateEvent}</div>
                     <div><strong>• Heure :</strong> À partir de ${heureEvent}</div>
                     <div><strong>• Lieu :</strong> ${lieuEvent}</div>
@@ -339,19 +339,19 @@ async function generateInvitationDocument(event) {
                 </div>
             </div>
 
-            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.3rem;">
+            <div style="text-align: justify; text-justify: inter-word; margin-bottom: 1.1rem;">
                 Convaincus de l'impact majeur de votre présence solennelle sur le succès de cette manifestation, nous restons à votre entière disposition pour tout renseignement complémentaire.
             </div>
 
             <!-- Formule de politesse -->
-            <div style="margin-bottom: 2rem;">
+            <div style="margin-bottom: 1.8rem;">
                 ${politesse}
             </div>
 
             <!-- Signature (Sans la mention Pour l'Organisation) -->
-            <div style="margin-left: 55%; text-align: center; margin-top: 1rem;">
-                <div style="font-style: italic; font-weight: bold; font-size: 11pt; color: #1e293b; margin-bottom: 2.2rem;">${signataireQualite}</div>
-                <div style="font-weight: bold; font-size: 11.5pt; text-decoration: underline; text-transform: uppercase; color: #0f172a;">${signataireNom}</div>
+            <div style="margin-left: 55%; text-align: center; margin-top: 0.8rem;">
+                <div style="font-style: italic; font-weight: bold; font-size: 10.5pt; color: #1e293b; margin-bottom: 2rem;">${signataireQualite}</div>
+                <div style="font-weight: bold; font-size: 11pt; text-decoration: underline; text-transform: uppercase; color: #0f172a;">${signataireNom}</div>
             </div>
         </div>
         `;
@@ -437,12 +437,17 @@ async function exportInvitationPDFDirect() {
     // Save live edits
     localStorage.setItem('invitation_doc_html', originalPaper.innerHTML);
 
-    // Create a temporary hidden container with fixed 794px width (A4)
+    // Create a temporary fixed container (x=0, y=0, position=fixed, zIndex=-99999)
     const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px';
+    tempContainer.style.position = 'fixed';
     tempContainer.style.top = '0';
+    tempContainer.style.left = '0';
     tempContainer.style.width = '794px';
+    tempContainer.style.height = '1122px';
+    tempContainer.style.zIndex = '-99999';
+    tempContainer.style.opacity = '1';
+    tempContainer.style.pointerEvents = 'none';
+    tempContainer.style.overflow = 'hidden';
     tempContainer.style.background = '#ffffff';
 
     // Clone the inner document
@@ -474,7 +479,13 @@ async function exportInvitationPDFDirect() {
             logging: false, 
             backgroundColor: '#ffffff',
             width: 794,
-            windowWidth: 794
+            height: 1122,
+            windowWidth: 794,
+            windowHeight: 1122,
+            x: 0,
+            y: 0,
+            scrollX: 0,
+            scrollY: 0
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
