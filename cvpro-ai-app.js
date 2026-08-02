@@ -633,29 +633,24 @@ async function exportPDF() {
     const editables = paper.querySelectorAll('[contenteditable]');
     editables.forEach(el => el.setAttribute('contenteditable', 'false'));
 
-    try {
-        const canvas = await html2canvas(paper, {
-            scale: 3,
-            useCORS: true,
-            logging: false,
+    const opt = {
+        margin: 0,
+        filename: 'CV_Professionnel_IA.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2.5, 
+            useCORS: true, 
+            logging: false, 
             backgroundColor: '#ffffff'
-        });
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-        const imgData = canvas.toDataURL('image/png');
-        const jsPDF = window.jspdf ? window.jspdf.jsPDF : (window.jsPDF || null);
-
-        if (jsPDF) {
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
-            pdf.save('CV_Professionnel_IA.pdf');
+    try {
+        if (typeof html2pdf !== 'undefined') {
+            await html2pdf().set(opt).from(paper).save();
         } else {
-            await html2pdf().set({
-                margin: 0,
-                filename: 'CV_Professionnel_IA.pdf',
-                image: { type: 'png', quality: 1.0 },
-                html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(paper).save();
+            window.print();
         }
     } catch (err) {
         console.error("PDF generation error:", err);

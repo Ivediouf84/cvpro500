@@ -1061,29 +1061,24 @@ async function generatePDF() {
     const editables = paper.querySelectorAll('[contenteditable]');
     editables.forEach(el => el.setAttribute('contenteditable', 'false'));
 
-    try {
-        const canvas = await html2canvas(paper, {
-            scale: 3,
-            useCORS: true,
+    const opt = {
+        margin:       0,
+        filename:     fileName,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+            scale: 2.5, 
+            useCORS: true, 
             logging: false,
             backgroundColor: '#ffffff'
-        });
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-        const imgData = canvas.toDataURL('image/png');
-        const jsPDF = window.jspdf ? window.jspdf.jsPDF : (window.jsPDF || null);
-
-        if (jsPDF) {
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
-            pdf.save(fileName);
+    try {
+        if (typeof html2pdf !== 'undefined') {
+            await html2pdf().set(opt).from(paper).save();
         } else {
-            await html2pdf().set({
-                margin: 0,
-                filename: fileName,
-                image: { type: 'png', quality: 1.0 },
-                html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff' },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(paper).save();
+            window.print();
         }
     } catch (err) {
         console.error("PDF export error:", err);
