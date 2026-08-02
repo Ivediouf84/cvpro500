@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Lettre d'Invitation Officielle - NovaDoc</title>
+    <link rel="stylesheet" href="styles.css?v=20260801_v41">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .btn-institutional {
+            background: var(--grad-primary);
+            color: #ffffff !important;
+            border: none;
+            border-radius: var(--radius-lg);
+            padding: 0.85rem 1.6rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            cursor: pointer;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+            text-decoration: none;
+        }
+        .btn-institutional:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55);
+        }
+        .btn-institutional:active {
+            transform: scale(0.97);
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 9, 19, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 999999;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 1.5rem 1rem;
+        }
+        .modal-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            max-width: 920px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            position: relative;
+            padding: 2.2rem;
+            color: var(--text-main);
+        }
+        .modal-header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.2rem;
+            margin-bottom: 1.8rem;
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 0; right: 0;
+            background: rgba(255,255,255,0.08);
+            border: none;
+            color: var(--text-muted);
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-close-btn:hover {
+            background: #ef4444; color: white;
+        }
+        .form-section {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-light);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 0.5rem;
+        }
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            cursor: pointer;
+            background: rgba(255,255,255,0.02);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .checkbox-label:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+        }
+        .document-box {
+            background: #ffffff;
+            color: #1e293b;
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            margin: 0 auto;
+            max-width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 20mm;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body style="background: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column;">
+
+    <!-- Navigation Header -->
+    <nav class="cv-nav">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <img src="novadoc-logo-n.png?v=12" alt="NovaDoc Logo" style="height: 38px; width: auto; object-fit: contain;">
+            </a>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="index.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    <i class="fa-solid fa-arrow-left"></i> Tableau de bord
+                </a>
+                <button onclick="openInvitationModal(event)" class="btn-institutional">
+                    <i class="fa-solid fa-envelope-open-text"></i> Formulaire d'invitation
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container" style="flex: 1; padding: 2rem 1rem;">
+        
+        <!-- Hero Section -->
+        <div id="invitation-landing-section" style="text-align: center; max-width: 800px; margin: 2rem auto;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; color: var(--primary); font-size: 2.5rem; margin-bottom: 1.5rem;">
+                <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+            <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 1rem; background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Lettre d'Invitation Officielle à une Autorité
+            </h1>
+            <p style="font-size: 1.1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 2rem;">
+                Générez en quelques clics une lettre d'invitation administrative solennelle pour un Ministre, Gouverneur, Préfet, Sous-préfet, Maire, Directeur Général, Député ou Président d'Institution. Conforme aux usages officiels du Sénégal.
+            </p>
+            <button onclick="openInvitationModal(event)" class="btn-institutional" style="font-size: 1.2rem; padding: 1rem 2.2rem;">
+                <i class="fa-solid fa-pen-to-square"></i> Remplir le Formulaire Guidé
+            </button>
+        </div>
+
+        <!-- Document Results Section -->
+        <div id="invitation-results-section" style="display: none; max-width: 950px; margin: 0 auto;">
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 2rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
+                <div>
+                    <h3 style="margin: 0 0 0.4rem 0; color: var(--text-main); font-size: 1.3rem;"><i class="fa-solid fa-check-circle" style="color: #10b981;"></i> Votre Lettre d'Invitation est prête !</h3>
+                    <p style="margin: 0; color: var(--text-muted); font-size: 0.95rem;">Vous pouvez la consulter, l'imprimer ou la télécharger directement en PDF A4.</p>
+                </div>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <button onclick="openInvitationModal(event)" class="btn btn-outline" style="padding: 0.65rem 1.2rem;">
+                        <i class="fa-solid fa-pen"></i> Modifier les infos
+                    </button>
+                    <button onclick="window.print()" class="btn btn-outline" style="padding: 0.65rem 1.2rem;">
+                        <i class="fa-solid fa-print"></i> Imprimer
+                    </button>
+                    <button onclick="openInvitationPaymentModal('pdf')" class="btn-institutional" style="padding: 0.65rem 1.4rem;">
+                        <i class="fa-solid fa-download"></i> Télécharger en PDF (500 FCFA)
+                    </button>
+                </div>
+            </div>
+
+            <!-- PDF Container Preview -->
+            <div id="doc-invitation-container" style="overflow-x: auto; padding: 1rem 0;">
+                <div id="doc-invitation-output" class="document-box"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Formulaire Guidé -->
+    <div id="invitation-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <button type="button" class="modal-close-btn" onclick="closeInvitationModal()">&times;</button>
+                <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main); display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fa-solid fa-envelope-open-text" style="color: var(--primary);"></i> Formulaire d'Invitation Officielle
+                </h2>
+                <p style="margin: 0.4rem 0 0 0; color: var(--text-muted); font-size: 0.9rem;">Complétez les informations ci-dessous pour rédiger automatiquement votre lettre de correspondance administrative.</p>
+            </div>
+
+            <form id="invitation-form" onsubmit="generateInvitationDocument(event)">
+                
+                <!-- Section 1 : Organisation -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-building"></i> 1. Organisation Invitatrice
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 240px;">
+                            <label for="inv-org-nom">Nom de l'Organisation / Structure <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="inv-org-nom" class="form-control" placeholder="Ex: Association des Jeunes Cadres de Dakar" required>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 240px;">
+                            <label for="inv-org-logo">Logo de l'organisation (Optionnel)</label>
+                            <input type="file" id="inv-org-logo" class="form-control" accept="image/*" onchange="handleInvitationLogoUpload(event)">
+                            <div id="inv-logo-preview-container" style="display: none; margin-top: 0.5rem;">
+                                <img id="inv-logo-preview" src="" alt="Logo Aperçu" style="max-height: 50px; max-width: 120px; object-fit: contain;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 240px;">
+                            <label for="inv-org-adresse">Adresse / Siège social</label>
+                            <input type="text" id="inv-org-adresse" class="form-control" placeholder="Ex: Avenue Cheikh Anta Diop, Dakar">
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 240px;">
+                            <label for="inv-org-tel">Téléphone de contact</label>
+                            <input type="tel" id="inv-org-tel" class="form-control" placeholder="Ex: +221 77 000 00 00">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2 : Autorité Invitée -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-user-tie"></i> 2. Autorité Invitée
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 240px;">
+                            <label for="inv-civilite">Civilité / Titre Administratif <span style="color: #ef4444;">*</span></label>
+                            <select id="inv-civilite" class="form-control" required>
+                                <option value="Monsieur le Ministre">Monsieur le Ministre</option>
+                                <option value="Madame la Ministre">Madame la Ministre</option>
+                                <option value="Monsieur le Gouverneur">Monsieur le Gouverneur</option>
+                                <option value="Monsieur le Préfet">Monsieur le Préfet</option>
+                                <option value="Monsieur le Sous-préfet">Monsieur le Sous-préfet</option>
+                                <option value="Monsieur le Maire">Monsieur le Maire</option>
+                                <option value="Directeur Général">Directeur Général</option>
+                                <option value="Président">Président</option>
+                                <option value="Excellence">Excellence</option>
+                                <option value="Honorable">Honorable (Député)</option>
+                                <option value="Monsieur">Monsieur</option>
+                                <option value="Madame">Madame</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 240px;">
+                            <label for="inv-autorite-nom">Nom et Prénom de l'Autorité</label>
+                            <input type="text" id="inv-autorite-nom" class="form-control" placeholder="Ex: Amadou BA">
+                        </div>
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 240px;">
+                            <label for="inv-autorite-fonction">Fonction officielle</label>
+                            <input type="text" id="inv-autorite-fonction" class="form-control" placeholder="Ex: Ministre de l'Économie Numérique">
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 240px;">
+                            <label for="inv-autorite-institution">Institution / Ministère</label>
+                            <input type="text" id="inv-autorite-institution" class="form-control" placeholder="Ex: Ministère des Télécommunications">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="inv-autorite-adresse">Adresse de l'Institution</label>
+                        <input type="text" id="inv-autorite-adresse" class="form-control" placeholder="Ex: Place de l'Indépendance, Dakar">
+                    </div>
+                </div>
+
+                <!-- Section 3 : Informations sur l'activité -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-calendar-star"></i> 3. Informations sur l'Activité
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 2; min-width: 240px;">
+                            <label for="inv-activite-title">Intitulé de l'Activité <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="inv-activite-title" class="form-control" placeholder="Ex: Forum National sur l'Entrepreneuriat des Jeunes" required>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 200px;">
+                            <label for="inv-activite-type">Type d'activité</label>
+                            <select id="inv-activite-type" class="form-control">
+                                <option value="Cérémonie">Cérémonie</option>
+                                <option value="Conférence">Conférence</option>
+                                <option value="Lancement officiel">Lancement officiel</option>
+                                <option value="Inauguration">Inauguration</option>
+                                <option value="Forum">Forum</option>
+                                <option value="Atelier">Atelier</option>
+                                <option value="Séminaire">Séminaire</option>
+                                <option value="Formation">Formation</option>
+                                <option value="Journée de sensibilisation">Journée de sensibilisation</option>
+                                <option value="Remise de prix">Remise de prix</option>
+                                <option value="Assemblée générale">Assemblée générale</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="inv-objet">Objet de l'invitation</label>
+                        <input type="text" id="inv-objet" class="form-control" placeholder="Ex: Invitation officielle à la cérémonie de lancement du Forum National">
+                    </div>
+                    <div class="form-group">
+                        <label for="inv-description">Description succincte de l'événement</label>
+                        <textarea id="inv-description" class="form-control" rows="3" placeholder="Présentez brièvement les objectifs, les bénéficiaires et les enjeux de cet événement..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Section 4 : Date et lieu -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-clock"></i> 4. Date et Lieu
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 180px;">
+                            <label for="inv-date">Date de l'événement <span style="color: #ef4444;">*</span></label>
+                            <input type="date" id="inv-date" class="form-control" required>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 180px;">
+                            <label for="inv-heure">Heure de début</label>
+                            <input type="time" id="inv-heure" class="form-control" value="09:00">
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 220px;">
+                            <label for="inv-lieu">Lieu / Salle</label>
+                            <input type="text" id="inv-lieu" class="form-control" placeholder="Ex: Hôtel King Fahd Palace">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inv-adresse-complete">Adresse complète du lieu</label>
+                        <input type="text" id="inv-adresse-complete" class="form-control" placeholder="Ex: Route des Almadies, Dakar">
+                    </div>
+                </div>
+
+                <!-- Section 5 : Rôle attendu de l'autorité -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-award"></i> 5. Rôle Attendu de l'Autorité
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Cochez la ou les qualités sollicitées auprès de l'autorité :</p>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="role_attendu" value="Président de cérémonie" checked> Président de cérémonie
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="role_attendu" value="Invité d'honneur"> Invité d'honneur
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="role_attendu" value="Parrain"> Parrain
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="role_attendu" value="Marraine"> Marraine
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="role_attendu" value="Discours officiel"> Discours officiel
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="role_attendu" value="Conférencier"> Conférencier / Orateur
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="role_attendu" value="Coupure du ruban"> Coupure du ruban
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="role_attendu" value="Remise de distinctions"> Remise de distinctions
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="inv-role-precision">Précisions supplémentaires sur le rôle (Optionnel)</label>
+                        <input type="text" id="inv-role-precision" class="form-control" placeholder="Ex: Prononcer le mot d'ouverture officielle à 09h30">
+                    </div>
+                </div>
+
+                <!-- Section 6 : Signataire -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-signature"></i> 6. Signataire de la Lettre
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 220px;">
+                            <label for="inv-signataire-nom">Nom du Signataire <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="inv-signataire-nom" class="form-control" placeholder="Ex: Ousmane SOW" required>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 220px;">
+                            <label for="inv-signataire-qualite">Qualité / Titre du Signataire</label>
+                            <input type="text" id="inv-signataire-qualite" class="form-control" placeholder="Ex: Le Président de l'Association">
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 180px;">
+                            <label for="inv-date-redaction">Date de rédaction</label>
+                            <input type="date" id="inv-date-redaction" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="button" onclick="closeInvitationModal()" class="btn btn-outline" style="padding: 0.8rem 1.5rem;">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn-institutional" style="padding: 0.8rem 2rem;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Générer la Lettre d'Invitation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SenePay Payment Modal -->
+    <div id="invitation-payment-modal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 480px; text-align: center;">
+            <button class="modal-close-btn" onclick="closeInvitationPaymentModal()">&times;</button>
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; color: var(--primary); font-size: 2rem; margin-bottom: 1rem;">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 style="margin: 0 0 0.5rem 0; color: var(--text-main); font-size: 1.3rem;">Paiement Sécurisé SenePay</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Téléchargez votre Lettre d'Invitation Officielle au format PDF A4 haute définition.
+            </p>
+            <div style="font-size: 2.2rem; font-weight: 800; color: var(--primary); margin-bottom: 1.5rem;">
+                500 FCFA
+            </div>
+            <button onclick="processInvitationPayment()" class="btn-institutional" style="width: 100%; justify-content: center; padding: 1rem; font-size: 1.1rem;">
+                <i class="fa-solid fa-mobile-screen-button"></i> Payer avec Orange Money / Wave
+            </button>
+        </div>
+    </div>
+
+    <script src="invitation-app.js?v=20260801_v41"></script>
+</body>
+</html>
