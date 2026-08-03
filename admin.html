@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de Bord Admin & Statistiques - NovaDoc</title>
-    <link rel="stylesheet" href="styles.css?v=cvpro1">
+    <link rel="stylesheet" href="styles.css?v=20260801_v47">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- PWA Manifest & App Icons -->
     <link rel="manifest" href="manifest.json">
@@ -37,13 +37,13 @@
         .filter-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.55rem 1rem; border-radius: var(--radius-md); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; }
         .filter-btn.active, .filter-btn:hover { background: var(--grad-primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
         
-        /* Summary Stat Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem; }
+        /* Summary Stat Cards Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem; }
         .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.35rem; position: relative; overflow: hidden; box-shadow: var(--shadow-md); transition: transform 0.2s ease; }
         .stat-card:hover { transform: translateY(-3px); border-color: var(--primary); }
-        .stat-icon { position: absolute; top: 1.25rem; right: 1.25rem; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
-        .stat-label { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.5rem; }
-        .stat-value { font-size: 1.85rem; font-weight: 800; color: var(--text-main); font-family: 'Outfit', sans-serif; line-height: 1.1; }
+        .stat-icon { position: absolute; top: 1.25rem; right: 1.25rem; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .stat-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.75rem; font-weight: 800; color: var(--text-main); font-family: 'Outfit', sans-serif; line-height: 1.1; }
         .stat-sub { font-size: 0.78rem; margin-top: 0.5rem; color: #10B981; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
         
         /* Analytics Grid */
@@ -108,8 +108,8 @@
         <!-- Title & Period Filter Bar -->
         <div class="admin-header">
             <div class="admin-title">
-                <h1><i class="fa-solid fa-sack-dollar" style="color: #10B981;"></i> Statistiques & Revenus</h1>
-                <p>Analyse financière en temps réel par fonctionnalité, période et mode de paiement.</p>
+                <h1><i class="fa-solid fa-sack-dollar" style="color: #10B981;"></i> Statistiques & Revenus Réels</h1>
+                <p>Données réelles de la base de données Supabase par fonctionnalité, utilisateurs et transactions.</p>
             </div>
             <div class="filter-bar">
                 <button class="filter-btn active" onclick="setPeriodFilter('all', this)">Global (Tout)</button>
@@ -119,7 +119,7 @@
             </div>
         </div>
 
-        <!-- 4 Stat Summary Cards -->
+        <!-- 5 Real Stat Summary Cards -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10B981;">
@@ -127,7 +127,7 @@
                 </div>
                 <div class="stat-label">Revenu Total Cumulé</div>
                 <div class="stat-value" id="stat-total-revenue">0 FCFA</div>
-                <div class="stat-sub"><i class="fa-solid fa-arrow-trend-up"></i> Taux d'encaissement 100%</div>
+                <div class="stat-sub"><i class="fa-solid fa-shield-halved"></i> Données réelles Supabase</div>
             </div>
             
             <div class="stat-card">
@@ -136,7 +136,7 @@
                 </div>
                 <div class="stat-label">Revenu du Mois</div>
                 <div class="stat-value" id="stat-month-revenue">0 FCFA</div>
-                <div class="stat-sub"><i class="fa-solid fa-chart-line"></i> Période en cours</div>
+                <div class="stat-sub"><i class="fa-solid fa-chart-line"></i> Mois en cours</div>
             </div>
 
             <div class="stat-card">
@@ -145,7 +145,16 @@
                 </div>
                 <div class="stat-label">Revenu d'Aujourd'hui</div>
                 <div class="stat-value" id="stat-today-revenue">0 FCFA</div>
-                <div class="stat-sub"><i class="fa-solid fa-clock"></i> Mises à jour en direct</div>
+                <div class="stat-sub"><i class="fa-solid fa-clock"></i> Mises à jour directes</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(59, 130, 246, 0.15); color: #3B82F6;">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="stat-label">Total Utilisateurs</div>
+                <div class="stat-value" id="stat-total-users">0</div>
+                <div class="stat-sub" style="color: #3B82F6;"><i class="fa-solid fa-user-check"></i> Comptes inscrits réels</div>
             </div>
 
             <div class="stat-card">
@@ -222,7 +231,7 @@
         <!-- Detailed Transaction Table -->
         <div class="panel-card" style="margin-bottom: 3rem;">
             <div class="panel-header">
-                <h3><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Historique des Transactions</h3>
+                <h3><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Historique des Transactions Réelles</h3>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <input type="text" id="table-search" oninput="filterTransactionsTable()" placeholder="Rechercher email, ID, type..." class="search-input">
                 </div>

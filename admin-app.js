@@ -1,5 +1,6 @@
-// NovaDoc Admin Dashboard & Analytics Engine
+// NovaDoc Real Admin Dashboard & Analytics Engine
 let allPayments = [];
+let totalUsersCount = 0;
 let activePeriod = 'all';
 
 const FEATURE_NAMES = {
@@ -7,6 +8,8 @@ const FEATURE_NAMES = {
     'scanner_cv': "Scanner CV (IA)",
     'demande_emploi': "Demande d'Emploi",
     'lettre_motivation': "Lettre de Motivation",
+    'invitation': "Lettre d'Invitation Officielle",
+    'pv_reunion': "PV de Réunion IA",
     'demande_stage': "Demande de Stage",
     'contrat_location': "Contrat de Location",
     'acte_vente': "Acte de Vente Véhicule",
@@ -18,6 +21,8 @@ const FEATURE_COLORS = {
     'scanner_cv': '#6366F1',
     'demande_emploi': '#7C3AED',
     'lettre_motivation': '#C026D3',
+    'invitation': '#a855f7',
+    'pv_reunion': '#10B981',
     'demande_stage': '#0284C7',
     'contrat_location': '#059669',
     'acte_vente': '#D97706',
@@ -31,23 +36,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function fetchPaymentsData() {
     try {
         const SUPABASE_URL = 'https://ahubfrxlycfkgriizmde.supabase.co';
-        const SUPABASE_KEY = localStorage.getItem('supabase_anon_key');
+        const SUPABASE_KEY = localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFodWJmcnhseWNma2dyaWl6bWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTA5NTIsImV4cCI6MjA5OTcyNjk1Mn0.dCzbPw4wWgnYRU4XCH2B2WOgm1O3KaH6s2UCbsQ73bY';
 
-        if (SUPABASE_KEY && window.supabase) {
+        if (window.supabase) {
             const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            const { data, error } = await client.from('user_payments').select('*').order('created_at', { ascending: false });
+            
+            // 1. Fetch Real Payments
+            const { data: paymentsData, error: payError } = await client
+                .from('user_payments')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-            if (!error && data && data.length > 0) {
-                allPayments = data;
+            if (!payError && paymentsData) {
+                allPayments = paymentsData;
             } else {
-                allPayments = generateDemoPayments();
+                allPayments = [];
+            }
+
+            // 2. Fetch Real Users Count from Profiles table
+            try {
+                const { count: profilesCount, error: profError } = await client
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (!profError && profilesCount !== null && profilesCount !== undefined) {
+                    totalUsersCount = profilesCount;
+                } else {
+                    // Fallback to distinct users from payments or user_cvs
+                    const { data: cvUsers } = await client.from('user_cvs').select('user_id');
+                    const uniqueUserIds = new Set();
+                    if (cvUsers) cvUsers.forEach(u => uniqueUserIds.add(u.user_id));
+                    allPayments.forEach(p => { if (p.user_id) uniqueUserIds.add(p.user_id); });
+                    totalUsersCount = uniqueUserIds.size;
+                }
+            } catch (errUser) {
+                console.warn("Utilisateurs count query fallback:", errUser);
+                totalUsersCount = allPayments.length > 0 ? new Set(allPayments.map(p => p.user_id || p.user_email)).size : 0;
             }
         } else {
-            allPayments = generateDemoPayments();
+            allPayments = [];
+            totalUsersCount = 0;
         }
     } catch (e) {
-        console.warn("Utilisation des données analytiques de démonstration :", e);
-        allPayments = generateDemoPayments();
+        console.error("Erreur de chargement des données analytiques réelles Supabase :", e);
+        allPayments = [];
+        totalUsersCount = 0;
     }
 
     renderDashboard();
@@ -56,7 +89,7 @@ async function fetchPaymentsData() {
 function renderDashboard() {
     const filtered = filterPaymentsByPeriod(allPayments, activePeriod);
 
-    // 1. Calculate Summary Metrics
+    // 1. Calculate Summary Metrics from Real Data
     const totalRev = filtered.reduce((acc, p) => p.status === 'SUCCESS' ? acc + Number(p.amount) : acc, 0);
     
     const now = new Date();
@@ -77,10 +110,11 @@ function renderDashboard() {
     const failedTx = filtered.filter(p => p.status === 'FAILED').length;
     const successRate = totalTx > 0 ? Math.round((successTx / totalTx) * 100) : 100;
 
-    // Update UI Stats
+    // Update Real UI Stats
     document.getElementById('stat-total-revenue').textContent = formatFCFA(totalRev);
     document.getElementById('stat-month-revenue').textContent = formatFCFA(monthRev);
     document.getElementById('stat-today-revenue').textContent = formatFCFA(todayRev);
+    document.getElementById('stat-total-users').textContent = totalUsersCount.toLocaleString('fr-FR');
     document.getElementById('stat-total-transactions').textContent = totalTx.toLocaleString('fr-FR');
     document.getElementById('stat-success-rate').innerHTML = `<i class="fa-solid fa-circle-check"></i> ${successRate}% Réussies`;
 
@@ -131,7 +165,13 @@ function renderFeatureBreakdown(payments, totalRevenue) {
         }
     });
 
-    const sortedFeatures = Object.keys(featureTotals).sort((a, b) => featureTotals[b] - featureTotals[a]);
+    const activeFeatures = Object.keys(featureTotals).filter(k => featureTotals[k] > 0 || totalRevenue === 0);
+    const sortedFeatures = activeFeatures.sort((a, b) => featureTotals[b] - featureTotals[a]);
+
+    if (sortedFeatures.length === 0 || totalRevenue === 0) {
+        container.innerHTML = `<div style="text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">Aucune donnée de revenu enregistrée pour cette période.</div>`;
+        return;
+    }
 
     sortedFeatures.forEach(featKey => {
         const amount = featureTotals[featKey];
@@ -159,7 +199,7 @@ function renderTransactionsTable(payments) {
     tbody.innerHTML = '';
 
     if (payments.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Aucune transaction trouvée pour cette période.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Aucune transaction enregistrée pour le moment.</td></tr>`;
         return;
     }
 
@@ -253,36 +293,6 @@ function exportCSVReport() {
     link.href = URL.createObjectURL(blob);
     link.download = `Rapport_Revenus_NovaDoc_${activePeriod}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-}
-
-function generateDemoPayments() {
-    const demo = [];
-    const features = ['cv', 'scanner_cv', 'demande_emploi', 'lettre_motivation', 'demande_stage', 'contrat_location', 'acte_vente', 'demande_autorisation'];
-    const amounts = { 'cv': 1000, 'scanner_cv': 1000, 'demande_emploi': 500, 'lettre_motivation': 500, 'demande_stage': 500, 'contrat_location': 1000, 'acte_vente': 1000, 'demande_autorisation': 500 };
-    const methods = ['Wave', 'Orange Money'];
-
-    const now = new Date();
-    for (let i = 1; i <= 35; i++) {
-        const feat = features[Math.floor(Math.random() * features.length)];
-        const amt = amounts[feat];
-        const method = methods[Math.floor(Math.random() * methods.length)];
-        
-        // Random date within last 30 days
-        const d = new Date();
-        d.setDate(now.getDate() - Math.floor(Math.random() * 28));
-
-        demo.push({
-            id: `TX-${1000 + i}`,
-            user_email: `client${i}@gmail.com`,
-            feature: feat,
-            amount: amt,
-            payment_method: method,
-            status: 'SUCCESS',
-            created_at: d.toISOString()
-        });
-    }
-
-    return demo;
 }
 
 // Theme switch helper
