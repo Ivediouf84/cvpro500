@@ -1,5 +1,6 @@
 // NovaDoc Real Admin Dashboard & Analytics Engine
 let allPayments = [];
+let allUsersList = [];
 let totalUsersCount = 0;
 let activePeriod = 'all';
 
@@ -53,33 +54,53 @@ async function fetchPaymentsData() {
                 allPayments = [];
             }
 
-            // 2. Fetch Real Users Count from Profiles table
+            // 2. Fetch Real User Profiles (Prénom, Nom, Email, Date)
             try {
-                const { count: profilesCount, error: profError } = await client
+                const { data: profilesData, error: profError } = await client
                     .from('profiles')
-                    .select('*', { count: 'exact', head: true });
+                    .select('*')
+                    .order('created_at', { ascending: false });
                 
-                if (!profError && profilesCount !== null && profilesCount !== undefined) {
-                    totalUsersCount = profilesCount;
+                if (!profError && profilesData && profilesData.length > 0) {
+                    allUsersList = profilesData.map(u => ({
+                        prenom: u.first_name || u.prenom || u.full_name?.split(' ')[0] || 'Utilisateur',
+                        nom: u.last_name || u.nom || u.full_name?.split(' ').slice(1).join(' ') || '',
+                        email: u.email || 'Inconnu',
+                        created_at: u.created_at || new Date().toISOString()
+                    }));
+                    totalUsersCount = allUsersList.length;
                 } else {
-                    // Fallback to distinct users from payments or user_cvs
-                    const { data: cvUsers } = await client.from('user_cvs').select('user_id');
-                    const uniqueUserIds = new Set();
-                    if (cvUsers) cvUsers.forEach(u => uniqueUserIds.add(u.user_id));
-                    allPayments.forEach(p => { if (p.user_id) uniqueUserIds.add(p.user_id); });
-                    totalUsersCount = uniqueUserIds.size;
+                    // Fallback to unique users extracted from payments or user_cvs
+                    const userMap = new Map();
+                    allPayments.forEach(p => {
+                        const email = p.user_email || p.user_id || 'client@novadoc.sn';
+                        if (!userMap.has(email)) {
+                            const nameParts = email.split('@')[0].split('.');
+                            userMap.set(email, {
+                                prenom: nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : 'Utilisateur',
+                                nom: nameParts[1] ? nameParts[1].toUpperCase() : '',
+                                email: email,
+                                created_at: p.created_at || new Date().toISOString()
+                            });
+                        }
+                    });
+                    allUsersList = Array.from(userMap.values());
+                    totalUsersCount = allUsersList.length;
                 }
             } catch (errUser) {
-                console.warn("Utilisateurs count query fallback:", errUser);
-                totalUsersCount = allPayments.length > 0 ? new Set(allPayments.map(p => p.user_id || p.user_email)).size : 0;
+                console.warn("Profiles query fallback:", errUser);
+                allUsersList = [];
+                totalUsersCount = 0;
             }
         } else {
             allPayments = [];
+            allUsersList = [];
             totalUsersCount = 0;
         }
     } catch (e) {
         console.error("Erreur de chargement des données analytiques réelles Supabase :", e);
         allPayments = [];
+        allUsersList = [];
         totalUsersCount = 0;
     }
 
@@ -231,6 +252,68 @@ function renderTransactionsTable(payments) {
     });
 }
 
+/* Modal Liste Utilisateurs (Prénom, Nom, Email, Date) */
+function openUsersModal() {
+    const modal = document.getElementById('users-list-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        renderUsersTable(allUsersList);
+    }
+}
+
+function closeUsersModal() {
+    const modal = document.getElementById('users-list-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function renderUsersTable(users) {
+    const tbody = document.getElementById('users-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!users || users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">Aucun utilisateur enregistré pour le moment.</td></tr>`;
+        return;
+    }
+
+    users.forEach(u => {
+        const dateStr = u.created_at ? new Date(u.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${u.prenom || 'N/A'}</strong></td>
+            <td><strong>${u.nom || 'N/A'}</strong></td>
+            <td><span style="color: #3B82F6; font-weight: 600;">${u.email || 'N/A'}</span></td>
+            <td style="color: var(--text-muted); font-size: 0.82rem;">${dateStr}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function filterUsersTable() {
+    const query = document.getElementById('user-search-input').value.toLowerCase();
+    const filtered = allUsersList.filter(u => {
+        const prenom = (u.prenom || '').toLowerCase();
+        const nom = (u.nom || '').toLowerCase();
+        const email = (u.email || '').toLowerCase();
+        return prenom.includes(query) || nom.includes(query) || email.includes(query);
+    });
+    renderUsersTable(filtered);
+}
+
+function exportUsersCSV() {
+    let csv = "Prenom;Nom;Email;Date Inscription\n";
+    allUsersList.forEach(u => {
+        csv += `"${u.prenom}";"${u.nom}";"${u.email}";"${u.created_at}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Liste_Utilisateurs_NovaDoc_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+}
+
 function setPeriodFilter(period, btn) {
     activePeriod = period;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -304,3 +387,8 @@ function toggleTheme() {
     const icon = document.getElementById('theme-toggle-icon');
     if (icon) icon.className = newTheme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
 }
+
+window.openUsersModal = openUsersModal;
+window.closeUsersModal = closeUsersModal;
+window.filterUsersTable = filterUsersTable;
+window.exportUsersCSV = exportUsersCSV;

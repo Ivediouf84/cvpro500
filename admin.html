@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de Bord Admin & Statistiques - NovaDoc</title>
-    <link rel="stylesheet" href="styles.css?v=20260801_v47">
+    <link rel="stylesheet" href="styles.css?v=20260801_v50">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- PWA Manifest & App Icons -->
     <link rel="manifest" href="manifest.json">
@@ -41,6 +41,8 @@
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem; }
         .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.35rem; position: relative; overflow: hidden; box-shadow: var(--shadow-md); transition: transform 0.2s ease; }
         .stat-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+        .stat-card-clickable { cursor: pointer; }
+        .stat-card-clickable:hover { border-color: #3B82F6; box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3); }
         .stat-icon { position: absolute; top: 1.25rem; right: 1.25rem; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
         .stat-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 0.5rem; }
         .stat-value { font-size: 1.75rem; font-weight: 800; color: var(--text-main); font-family: 'Outfit', sans-serif; line-height: 1.1; }
@@ -80,6 +82,48 @@
         
         .search-input { padding: 0.5rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--background); color: var(--text-main); font-size: 0.85rem; width: 220px; }
         .search-input:focus { outline: none; border-color: var(--primary); }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 9, 19, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 999999;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 1.5rem 1rem;
+        }
+        .modal-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            max-width: 950px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            position: relative;
+            padding: 2rem;
+            color: var(--text-main);
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1.2rem; right: 1.2rem;
+            background: rgba(255,255,255,0.08);
+            border: none;
+            color: var(--text-muted);
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-close-btn:hover {
+            background: #ef4444; color: white;
+        }
     </style>
 </head>
 <body class="dark-theme">
@@ -89,12 +133,15 @@
         <a href="index.html" class="admin-brand">
             <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> NovaDoc <span>Admin</span>
         </a>
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <button id="theme-toggle-btn" onclick="toggleTheme()" title="Changer de thème" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                <i id="theme-toggle-icon" class="fa-solid fa-moon" style="font-size: 1rem; color: #a5b4fc;"></i>
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <button onclick="openUsersModal()" class="btn btn-pill-navy-red" style="font-size: 0.85rem; padding: 0.45rem 1rem; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%) !important;">
+                <i class="fa-solid fa-users"></i> Liste des Utilisateurs
             </button>
             <button onclick="exportCSVReport()" class="btn btn-pill-navy-red" style="font-size: 0.85rem; padding: 0.45rem 1rem;">
                 <i class="fa-solid fa-file-csv"></i> Exporter Rapport CSV
+            </button>
+            <button id="theme-toggle-btn" onclick="toggleTheme()" title="Changer de thème" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-main); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <i id="theme-toggle-icon" class="fa-solid fa-moon" style="font-size: 1rem; color: #a5b4fc;"></i>
             </button>
             <a href="index.html" class="btn btn-ghost" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; border: 1px solid var(--border); color: var(--text-main); border-radius: var(--radius-md); text-decoration: none;">
                 <i class="fa-solid fa-house"></i> Site Client
@@ -148,13 +195,14 @@
                 <div class="stat-sub"><i class="fa-solid fa-clock"></i> Mises à jour directes</div>
             </div>
 
-            <div class="stat-card">
+            <!-- Clickable Total Users Stat Card -->
+            <div class="stat-card stat-card-clickable" onclick="openUsersModal()" title="Cliquez pour voir la liste des utilisateurs">
                 <div class="stat-icon" style="background: rgba(59, 130, 246, 0.15); color: #3B82F6;">
                     <i class="fa-solid fa-users"></i>
                 </div>
                 <div class="stat-label">Total Utilisateurs</div>
                 <div class="stat-value" id="stat-total-users">0</div>
-                <div class="stat-sub" style="color: #3B82F6;"><i class="fa-solid fa-user-check"></i> Comptes inscrits réels</div>
+                <div class="stat-sub" style="color: #3B82F6;"><i class="fa-solid fa-eye"></i> Cliquez pour voir la liste</div>
             </div>
 
             <div class="stat-card">
@@ -257,6 +305,43 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Modal Liste des Utilisateurs -->
+    <div id="users-list-modal" class="modal-overlay">
+        <div class="modal-container">
+            <button class="modal-close-btn" onclick="closeUsersModal()">&times;</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="margin: 0; font-size: 1.4rem; color: var(--title-color); display: flex; align-items: center; gap: 0.6rem;">
+                        <i class="fa-solid fa-users" style="color: #3B82F6;"></i> Liste des Utilisateurs Inscrits
+                    </h2>
+                    <p style="margin: 0.3rem 0 0 0; color: var(--text-muted); font-size: 0.88rem;">Nom, prénom, adresse e-mail et date d'inscription des utilisateurs enregistrés.</p>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <input type="text" id="user-search-input" oninput="filterUsersTable()" placeholder="Rechercher nom, prénom, email..." class="search-input" style="width: 240px;">
+                    <button onclick="exportUsersCSV()" class="btn btn-pill-navy-red" style="font-size: 0.8rem; padding: 0.4rem 0.85rem; background: #059669 !important;">
+                        <i class="fa-solid fa-file-excel"></i> Exporter CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Prénom</th>
+                            <th>Nom</th>
+                            <th>Adresse Email</th>
+                            <th>Date d'Inscription</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Injected dynamically by admin-app.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Admin App JS -->
