@@ -430,7 +430,7 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Traitement...';
             btn.disabled = true;
 
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
             const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
 
@@ -464,7 +464,7 @@
                         window.location.href = redirectTarget;
                     } else {
                         document.getElementById('auth-form').reset();
-                        showAlert(`<strong>Inscription réussie ! ✉️</strong><br>Un e-mail de validation a été envoyé en temps réel à <strong>${email}</strong>.<br><br>💡 <strong>INSTRUCTION IMPORTANTE :</strong> Ouvrez votre messagerie et vérifiez attentivement votre dossier <strong>Spam / Courriers indésirables</strong> s'il n'est pas dans la boîte de réception. Cliquez sur le lien pour être automatiquement connecté !`, false);
+                        showAlert(`<strong>Inscription réussie ! ✉️</strong><br>Un e-mail de validation a été envoyé à <strong>${email}</strong>.<br><br>💡 <strong>REMARQUE :</strong> Vérifiez vos <strong>Spams / Courriers indésirables</strong> puis cliquez sur le lien.<br><br><button type="button" onclick="resendConfirmation('${email}')" style="background:#4F46E5; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer; margin-top:0.4rem;"><i class="fa-solid fa-paper-plane"></i> Renvoyer l'e-mail de confirmation</button>`, false);
                         setAuthMode('login');
                     }
                 } else if (currentMode === 'forgot') {
@@ -500,9 +500,9 @@
                 console.error("Auth error:", err);
                 let msg = err.message || "Une erreur est survenue lors de l'authentification.";
                 if (msg.includes("Invalid login credentials")) {
-                    msg = "<strong>❌ Email ou mot de passe incorrect.</strong><br><br>• Vérifiez votre saisie (5 tentatives max par minute).<br>• Si vous avez oublié votre mot de passe, <a href='#' id='alert-link-forgot' style='color:var(--primary); font-weight:bold;'>cliquez ici pour le réinitialiser</a>.";
+                    msg = `<strong>❌ Identifiants incorrects ou compte non confirmé.</strong><br><br>• Vérifiez que le mot de passe est exact (sensible aux majuscules).<br>• Si vous avez oublié votre mot de passe, <a href='#' id='alert-link-forgot' style='color:var(--primary); font-weight:bold;'>cliquez ici pour le réinitialiser</a>.<br>• Si vous n'avez pas confirmé votre e-mail :<br><button type="button" onclick="resendConfirmation('${email}')" style="background:#4F46E5; color:white; border:none; padding:0.4rem 0.85rem; border-radius:6px; font-size:0.82rem; font-weight:bold; cursor:pointer; margin-top:0.5rem;"><i class="fa-solid fa-paper-plane"></i> Renvoyer l'e-mail de confirmation</button>`;
                 } else if (msg.includes("Email not confirmed")) {
-                    msg = "<strong>❌ Compte non confirmé.</strong><br>Veuillez ouvrir vos e-mails (et votre dossier <strong>Spams</strong>) et cliquer sur le lien d'activation.";
+                    msg = `<strong>❌ Compte non confirmé.</strong><br>Veuillez consulter vos e-mails (et vos <strong>Spams</strong>) pour valider votre compte.<br><br><button type="button" onclick="resendConfirmation('${email}')" style="background:#4F46E5; color:white; border:none; padding:0.4rem 0.85rem; border-radius:6px; font-size:0.82rem; font-weight:bold; cursor:pointer; margin-top:0.4rem;"><i class="fa-solid fa-paper-plane"></i> Renvoyer l'e-mail de confirmation</button>`;
                 } else if (msg.includes("User already registered") || msg.includes("already registered")) {
                     msg = "<strong>❌ Cet e-mail est déjà utilisé.</strong><br>Un compte existe déjà avec cette adresse. Veuillez vous connecter ou réinitialiser votre mot de passe.";
                 }
@@ -510,6 +510,32 @@
             } finally {
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
+            }
+        }
+
+        async function resendConfirmation(targetEmail) {
+            if (!targetEmail) {
+                targetEmail = document.getElementById('email').value.trim().toLowerCase();
+            }
+            if (!targetEmail) {
+                showAlert("<strong>Veuillez saisir votre adresse e-mail.</strong>", true);
+                return;
+            }
+            showAlert("<strong>⌛ Renvoi de l'e-mail de confirmation en cours...</strong>", false);
+            const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
+            const redirectUrl = window.location.origin + window.location.pathname + `?redirect=${encodeURIComponent(redirectTarget)}`;
+            
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email: targetEmail,
+                options: {
+                    emailRedirectTo: redirectUrl
+                }
+            });
+            if (error) {
+                showAlert(`<strong>❌ Erreur lors du renvoi :</strong> ${error.message}`, true);
+            } else {
+                showAlert(`<strong>✉️ Email de confirmation renvoyé avec succès !</strong><br>Un nouveau lien a été envoyé à <strong>${targetEmail}</strong>.<br><br>💡 N'oubliez pas d'inspecter vos <strong>Spams / Courriers indésirables</strong> !`, false);
             }
         }
 
