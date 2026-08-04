@@ -545,6 +545,22 @@ function injectAiParsedData(data) {
             `).join('');
         }
     }
+
+    renumberPvSections();
+}
+
+function renumberPvSections() {
+    const paper = document.getElementById('pv-document-a4');
+    if (!paper) return;
+    const titles = paper.querySelectorAll('.pv-sec-title');
+    let count = 1;
+    titles.forEach(t => {
+        const text = t.textContent.trim();
+        if (text.includes('Signatures') || text.includes('Feuille d\'Émargement') || text.includes('Annexe')) return;
+        const cleanText = text.replace(/^\d+[\.\)]\s*/, '');
+        t.textContent = `${count}. ${cleanText}`;
+        count++;
+    });
 }
 
 // Global array storing presence sheet scans

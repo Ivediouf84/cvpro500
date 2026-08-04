@@ -54,44 +54,83 @@ async function fetchPaymentsData() {
                 allPayments = [];
             }
 
-            // 2. Fetch Real User Profiles (Prénom, Nom, Email, Date)
+            // 2. Aggregate ALL registered users across Profiles, Payments & CVs
+            const userMap = new Map();
+
+            // Source A: Profiles table
             try {
-                const { data: profilesData, error: profError } = await client
+                const { data: profilesData } = await client
                     .from('profiles')
                     .select('*')
                     .order('created_at', { ascending: false });
                 
-                if (!profError && profilesData && profilesData.length > 0) {
-                    allUsersList = profilesData.map(u => ({
-                        prenom: u.first_name || u.prenom || u.full_name?.split(' ')[0] || 'Utilisateur',
-                        nom: u.last_name || u.nom || u.full_name?.split(' ').slice(1).join(' ') || '',
-                        email: u.email || 'Inconnu',
-                        created_at: u.created_at || new Date().toISOString()
-                    }));
-                    totalUsersCount = allUsersList.length;
-                } else {
-                    // Fallback to unique users extracted from payments or user_cvs
-                    const userMap = new Map();
-                    allPayments.forEach(p => {
-                        const email = p.user_email || p.user_id || 'client@novadoc.sn';
-                        if (!userMap.has(email)) {
-                            const nameParts = email.split('@')[0].split('.');
-                            userMap.set(email, {
-                                prenom: nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : 'Utilisateur',
-                                nom: nameParts[1] ? nameParts[1].toUpperCase() : '',
-                                email: email,
-                                created_at: p.created_at || new Date().toISOString()
+                if (profilesData && Array.isArray(profilesData)) {
+                    profilesData.forEach(u => {
+                        const email = u.email || u.id || u.user_id;
+                        if (email) {
+                            userMap.set(String(email).toLowerCase(), {
+                                prenom: u.first_name || u.prenom || (u.full_name ? u.full_name.split(' ')[0] : 'Utilisateur'),
+                                nom: u.last_name || u.nom || (u.full_name ? u.full_name.split(' ').slice(1).join(' ') : ''),
+                                email: String(email),
+                                created_at: u.created_at || new Date().toISOString()
                             });
                         }
                     });
-                    allUsersList = Array.from(userMap.values());
-                    totalUsersCount = allUsersList.length;
                 }
-            } catch (errUser) {
-                console.warn("Profiles query fallback:", errUser);
-                allUsersList = [];
-                totalUsersCount = 0;
+            } catch (eProf) {
+                console.warn("Profiles fetch fallback:", eProf);
             }
+
+            // Source B: User Payments (Extract unique client emails)
+            allPayments.forEach(p => {
+                const email = p.user_email || p.user_id;
+                if (email && !userMap.has(String(email).toLowerCase())) {
+                    const parts = String(email).split('@')[0].split('.');
+                    userMap.set(String(email).toLowerCase(), {
+                        prenom: parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'Utilisateur',
+                        nom: parts[1] ? parts[1].toUpperCase() : '',
+                        email: String(email),
+                        created_at: p.created_at || new Date().toISOString()
+                    });
+                }
+            });
+
+            // Source C: User CVs table
+            try {
+                const { data: cvsData } = await client
+                    .from('user_cvs')
+                    .select('user_id, created_at, cv_data')
+                    .order('created_at', { ascending: false });
+
+                if (cvsData && Array.isArray(cvsData)) {
+                    cvsData.forEach(c => {
+                        let email = c.user_id;
+                        let prenom = 'Utilisateur';
+                        let nom = '';
+
+                        if (c.cv_data && typeof c.cv_data === 'object') {
+                            if (c.cv_data.email) email = c.cv_data.email;
+                            if (c.cv_data.prenom || c.cv_data.first_name) prenom = c.cv_data.prenom || c.cv_data.first_name;
+                            if (c.cv_data.nom || c.cv_data.last_name) nom = c.cv_data.nom || c.cv_data.last_name;
+                        }
+
+                        if (email && !userMap.has(String(email).toLowerCase())) {
+                            const parts = String(email).split('@')[0].split('.');
+                            userMap.set(String(email).toLowerCase(), {
+                                prenom: prenom !== 'Utilisateur' ? prenom : (parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'Utilisateur'),
+                                nom: nom ? nom.toUpperCase() : (parts[1] ? parts[1].toUpperCase() : ''),
+                                email: String(email),
+                                created_at: c.created_at || new Date().toISOString()
+                            });
+                        }
+                    });
+                }
+            } catch (eCvs) {
+                console.warn("CVs fetch fallback:", eCvs);
+            }
+
+            allUsersList = Array.from(userMap.values());
+            totalUsersCount = allUsersList.length;
         } else {
             allPayments = [];
             allUsersList = [];
