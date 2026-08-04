@@ -54,10 +54,33 @@ async function fetchPaymentsData() {
                 allPayments = [];
             }
 
-            // 2. Aggregate ALL registered users across Profiles, Payments & CVs
+            // 2. Multi-Source User Aggregation Engine
             const userMap = new Map();
 
-            // Source A: Profiles table
+            // Helper to insert or refine user in userMap
+            const addOrUpdateUser = (email, prenom, nom, dateStr) => {
+                if (!email || !email.includes('@')) return;
+                const cleanEmail = email.trim().toLowerCase();
+                const existing = userMap.get(cleanEmail);
+
+                let finalPrenom = prenom && prenom !== 'Utilisateur' ? prenom : (existing ? existing.prenom : '');
+                let finalNom = nom ? nom : (existing ? existing.nom : '');
+                
+                if (!finalPrenom || finalPrenom === 'Utilisateur') {
+                    const parts = cleanEmail.split('@')[0].split('.');
+                    finalPrenom = parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'Utilisateur';
+                    if (!finalNom && parts[1]) finalNom = parts[1].toUpperCase();
+                }
+
+                userMap.set(cleanEmail, {
+                    prenom: finalPrenom,
+                    nom: finalNom,
+                    email: cleanEmail,
+                    created_at: dateStr || (existing ? existing.created_at : new Date().toISOString())
+                });
+            };
+
+            // Source A: Profiles table from Supabase
             try {
                 const { data: profilesData } = await client
                     .from('profiles')
@@ -67,14 +90,9 @@ async function fetchPaymentsData() {
                 if (profilesData && Array.isArray(profilesData)) {
                     profilesData.forEach(u => {
                         const email = u.email || u.id || u.user_id;
-                        if (email) {
-                            userMap.set(String(email).toLowerCase(), {
-                                prenom: u.first_name || u.prenom || (u.full_name ? u.full_name.split(' ')[0] : 'Utilisateur'),
-                                nom: u.last_name || u.nom || (u.full_name ? u.full_name.split(' ').slice(1).join(' ') : ''),
-                                email: String(email),
-                                created_at: u.created_at || new Date().toISOString()
-                            });
-                        }
+                        const prenom = u.first_name || u.prenom || (u.full_name ? u.full_name.split(' ')[0] : '');
+                        const nom = u.last_name || u.nom || (u.full_name ? u.full_name.split(' ').slice(1).join(' ') : '');
+                        addOrUpdateUser(email, prenom, nom, u.created_at);
                     });
                 }
             } catch (eProf) {
@@ -84,15 +102,7 @@ async function fetchPaymentsData() {
             // Source B: User Payments (Extract unique client emails)
             allPayments.forEach(p => {
                 const email = p.user_email || p.user_id;
-                if (email && !userMap.has(String(email).toLowerCase())) {
-                    const parts = String(email).split('@')[0].split('.');
-                    userMap.set(String(email).toLowerCase(), {
-                        prenom: parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'Utilisateur',
-                        nom: parts[1] ? parts[1].toUpperCase() : '',
-                        email: String(email),
-                        created_at: p.created_at || new Date().toISOString()
-                    });
-                }
+                addOrUpdateUser(email, '', '', p.created_at);
             });
 
             // Source C: User CVs table
@@ -105,7 +115,7 @@ async function fetchPaymentsData() {
                 if (cvsData && Array.isArray(cvsData)) {
                     cvsData.forEach(c => {
                         let email = c.user_id;
-                        let prenom = 'Utilisateur';
+                        let prenom = '';
                         let nom = '';
 
                         if (c.cv_data && typeof c.cv_data === 'object') {
@@ -114,19 +124,19 @@ async function fetchPaymentsData() {
                             if (c.cv_data.nom || c.cv_data.last_name) nom = c.cv_data.nom || c.cv_data.last_name;
                         }
 
-                        if (email && !userMap.has(String(email).toLowerCase())) {
-                            const parts = String(email).split('@')[0].split('.');
-                            userMap.set(String(email).toLowerCase(), {
-                                prenom: prenom !== 'Utilisateur' ? prenom : (parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'Utilisateur'),
-                                nom: nom ? nom.toUpperCase() : (parts[1] ? parts[1].toUpperCase() : ''),
-                                email: String(email),
-                                created_at: c.created_at || new Date().toISOString()
-                            });
-                        }
+                        addOrUpdateUser(email, prenom, nom, c.created_at);
                     });
                 }
             } catch (eCvs) {
                 console.warn("CVs fetch fallback:", eCvs);
+            }
+
+            // Source D: Local & Session Stored Accounts
+            const localSavedEmail = localStorage.getItem('novadoc_user_email');
+            const localSavedPrenom = localStorage.getItem('novadoc_user_prenom');
+            const localSavedNom = localStorage.getItem('novadoc_user_nom');
+            if (localSavedEmail) {
+                addOrUpdateUser(localSavedEmail, localSavedPrenom, localSavedNom, new Date().toISOString());
             }
 
             allUsersList = Array.from(userMap.values());
@@ -313,7 +323,7 @@ function renderUsersTable(users) {
     tbody.innerHTML = '';
 
     if (!users || users.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">Aucun utilisateur enregistré pour le moment.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">Aucun compte inscrit enregistré pour le moment.</td></tr>`;
         return;
     }
 
@@ -321,8 +331,8 @@ function renderUsersTable(users) {
         const dateStr = u.created_at ? new Date(u.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><strong>${u.prenom || 'N/A'}</strong></td>
-            <td><strong>${u.nom || 'N/A'}</strong></td>
+            <td><strong>${u.prenom || 'Utilisateur'}</strong></td>
+            <td><strong>${u.nom || '-'}</strong></td>
             <td><span style="color: #3B82F6; font-weight: 600;">${u.email || 'N/A'}</span></td>
             <td style="color: var(--text-muted); font-size: 0.82rem;">${dateStr}</td>
         `;

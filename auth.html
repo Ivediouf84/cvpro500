@@ -376,6 +376,17 @@
                         } catch(errSup) {
                             console.warn("Supabase signup sync:", errSup);
                         }
+
+                        try {
+                            await supabaseClient.from('profiles').upsert({
+                                email: email,
+                                first_name: prenom || 'Utilisateur',
+                                last_name: nom || '',
+                                created_at: new Date().toISOString()
+                            }, { onConflict: 'email' });
+                        } catch(errProf) {
+                            console.warn("Profiles upsert sync:", errProf);
+                        }
                     }
 
                     // Enregistrement de la session utilisateur locale sans aucun blocage
