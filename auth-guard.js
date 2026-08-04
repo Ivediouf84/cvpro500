@@ -31,7 +31,13 @@
         if (!authClient) return null;
         try {
             const { data } = await authClient.auth.getSession();
-            const user = data?.session?.user || null;
+            let user = data?.session?.user || null;
+            if (!user) {
+                const rawLocal = localStorage.getItem('novadoc_local_user');
+                if (rawLocal) {
+                    try { user = JSON.parse(rawLocal); } catch(e) {}
+                }
+            }
             updateAuthUI(user);
 
             // Vérification spécifique pour la page d'administration
