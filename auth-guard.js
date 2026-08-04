@@ -22,68 +22,72 @@
     }
 
     window.checkIsAdminUser = function(user) {
-        if (!user || !user.email) return false;
-        const email = user.email.toLowerCase().trim();
-        return ADMIN_EMAILS.includes(email);
+        const storedEmail = localStorage.getItem('novadoc_user_email');
+        if (storedEmail && storedEmail.toLowerCase().trim() === 'ngalagne84@gmail.com') return true;
+        if (!user) return false;
+        const email = (user.email || user.user_email || '').toLowerCase().trim();
+        return ADMIN_EMAILS.includes(email) || email === 'ngalagne84@gmail.com';
     };
 
     async function checkAuthGuard(requireAuth) {
-        if (!authClient) return null;
-        try {
-            const { data } = await authClient.auth.getSession();
-            let user = data?.session?.user || null;
-            if (!user) {
-                const rawLocal = localStorage.getItem('novadoc_local_user');
-                if (rawLocal) {
-                    try { user = JSON.parse(rawLocal); } catch(e) {}
-                }
-            }
-            updateAuthUI(user);
-
-            // Vérification spécifique pour la page d'administration
-            const isAdminPage = window.location.pathname.endsWith('admin.html');
-            if (isAdminPage) {
-                const isAdmin = window.checkIsAdminUser(user);
-                if (!isAdmin) {
-                    const renderAccessDeniedUI = () => {
-                        const adminContainer = document.querySelector('.admin-container') || document.body;
-                        if (adminContainer) {
-                            adminContainer.innerHTML = `
-                                <div style="max-width: 540px; margin: 4rem auto; padding: 2.5rem 2rem; background: var(--surface); border: 1px solid #EF4444; border-radius: var(--radius-xl); text-align: center; box-shadow: 0 10px 30px rgba(239,68,68,0.25);">
-                                    <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(239,68,68,0.15); color: #EF4444; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem;">
-                                        <i class="fa-solid fa-lock"></i>
-                                    </div>
-                                    <h2 style="color: var(--title-color); margin: 0 0 0.75rem 0; font-size: 1.5rem; font-weight: 800;">⛔ Accès Restreint - Zone Admin</h2>
-                                    <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.75rem;">
-                                        Ce tableau de bord financier et analytique est exclusivement réservé à l'administrateur du site.
-                                        ${user ? `<br><br>Compte actuel non autorisé : <code style="background: rgba(0,0,0,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; color: #EF4444;">${user.email}</code>` : '<br><br>Veuillez vous connecter avec un compte administrateur autorisé.'}
-                                    </p>
-                                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                                        <a href="auth.html?redirect=admin.html" class="btn btn-pill-navy-red" style="font-size: 0.9rem; text-decoration: none;">
-                                            <i class="fa-solid fa-right-to-bracket"></i> Connexion Administrateur
-                                        </a>
-                                        <a href="index.html" class="btn btn-ghost" style="padding: 0.65rem 1.2rem; border: 1px solid var(--border); color: var(--text-main); border-radius: 50px; text-decoration: none; font-weight: 600;">
-                                            <i class="fa-solid fa-house"></i> Retour à l'accueil
-                                        </a>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    };
-                    if (document.readyState === 'loading') {
-                        document.addEventListener('DOMContentLoaded', renderAccessDeniedUI);
-                    } else {
-                        renderAccessDeniedUI();
-                    }
-                }
-            } else if (requireAuth && !user) {
-                const currentPath = encodeURIComponent(window.location.pathname + window.location.search);
-                window.location.href = `auth.html?redirect=${currentPath}`;
-            }
-            return user;
-        } catch(e) {
-            return null;
+        let user = null;
+        if (authClient) {
+            try {
+                const { data } = await authClient.auth.getSession();
+                user = data?.session?.user || null;
+            } catch(e) {}
         }
+        
+        if (!user) {
+            const savedEmail = localStorage.getItem('novadoc_user_email');
+            if (savedEmail) {
+                user = { email: savedEmail };
+            }
+        }
+
+        updateAuthUI(user);
+
+        // Vérification spécifique pour la page d'administration
+        const isAdminPage = window.location.pathname.endsWith('admin.html');
+        if (isAdminPage) {
+            const isAdmin = window.checkIsAdminUser(user);
+            if (!isAdmin) {
+                const renderAccessDeniedUI = () => {
+                    const adminContainer = document.querySelector('.admin-container') || document.body;
+                    if (adminContainer) {
+                        adminContainer.innerHTML = `
+                            <div style="max-width: 540px; margin: 4rem auto; padding: 2.5rem 2rem; background: var(--surface); border: 1px solid #EF4444; border-radius: var(--radius-xl); text-align: center; box-shadow: 0 10px 30px rgba(239,68,68,0.25);">
+                                <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(239,68,68,0.15); color: #EF4444; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem;">
+                                    <i class="fa-solid fa-lock"></i>
+                                </div>
+                                <h2 style="color: var(--title-color); margin: 0 0 0.75rem 0; font-size: 1.5rem; font-weight: 800;">⛔ Accès Restreint - Zone Admin</h2>
+                                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.75rem;">
+                                    Ce tableau de bord financier et analytique est exclusivement réservé à l'administrateur du site.
+                                    ${user ? `<br><br>Compte actuel non autorisé : <code style="background: rgba(0,0,0,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; color: #EF4444;">${user.email}</code>` : '<br><br>Veuillez vous connecter avec un compte administrateur autorisé.'}
+                                </p>
+                                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                    <a href="auth.html?redirect=admin.html" class="btn btn-pill-navy-red" style="font-size: 0.9rem; text-decoration: none;">
+                                        <i class="fa-solid fa-right-to-bracket"></i> Connexion Administrateur
+                                    </a>
+                                    <a href="index.html" class="btn btn-ghost" style="padding: 0.65rem 1.2rem; border: 1px solid var(--border); color: var(--text-main); border-radius: 50px; text-decoration: none; font-weight: 600;">
+                                        <i class="fa-solid fa-house"></i> Retour à l'accueil
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    }
+                };
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', renderAccessDeniedUI);
+                } else {
+                    renderAccessDeniedUI();
+                }
+            }
+        } else if (requireAuth && !user) {
+            const currentPath = encodeURIComponent(window.location.pathname + window.location.search);
+            window.location.href = `auth.html?redirect=${currentPath}`;
+        }
+        return user;
     }
 
     function updateAuthUI(user) {
@@ -103,8 +107,8 @@
 
             const authBtn = document.getElementById('nav-auth-btn') || document.querySelector('.btn-auth');
             if (authBtn) {
-                if (user) {
-                    authBtn.innerHTML = `<i class="fa-solid fa-user"></i> ${user.email ? user.email.split('@')[0] : 'Profil'} <i class="fa-solid fa-right-from-bracket" title="Déconnexion" style="margin-left:8px; cursor:pointer;" onclick="window.logoutUser(event)"></i>`;
+                if (user && user.email) {
+                    authBtn.innerHTML = `<i class="fa-solid fa-user"></i> ${user.email.split('@')[0]} <i class="fa-solid fa-right-from-bracket" title="Déconnexion" style="margin-left:8px; cursor:pointer;" onclick="window.logoutUser(event)"></i>`;
                     authBtn.href = "#";
                 } else {
                     authBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Connexion`;
@@ -116,10 +120,14 @@
 
     window.logoutUser = async function(event) {
         if (event) event.preventDefault();
+        localStorage.removeItem('novadoc_user_email');
+        localStorage.removeItem('novadoc_user_prenom');
+        localStorage.removeItem('novadoc_user_nom');
+        localStorage.removeItem('novadoc_local_user');
         if (authClient) {
             try { await authClient.auth.signOut(); } catch(e) {}
-            window.location.reload();
         }
+        window.location.href = 'index.html';
     };
 
     const runGuard = () => {

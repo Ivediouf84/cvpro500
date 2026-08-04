@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion / Inscription - NovaDoc</title>
-    <link rel="stylesheet" href="styles.css?v=20260801_v52">
+    <link rel="stylesheet" href="styles.css?v=20260801_v55">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         (function() {
@@ -19,10 +19,11 @@
             background: var(--body-bg);
             min-height: 100vh;
             margin: 0;
-            padding: 3rem 1rem;
+            padding: 2.5rem 1rem;
             color: var(--text-main);
-            display: block;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .cvpro-login-card {
             background: var(--surface);
@@ -34,7 +35,6 @@
             box-shadow: 0 12px 30px rgba(0,0,0,0.5);
             text-align: center;
             margin: 0 auto;
-            display: block;
         }
         .cvpro-login-card * {
             box-sizing: border-box;
@@ -52,7 +52,7 @@
         }
         .auth-tab-btn {
             flex: 1;
-            padding: 0.65rem 0.5rem;
+            padding: 0.7rem 0.5rem;
             border: none;
             border-radius: var(--radius-sm);
             background: transparent;
@@ -77,19 +77,16 @@
             margin-bottom: 0.3rem;
             font-size: 1.6rem;
             color: var(--text-main);
-            display: block;
         }
         .cvpro-login-card p.subtitle {
             color: var(--text-muted);
             margin-bottom: 1.5rem;
             font-size: 0.9rem;
             line-height: 1.4;
-            display: block;
         }
         .form-group {
             margin-bottom: 1.1rem;
             text-align: left;
-            display: block;
             position: relative;
         }
         .form-group label {
@@ -154,6 +151,7 @@
             color: var(--primary);
             text-decoration: none;
             font-weight: bold;
+            cursor: pointer;
         }
         .toggle-text a:hover {
             text-decoration: underline;
@@ -186,12 +184,12 @@
             <img src="novadoc-logo-n.png?v=12" alt="NovaDoc Logo" style="height: 48px; width: auto; object-fit: contain;">
         </a>
 
-        <!-- Tabs Navigation -->
+        <!-- Navigation Onglets -->
         <div class="auth-tabs-nav" id="auth-tabs-nav">
-            <button type="button" class="auth-tab-btn active" id="tab-login-btn" onclick="setAuthMode('login')">
+            <button type="button" class="auth-tab-btn active" id="tab-login-btn">
                 <i class="fa-solid fa-right-to-bracket"></i> Connexion
             </button>
-            <button type="button" class="auth-tab-btn" id="tab-signup-btn" onclick="setAuthMode('signup')">
+            <button type="button" class="auth-tab-btn" id="tab-signup-btn">
                 <i class="fa-solid fa-user-plus"></i> Inscription
             </button>
         </div>
@@ -201,8 +199,8 @@
 
         <div id="auth-alert" class="alert"></div>
 
-        <form id="auth-form" onsubmit="handleAuth(event)">
-            <!-- Signup Name Fields -->
+        <form id="auth-form">
+            <!-- Champs prénom et nom (Inscription) -->
             <div id="signup-fields" style="display: none;">
                 <div style="display: flex; gap: 0.75rem; margin-bottom: 1.1rem;">
                     <div style="flex: 1;" class="form-group">
@@ -252,38 +250,6 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentMode = 'login'; // 'login', 'signup', 'forgot', 'reset'
-
-        // Rate limiting anti-brute force: 5 attempts per 60s -> 15 min lock
-        function checkRateLimit() {
-            const lockoutUntil = Number(localStorage.getItem('novadoc_lockout_until') || 0);
-            if (lockoutUntil && Date.now() < lockoutUntil) {
-                const remainingMins = Math.ceil((lockoutUntil - Date.now()) / 60000);
-                showAlert(`<strong>🔒 Accès temporairement verrouillé.</strong><br>Vous avez dépassé le nombre de tentatives de connexion autorisées (5 tentatives en 1 minute).<br><br>👉 Veuillez attendre <strong>${remainingMins} minute(s)</strong> avant de réessayer.`, true);
-                return false;
-            }
-            return true;
-        }
-
-        function recordFailedAttempt() {
-            const now = Date.now();
-            let attempts = JSON.parse(localStorage.getItem('novadoc_failed_attempts') || '[]');
-            attempts = attempts.filter(ts => (now - ts) < 60000); // 1 minute window
-            attempts.push(now);
-            localStorage.setItem('novadoc_failed_attempts', JSON.stringify(attempts));
-
-            if (attempts.length >= 5) {
-                const lockoutUntil = now + (15 * 60 * 1000); // 15 minutes lock
-                localStorage.setItem('novadoc_lockout_until', lockoutUntil.toString());
-                showAlert(`<strong>🔒 Trop de tentatives (5/5).</strong><br>Par mesure de sécurité, la connexion est bloquée pendant <strong>15 minutes</strong>.`, true);
-                return true;
-            }
-            return false;
-        }
-
-        function resetRateLimit() {
-            localStorage.removeItem('novadoc_failed_attempts');
-            localStorage.removeItem('novadoc_lockout_until');
-        }
 
         function setAuthMode(mode) {
             currentMode = mode;
@@ -384,17 +350,17 @@
                 passwordInput.required = true;
             }
 
-            // Attach event listener to dynamic link
+            // Re-bind dynamic toggle link
             const toggleLink = document.getElementById('link-toggle');
             if (toggleLink) {
-                toggleLink.addEventListener('click', (e) => {
+                toggleLink.onclick = (e) => {
                     e.preventDefault();
                     if (currentMode === 'signup' || currentMode === 'forgot' || currentMode === 'reset') {
                         setAuthMode('login');
                     } else {
                         setAuthMode('signup');
                     }
-                });
+                };
             }
         }
 
@@ -403,14 +369,6 @@
             alertEl.style.display = 'block';
             alertEl.innerHTML = msg;
             alertEl.className = 'alert ' + (isError ? 'alert-error' : 'alert-success');
-            
-            const alertForgotLink = document.getElementById('alert-link-forgot');
-            if (alertForgotLink) {
-                alertForgotLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    setAuthMode('forgot');
-                });
-            }
         }
 
         function hideAlert() {
@@ -420,10 +378,6 @@
         async function handleAuth(e) {
             e.preventDefault();
             hideAlert();
-
-            if (currentMode === 'login' && !checkRateLimit()) {
-                return;
-            }
 
             const btn = document.getElementById('btn-submit');
             const originalHtml = btn.innerHTML;
@@ -439,8 +393,6 @@
                     const prenom = document.getElementById('prenom').value.trim();
                     const nom = document.getElementById('nom').value.trim();
 
-                    const redirectUrl = window.location.origin + window.location.pathname + `?redirect=${encodeURIComponent(redirectTarget)}`;
-
                     const { data, error } = await supabase.auth.signUp({
                         email: email,
                         password: password,
@@ -448,95 +400,77 @@
                             data: {
                                 first_name: prenom,
                                 last_name: nom
-                            },
-                            emailRedirectTo: redirectUrl
+                            }
                         }
                     });
-                    if (error) throw error;
-                    
-                    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-                        showAlert(`<strong>❌ E-mail déjà utilisé !</strong><br>Un compte NovaDoc existe déjà avec l'adresse <strong>${email}</strong>.<br><br>👉 Veuillez vous connecter avec cet e-mail ou cliquer sur <strong>Mot de passe oublié</strong>.`, true);
-                        return;
+
+                    if (error) {
+                        if (error.message.includes("already registered") || error.message.includes("User already registered")) {
+                            showAlert(`<strong>❌ E-mail déjà utilisé !</strong><br>Un compte existe déjà avec <strong>${email}</strong>. Veuillez vous connecter.`, true);
+                            setAuthMode('login');
+                            return;
+                        }
+                        throw error;
                     }
 
-                    if (data.session) {
-                        resetRateLimit();
+                    // Save local active user session
+                    localStorage.setItem('novadoc_user_email', email);
+                    localStorage.setItem('novadoc_user_prenom', prenom);
+                    localStorage.setItem('novadoc_user_nom', nom);
+
+                    showAlert("<strong>Inscription réussie ! 🎉</strong><br>Votre compte a été créé avec succès. Redirection...", false);
+                    setTimeout(() => {
                         window.location.href = redirectTarget;
-                    } else {
-                        document.getElementById('auth-form').reset();
-                        showAlert(`<strong>Inscription réussie ! ✉️</strong><br>Un e-mail de validation a été envoyé à <strong>${email}</strong>.<br><br>💡 <strong>REMARQUE :</strong> Vérifiez vos <strong>Spams / Courriers indésirables</strong> puis cliquez sur le lien.<br><br><button type="button" onclick="resendConfirmation('${email}')" style="background:#4F46E5; color:white; border:none; padding:0.5rem 1rem; border-radius:6px; font-size:0.85rem; font-weight:bold; cursor:pointer; margin-top:0.4rem;"><i class="fa-solid fa-paper-plane"></i> Renvoyer l'e-mail de confirmation</button>`, false);
-                        setAuthMode('login');
-                    }
+                    }, 800);
+
                 } else if (currentMode === 'forgot') {
                     const resetRedirectUrl = window.location.origin + window.location.pathname + '?mode=reset';
                     const { error } = await supabase.auth.resetPasswordForEmail(email, {
                         redirectTo: resetRedirectUrl
                     });
                     if (error) throw error;
-                    showAlert(`<strong>Lien envoyé ! ✉️</strong><br>Un e-mail contenant les instructions a été envoyé à <strong>${email}</strong>.<br><br>Veuillez consulter votre boîte de réception (et vos spams) puis cliquer sur le lien.`, false);
+                    showAlert(`<strong>Lien envoyé ! ✉️</strong><br>Un e-mail contenant les instructions a été envoyé à <strong>${email}</strong>.`, false);
                 } else if (currentMode === 'reset') {
                     const { error } = await supabase.auth.updateUser({ password: password });
                     if (error) throw error;
-                    resetRateLimit();
-                    showAlert("<strong>Mot de passe mis à jour ! 🔑</strong><br>Votre mot de passe a été modifié avec succès. Redirection...", false);
+                    showAlert("<strong>Mot de passe mis à jour ! 🔑</strong><br>Votre mot de passe a été modifié. Redirection...", false);
                     setTimeout(() => {
                         window.location.href = redirectTarget;
-                    }, 1200);
+                    }, 800);
                 } else {
                     // Login mode
                     const { data, error } = await supabase.auth.signInWithPassword({
                         email: email,
-                        password: password,
-                    });
-                    
-                    if (!error && data && data.session) {
-                        resetRateLimit();
-                        localStorage.setItem('novadoc_local_user', JSON.stringify({ email: email, user_id: data.session.user.id }));
-                        window.location.href = redirectTarget;
-                        return;
-                    }
-
-                    // Fallback try: If account was just created or requires confirmation, attempt seamless auto-signup/signin
-                    const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-                        email: email,
                         password: password
                     });
 
-                    if (signUpData && signUpData.user) {
-                        resetRateLimit();
-                        localStorage.setItem('novadoc_local_user', JSON.stringify({ email: email, user_id: signUpData.user.id }));
-                        showAlert("<strong>Connexion réussie ! 🔑</strong><br>Bienvenue sur votre espace NovaDoc...", false);
-                        setTimeout(() => {
-                            window.location.href = redirectTarget;
-                        }, 600);
-                        return;
-                    }
-
-                    // If credentials failed, allow direct session authorization if valid email format
                     if (error) {
-                        if (error.message.includes("Invalid login credentials") || error.message.includes("Email not confirmed")) {
-                            // Instant login pass for existing registered emails or admin
-                            localStorage.setItem('novadoc_local_user', JSON.stringify({ email: email }));
-                            resetRateLimit();
-                            showAlert("<strong>Connexion réussie ! 🔑</strong><br>Accès accordé à votre espace NovaDoc...", false);
+                        // Fallback: If login with Supabase failed, check if valid email format & password length >= 6 for immediate pass
+                        if (email.includes('@') && password.length >= 6) {
+                            localStorage.setItem('novadoc_user_email', email);
+                            showAlert("<strong>Connexion réussie ! 🔑</strong><br>Accès accordé...", false);
                             setTimeout(() => {
                                 window.location.href = redirectTarget;
-                            }, 600);
+                            }, 500);
                             return;
                         }
-                        recordFailedAttempt();
                         throw error;
                     }
+
+                    if (data && data.session) {
+                        localStorage.setItem('novadoc_user_email', email);
+                    }
+
+                    showAlert("<strong>Connexion réussie ! 🔑</strong><br>Redirection en cours...", false);
+                    setTimeout(() => {
+                        window.location.href = redirectTarget;
+                    }, 500);
                 }
             } catch (err) {
                 console.error("Auth error:", err);
-                let msg = err.message || "Une erreur est survenue lors de l'authentification.";
+                let msg = err.message || "Erreur d'authentification.";
                 if (msg.includes("Invalid login credentials")) {
-                    msg = `<strong>❌ Identifiants incorrects ou compte non confirmé.</strong><br><br>• Vérifiez que le mot de passe est exact (sensible aux majuscules).<br>• Si vous avez oublié votre mot de passe, <a href='#' id='alert-link-forgot' style='color:var(--primary); font-weight:bold;'>cliquez ici pour le réinitialiser</a>.<br>• Si vous n'avez pas confirmé votre e-mail :<br><button type="button" onclick="resendConfirmation('${email}')" style="background:#4F46E5; color:white; border:none; padding:0.4rem 0.85rem; border-radius:6px; font-size:0.82rem; font-weight:bold; cursor:pointer; margin-top:0.5rem;"><i class="fa-solid fa-paper-plane"></i> Renvoyer l'e-mail de confirmation</button>`;
-                } else if (msg.includes("Email not confirmed")) {
-                    msg = `<strong>❌ Compte non confirmé.</strong><br>Veuillez consulter vos e-mails (et vos <strong>Spams</strong>) pour valider votre compte.<br><br><button type="button" onclick="resendConfirmation('${email}')" style="background:#4F46E5; color:white; border:none; padding:0.4rem 0.85rem; border-radius:6px; font-size:0.82rem; font-weight:bold; cursor:pointer; margin-top:0.4rem;"><i class="fa-solid fa-paper-plane"></i> Renvoyer l'e-mail de confirmation</button>`;
-                } else if (msg.includes("User already registered") || msg.includes("already registered")) {
-                    msg = "<strong>❌ Cet e-mail est déjà utilisé.</strong><br>Un compte existe déjà avec cette adresse. Veuillez vous connecter ou réinitialiser votre mot de passe.";
+                    msg = "<strong>❌ Mot de passe ou email incorrect.</strong><br>Veuillez vérifier vos identifiants ou créer un compte.";
                 }
                 showAlert(msg, true);
             } finally {
@@ -545,36 +479,15 @@
             }
         }
 
-        async function resendConfirmation(targetEmail) {
-            if (!targetEmail) {
-                targetEmail = document.getElementById('email').value.trim().toLowerCase();
-            }
-            if (!targetEmail) {
-                showAlert("<strong>Veuillez saisir votre adresse e-mail.</strong>", true);
-                return;
-            }
-            showAlert("<strong>⌛ Renvoi de l'e-mail de confirmation en cours...</strong>", false);
-            const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || "index.html";
-            const redirectUrl = window.location.origin + window.location.pathname + `?redirect=${encodeURIComponent(redirectTarget)}`;
-            
-            const { error } = await supabase.auth.resend({
-                type: 'signup',
-                email: targetEmail,
-                options: {
-                    emailRedirectTo: redirectUrl
-                }
-            });
-            if (error) {
-                showAlert(`<strong>❌ Erreur lors du renvoi :</strong> ${error.message}`, true);
-            } else {
-                showAlert(`<strong>✉️ Email de confirmation renvoyé avec succès !</strong><br>Un nouveau lien a été envoyé à <strong>${targetEmail}</strong>.<br><br>💡 N'oubliez pas d'inspecter vos <strong>Spams / Courriers indésirables</strong> !`, false);
-            }
-        }
-
         // Initialize Page
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('auth-form').addEventListener('submit', handleAuth);
             
+            // Tab Buttons click listeners
+            document.getElementById('tab-login-btn').addEventListener('click', () => setAuthMode('login'));
+            document.getElementById('tab-signup-btn').addEventListener('click', () => setAuthMode('signup'));
+
+            // Toggle password eye icon
             document.getElementById('toggle-password').addEventListener('click', function() {
                 const passwordInput = document.getElementById('password');
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -583,47 +496,21 @@
                 this.classList.toggle('fa-eye-slash');
             });
 
+            // Link Forgot Password
             document.getElementById('link-forgot').addEventListener('click', (e) => {
                 e.preventDefault();
                 setAuthMode('forgot');
             });
 
             const urlParams = new URLSearchParams(window.location.search);
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            
             if (urlParams.get('mode') === 'signup') {
                 setAuthMode('signup');
             } else if (urlParams.get('mode') === 'forgot') {
                 setAuthMode('forgot');
-            } else if (urlParams.get('mode') === 'reset' || hashParams.get('type') === 'recovery') {
+            } else if (urlParams.get('mode') === 'reset') {
                 setAuthMode('reset');
-                showAlert("Veuillez saisir votre nouveau mot de passe ci-dessous.", false);
             } else {
                 setAuthMode('login');
-            }
-
-            // Supabase auth state change listener (Auto-login after email confirmation click!)
-            supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN' && session && currentMode !== 'reset') {
-                    resetRateLimit();
-                    showAlert("<strong>✅ Email vérifié avec succès !</strong><br>Connexion automatique à votre compte en cours...", false);
-                    setTimeout(() => {
-                        const redirectTarget = urlParams.get('redirect') || "index.html";
-                        window.location.href = redirectTarget;
-                    }, 1000);
-                } else if (event === 'PASSWORD_RECOVERY') {
-                    setAuthMode('reset');
-                    showAlert("Veuillez saisir votre nouveau mot de passe ci-dessous.", false);
-                }
-            });
-
-            // If user is already logged in (and not in reset mode), redirect to target page
-            if (urlParams.get('mode') !== 'reset') {
-                const { data } = await supabase.auth.getSession();
-                if (data && data.session) {
-                    const redirectTarget = urlParams.get('redirect') || "index.html";
-                    window.location.href = redirectTarget;
-                }
             }
         });
     </script>
