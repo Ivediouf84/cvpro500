@@ -478,7 +478,6 @@ function renderParsedJsonToHtml(parsed, templateClass) {
                 ${extraSectionsHtml}
             </div>
         `;
-    }
     } else {
         // Modèle Canva 2 Colonnes
         html = `
