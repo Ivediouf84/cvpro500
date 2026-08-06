@@ -406,6 +406,20 @@
     </nav>
        <!-- Horizontal Top Editor Toolbar (Purifiée) -->
     <div class="horizontal-editor-toolbar">
+        <!-- Choix du Modèle CV -->
+        <div class="toolbar-group">
+            <label><i class="fa-solid fa-layer-group"></i> Modèle CV</label>
+            <select id="style-cv-template" class="toolbar-select" onchange="changeCvTemplate(this.value)" style="max-width: 140px; font-weight: 700; border-color: var(--primary);">
+                <option value="cv-template-canva" selected>Canva Moderne</option>
+                <option value="cv-template-emerald">Émeraude Pro</option>
+                <option value="cv-template-navy">Bleu Marine</option>
+                <option value="cv-template-minimal">Classique Minimal</option>
+                <option value="cv-template-raw">Texte Brut</option>
+            </select>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
         <!-- Police & Taille -->
         <div class="toolbar-group">
             <label><i class="fa-solid fa-font"></i> Police & Taille</label>

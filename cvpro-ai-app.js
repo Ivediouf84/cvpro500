@@ -280,9 +280,11 @@ function renderListItemsVerbatim(list) {
 
 let lastParsedCvData = null;
 
-function renderParsedJsonToHtml(parsed) {
+function renderParsedJsonToHtml(parsed, templateClass) {
     const docEl = document.getElementById('cv-document');
     if (!docEl || !parsed) return;
+
+    const chosenTemplate = templateClass || document.getElementById('style-cv-template')?.value || 'cv-template-canva';
 
     // Show A4 canvas wrapper and hide empty upload card
     const emptyCard = document.getElementById('cv-empty-upload-card');
@@ -291,7 +293,7 @@ function renderParsedJsonToHtml(parsed) {
     if (scaleWrapper) scaleWrapper.style.display = 'block';
 
     lastParsedCvData = parsed;
-    docEl.className = "cv-page-container cv-template-canva";
+    docEl.className = "cv-page-container " + chosenTemplate;
 
     // Dynamic extraction - Universal Key Mapping
     const p = {
@@ -456,6 +458,28 @@ function renderParsedJsonToHtml(parsed) {
     triggerCloudSaveHtml(html);
 }
 
+window.handlePhotoUploadInCv = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imgUrl = e.target.result;
+        localStorage.setItem('user_profile_photo_url', imgUrl);
+        
+        const photoImgs = document.querySelectorAll('#cv-document .cv-photo');
+        photoImgs.forEach(img => img.src = imgUrl);
+        
+        const placeholders = document.querySelectorAll('#cv-document .cv-canva-photo-container, #cv-document .cv-photo-container');
+        placeholders.forEach(ph => {
+            ph.innerHTML = `<img src="${imgUrl}" class="cv-photo" alt="Photo du candidat" style="width:100%; height:100%; border-radius:50%; object-fit:cover; display:block;">`;
+        });
+
+        triggerCloudSaveHtml(document.getElementById('cv-document').innerHTML);
+    };
+    reader.readAsDataURL(file);
+};
+
 window.triggerProfilePhotoUpload = function(e) {
     if (e) {
         e.preventDefault();
@@ -470,35 +494,8 @@ window.triggerProfilePhotoUpload = function(e) {
         fileInput.style.display = 'none';
         document.body.appendChild(fileInput);
 
-        fileInput.addEventListener('change', (evt) => {
-            const file = evt.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const photoDataUrl = ev.target.result;
-                    localStorage.setItem('user_profile_photo_url', photoDataUrl);
-
-                    const photoContainers = document.querySelectorAll('.cv-canva-photo-container, .cv-photo-placeholder, .cv-photo-container');
-                    photoContainers.forEach(container => {
-                        container.innerHTML = `<img src="${photoDataUrl}" class="cv-photo" alt="Photo du candidat" style="width:100%; height:100%; border-radius:50%; object-fit:cover; display:block;">`;
-                        container.style.overflow = 'hidden';
-                        container.style.borderRadius = '50%';
-                    });
-
-                    const photoImgs = document.querySelectorAll('img.cv-photo, img.cv-profile-pic');
-                    photoImgs.forEach(img => {
-                        img.src = photoDataUrl;
-                        img.style.width = '100%';
-                        img.style.height = '100%';
-                        img.style.objectFit = 'cover';
-                        img.style.borderRadius = '50%';
-                    });
-
-                    const docEl = document.getElementById('cv-document');
-                    if (docEl) triggerCloudSaveHtml(docEl.innerHTML);
-                };
-                reader.readAsDataURL(file);
-            }
+        fileInput.addEventListener('change', (ev) => {
+            window.handlePhotoUploadInCv(ev);
         });
     }
     fileInput.click();
