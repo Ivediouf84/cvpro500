@@ -651,16 +651,15 @@ async function exportPDF() {
     const origPaperMinHeight = paper.style.minHeight;
     const origPaperOverflow = paper.style.overflow;
 
-    // Temporarily set strict single-page A4 dimensions (210mm x 296.5mm)
+    // Temporarily set A4 dimensions allowing natural multi-page flow if content requires it
     if (scaleWrapper) {
         scaleWrapper.style.transform = 'none';
         scaleWrapper.style.width = '210mm';
     }
     paper.style.width = '210mm';
-    paper.style.height = '296.5mm';
-    paper.style.maxHeight = '296.5mm';
-    paper.style.minHeight = '296.5mm';
-    paper.style.overflow = 'hidden';
+    paper.style.height = 'auto';
+    paper.style.minHeight = '297mm';
+    paper.style.overflow = 'visible';
     paper.style.boxShadow = 'none';
 
     // Remove contenteditable focus lines temporarily
@@ -942,30 +941,30 @@ function changeCvTemplate(templateClass) {
 }
 window.changeCvTemplate = changeCvTemplate;
 
-// Balance A4 Page Layout so content fills full page height harmoniously
+// Balance A4 Page Layout so content is spacious, readable and dynamically extends naturally across 1 or 2 pages
 function balanceA4PageLayout() {
     const docEl = document.getElementById('cv-document');
     if (!docEl) return;
 
-    const scrollH = docEl.scrollHeight;
-    const targetH = 1060; // Approximate height of single A4 page in preview
+    docEl.style.lineHeight = '1.45';
+    docEl.style.fontSize = '9.5pt';
 
-    if (scrollH > targetH + 40) {
-        // Content exceeds 1 A4 page: compact padding, line-height & font sizes
-        docEl.style.lineHeight = '1.35';
-        const sectionBlocks = docEl.querySelectorAll('.cv-section-block');
-        sectionBlocks.forEach(b => b.style.marginBottom = '10px');
-        const lists = docEl.querySelectorAll('ul');
-        lists.forEach(l => l.style.marginBottom = '4px');
-        const items = docEl.querySelectorAll('li');
-        items.forEach(i => i.style.marginBottom = '2px');
-    } else if (scrollH < targetH - 220) {
-        // Content is short: expand margins to balance full A4 sheet
-        const sectionBlocks = docEl.querySelectorAll('.cv-section-block');
-        sectionBlocks.forEach(b => b.style.marginBottom = '18px');
-        const lists = docEl.querySelectorAll('ul');
-        lists.forEach(l => l.style.marginBottom = '8px');
-    }
+    const sectionBlocks = docEl.querySelectorAll('.cv-section-block');
+    sectionBlocks.forEach(b => {
+        b.style.marginBottom = '16px';
+        b.style.pageBreakInside = 'avoid';
+    });
+
+    const lists = docEl.querySelectorAll('ul');
+    lists.forEach(l => {
+        l.style.marginBottom = '6px';
+    });
+
+    const items = docEl.querySelectorAll('li');
+    items.forEach(i => {
+        i.style.marginBottom = '4px';
+        i.style.lineHeight = '1.45';
+    });
 }
 window.balanceA4PageLayout = balanceA4PageLayout;
 
