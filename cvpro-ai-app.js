@@ -450,9 +450,10 @@ function renderParsedJsonToHtml(parsed, templateClass) {
     const upperInterests = titleInterests.toUpperCase();
 
     // Determine grid rendering for core sections with 1.15 line-height
-    const eduHtml = isShortItemsList(education) ? renderShortItemsGrid(education, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(education)}</ul>`;
-    const formHtml = isShortItemsList(formations) ? renderShortItemsGrid(formations, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(formations)}</ul>`;
-    const expHtml = isShortItemsList(experiences) ? renderShortItemsGrid(experiences, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(experiences)}</ul>`;
+    // NOTE: Experiences, Education, and Formations MUST ALWAYS render with full text & bullet points (renderListItemsVerbatim) to prevent losing descriptions!
+    const eduHtml = `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(education)}</ul>`;
+    const formHtml = `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(formations)}</ul>`;
+    const expHtml = `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(experiences)}</ul>`;
     const skillsHtml = renderShortItemsGrid(skills, themeColor);
     const langHtml = renderShortItemsGrid(languages, themeColor);
     const intHtml = renderShortItemsGrid(interests, themeColor);
