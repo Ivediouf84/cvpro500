@@ -322,11 +322,11 @@ function renderShortItemsGrid(list, themeColor) {
 
     const iconColor = themeColor || '#2563eb';
 
-    return `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px 14px; margin-top: 8px; margin-bottom: 6px; width: 100%; box-sizing: border-box;">
+    return `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px 16px; margin-top: 6px; margin-bottom: 8px; width: 100%; box-sizing: border-box; background: transparent; border: none; padding: 0;">
         ${itemsArr.map(item => `
-            <div style="font-size: 9.5pt; color: #1e293b; display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
-                <i class="fa-solid fa-check" style="color: ${iconColor}; font-size: 8.5pt; flex-shrink: 0;"></i>
-                <span style="word-break: break-word; line-height: 1.3;">${item}</span>
+            <div style="font-size: 9.5pt; color: #1e293b; display: flex; align-items: flex-start; gap: 7px; font-weight: 500; line-height: 1.4; background: transparent; border: none; padding: 0; box-shadow: none;">
+                <i class="fa-solid fa-angle-right" style="color: ${iconColor}; font-size: 8.5pt; margin-top: 3px; flex-shrink: 0;"></i>
+                <span style="word-break: break-word;">${item}</span>
             </div>
         `).join('')}
     </div>`;
@@ -369,20 +369,18 @@ function renderParsedJsonToHtml(parsed, templateClass) {
     const languages = parsed.languages || parsed.langues || [];
     const interests = parsed.interests || parsed.loisirs || parsed.autres || parsed.hobbies || parsed.activites || [];
     
-    // Detect Language & Original Rubric Names
+    // Detect Language & Force Exact Titles
     const sampleText = JSON.stringify(parsed).toLowerCase();
-    const isFrench = /diplôme|expérience|formation|compétence|dakar|sénégal|université|monsieur|madame|directeur|responsable|travail|santé/i.test(sampleText);
-    const isEnglish = !isFrench && (parsed.language === 'en' || /professional profile|work experience|education & degrees/i.test(sampleText));
+    const isFrench = /diplôme|expérience|formation|compétence|dakar|sénégal|université|monsieur|madame|directeur|responsable|travail|santé|conseiller|géographe|doctorant|baccalauréat|licence|master|certificat/i.test(sampleText);
 
-    const st = parsed.sectionTitles || {};
-    const titleProfile = st.profile || (isEnglish ? 'PROFESSIONAL PROFILE' : 'PROFIL PROFESSIONNEL');
-    const titleContact = st.contact || 'CONTACT';
-    const titleLanguages = st.languages || (isEnglish ? 'LANGUAGES' : 'LANGUES');
-    const titleSkills = st.skills || (isEnglish ? 'AREAS OF EXPERTISE' : 'COMPÉTENCES & DOMAINES D\'EXPERTISE');
-    const titleEducation = st.education || (isEnglish ? 'EDUCATION & DEGREES' : 'DIPLÔMES & ÉTUDES');
-    const titleFormations = st.formations || (isEnglish ? 'CERTIFICATIONS & TRAINING' : 'FORMATIONS & CERTIFICATIONS');
-    const titleExperiences = st.experiences || (isEnglish ? 'PROFESSIONAL EXPERIENCE' : 'EXPÉRIENCES PROFESSIONNELLES');
-    const titleInterests = st.interests || (isEnglish ? 'INTERESTS & ACTIVITIES' : 'CENTRES D\'INTÉRÊT');
+    let titleProfile = isFrench ? 'PROFIL PROFESSIONNEL' : 'PROFESSIONAL PROFILE';
+    let titleContact = 'CONTACT';
+    let titleLanguages = isFrench ? 'LANGUES' : 'LANGUAGES';
+    let titleSkills = isFrench ? 'COMPÉTENCES & DOMAINES D\'EXPERTISE' : 'AREAS OF EXPERTISE';
+    let titleEducation = isFrench ? 'DIPLÔMES & ÉTUDES' : 'EDUCATION & DEGREES';
+    let titleFormations = isFrench ? 'FORMATIONS & CERTIFICATIONS' : 'CERTIFICATIONS & TRAINING';
+    let titleExperiences = isFrench ? 'EXPÉRIENCES PROFESSIONNELLES' : 'PROFESSIONAL EXPERIENCE';
+    let titleInterests = isFrench ? 'CENTRES D\'INTÉRÊT' : 'INTERESTS & ACTIVITIES';
 
     // Photo from profile upload
     const userPhotoUrl = localStorage.getItem('user_profile_photo_url') || parsed.personal?.photo || parsed.photo || '';
