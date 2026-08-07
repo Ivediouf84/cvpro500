@@ -370,24 +370,26 @@ function renderParsedJsonToHtml(parsed, templateClass) {
     const interests = parsed.interests || parsed.loisirs || parsed.autres || parsed.hobbies || parsed.activites || [];
     
     // Detect Language & Original Rubric Names
-    const isEnglish = (parsed.language === 'en') || 
-        /professional|experience|education|expertise|skills|certified|summary|university|diploma|bachelor|master|doctorate/i.test(
-            JSON.stringify(parsed).slice(0, 1500)
-        );
+    const sampleText = JSON.stringify(parsed).toLowerCase();
+    const isFrench = /diplôme|expérience|formation|compétence|dakar|sénégal|université|monsieur|madame|directeur|responsable|travail|santé/i.test(sampleText);
+    const isEnglish = !isFrench && (parsed.language === 'en' || /professional profile|work experience|education & degrees/i.test(sampleText));
 
     const st = parsed.sectionTitles || {};
-    const titleProfile = st.profile || (isEnglish ? 'PROFESSIONAL PROFILE' : 'PROFIL / PRÉSENTATION');
+    const titleProfile = st.profile || (isEnglish ? 'PROFESSIONAL PROFILE' : 'PROFIL PROFESSIONNEL');
     const titleContact = st.contact || 'CONTACT';
     const titleLanguages = st.languages || (isEnglish ? 'LANGUAGES' : 'LANGUES');
-    const titleSkills = st.skills || (isEnglish ? 'AREAS OF EXPERTISE' : 'COMPÉTENCES');
-    const titleEducation = st.education || (isEnglish ? 'EDUCATION & DEGREES' : 'ÉTUDES / DIPLÔMES');
-    const titleFormations = st.formations || (isEnglish ? 'CERTIFICATIONS & TRAINING' : 'FORMATIONS');
-    const titleExperiences = st.experiences || (isEnglish ? 'PROFESSIONAL EXPERIENCE' : 'EXPÉRIENCES');
-    const titleInterests = st.interests || (isEnglish ? 'INTERESTS & ACTIVITIES' : 'LOISIRS / AUTRES');
+    const titleSkills = st.skills || (isEnglish ? 'AREAS OF EXPERTISE' : 'COMPÉTENCES & DOMAINES D\'EXPERTISE');
+    const titleEducation = st.education || (isEnglish ? 'EDUCATION & DEGREES' : 'DIPLÔMES & ÉTUDES');
+    const titleFormations = st.formations || (isEnglish ? 'CERTIFICATIONS & TRAINING' : 'FORMATIONS & CERTIFICATIONS');
+    const titleExperiences = st.experiences || (isEnglish ? 'PROFESSIONAL EXPERIENCE' : 'EXPÉRIENCES PROFESSIONNELLES');
+    const titleInterests = st.interests || (isEnglish ? 'INTERESTS & ACTIVITIES' : 'CENTRES D\'INTÉRÊT');
 
     // Photo from profile upload
     const userPhotoUrl = localStorage.getItem('user_profile_photo_url') || parsed.personal?.photo || parsed.photo || '';
-    const themeColor = document.getElementById('style-text-color')?.value || '#0f172a';
+    let themeColor = document.getElementById('style-text-color')?.value;
+    if (!themeColor || themeColor === '#0f172a' || themeColor === '#000000') {
+        themeColor = '#2563eb'; // Vibrant Royal Blue so section titles are always beautifully colored!
+    }
     const accentColor = '#800000';
 
     // Render any additional dynamic sections (e.g. AUTRES, EXPÉRIENCES POLITIQUES, PROJETS)
