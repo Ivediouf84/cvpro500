@@ -365,9 +365,22 @@ function renderParsedJsonToHtml(parsed, templateClass) {
     const education = parsed.education || parsed.etudes || parsed.studies || parsed.cursus || parsed.diplomes || parsed.formation_scolaire || [];
     const formations = parsed.formations || parsed.training || parsed.certifications || parsed.stages || [];
     const experiences = parsed.experiences || parsed.experience || parsed.postes || parsed.jobs || parsed.parcours_professionnel || [];
-    const skills = parsed.skills || parsed.competences || parsed.competence || parsed.savoir_faire || [];
     const languages = parsed.languages || parsed.langues || [];
     const interests = parsed.interests || parsed.loisirs || parsed.autres || parsed.hobbies || parsed.activites || [];
+
+    // Consolidate & deduplicate skills across all key variations
+    const rawSkills = parsed.skills || parsed.competences || parsed.competence || parsed.savoir_faire || [];
+    const domainExpertise = parsed.domaines_d_expertise || parsed.domaines_expertise || [];
+    const compTech = parsed.competences_techniques || [];
+    let skills = [];
+    [rawSkills, domainExpertise, compTech].forEach(src => {
+        if (typeof src === 'string') {
+            const arr = src.split(/\n|,|;/).map(s => s.trim()).filter(s => s.length > 0);
+            skills.push(...arr);
+        } else if (Array.isArray(src)) {
+            skills.push(...src);
+        }
+    });
     
     // Detect Language & Force Exact Titles
     const sampleText = JSON.stringify(parsed).toLowerCase();
@@ -386,35 +399,33 @@ function renderParsedJsonToHtml(parsed, templateClass) {
     const userPhotoUrl = localStorage.getItem('user_profile_photo_url') || parsed.personal?.photo || parsed.photo || '';
     let themeColor = document.getElementById('style-text-color')?.value;
     if (!themeColor || themeColor === '#0f172a' || themeColor === '#000000') {
-        themeColor = '#2563eb'; // Vibrant Royal Blue so section titles are always beautifully colored!
+        themeColor = '#2563eb'; // Vibrant Royal Blue default so titles are ALWAYS brightly colored!
     }
     const accentColor = '#800000';
 
-    // Render any additional dynamic sections (e.g. AUTRES, EXPÉRIENCES POLITIQUES, PROJETS)
+    // Render any additional dynamic sections (e.g. AUTRES, PROJETS, DECLARATION)
     let extraSectionsHtml = '';
-    const knownKeys = ['language', 'sectiontitles', 'personal', 'firstname', 'lastname', 'jobtitle', 'email', 'phone', 'city', 'location', 'birth', 'datenaissance', 'profile', 'summary', 'presentation', 'profil', 'education', 'etudes', 'studies', 'cursus', 'diplomes', 'formation_scolaire', 'formations', 'training', 'certifications', 'stages', 'experiences', 'experience', 'postes', 'jobs', 'parcours_professionnel', 'skills', 'competences', 'competence', 'savoir_faire', 'languages', 'langues', 'interests', 'loisirs', 'autres', 'hobbies', 'activites'];
+    const knownKeys = ['language', 'sectiontitles', 'personal', 'firstname', 'lastname', 'jobtitle', 'email', 'phone', 'city', 'location', 'birth', 'datenaissance', 'profile', 'summary', 'presentation', 'profil', 'education', 'etudes', 'studies', 'cursus', 'diplomes', 'formation_scolaire', 'formations', 'training', 'certifications', 'stages', 'experiences', 'experience', 'postes', 'jobs', 'parcours_professionnel', 'parcours', 'skills', 'competences', 'competence', 'savoir_faire', 'domaines_d_expertise', 'domaines_expertise', 'competences_techniques', 'languages', 'langues', 'interests', 'loisirs', 'autres', 'hobbies', 'activites', 'declaration'];
     
     Object.keys(parsed).forEach(key => {
         if (!knownKeys.includes(key.toLowerCase()) && parsed[key]) {
             const val = parsed[key];
             const sectionTitle = key.replace(/_/g, ' ').toUpperCase();
             const useShortGrid = isShortItemsList(val);
-            const contentHtml = useShortGrid ? renderShortItemsGrid(val, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(val)}</ul>`;
+            const contentHtml = useShortGrid ? renderShortItemsGrid(val, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(val)}</ul>`;
 
             if (chosenTemplate === 'cv-template-minimal' || !chosenTemplate) {
-                // Classique Pro line header style (100% unified with other headers!)
                 extraSectionsHtml += `
-                    <div class="cv-section-block" style="margin-bottom: 20px;">
-                        <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${sectionTitle}</div>
+                    <div class="cv-section-block" style="margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid;">
+                        <div style="font-size: 11pt; font-weight: 800; color: ${themeColor} !important; border-bottom: 2px solid ${themeColor}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${sectionTitle}</div>
                         ${contentHtml}
                     </div>
                 `;
             } else {
-                // Canva banner style
                 extraSectionsHtml += `
-                    <div class="cv-section-block" style="margin-bottom: 14px;">
-                        <div class="cv-canva-box-title" style="background:${accentColor}; color:white; text-transform:uppercase; font-weight:800; font-size:10pt; letter-spacing:0.5px; padding:5px 12px; text-align:left; border-radius:4px; margin:10px 0 6px 0; display:flex; align-items:center; gap:8px;">
-                            <i class="fa-solid fa-bookmark" style="font-size:0.85rem;"></i> ${sectionTitle}
+                    <div class="cv-section-block" style="margin-bottom: 12px; page-break-inside: avoid; break-inside: avoid;">
+                        <div class="cv-canva-box-title" style="background:${themeColor}; color:white; text-transform:uppercase; font-weight:800; font-size:9.5pt; letter-spacing:0.5px; padding:4px 10px; border-radius:4px; margin:8px 0 6px 0;">
+                            ${sectionTitle}
                         </div>
                         ${contentHtml}
                     </div>
@@ -425,7 +436,6 @@ function renderParsedJsonToHtml(parsed, templateClass) {
 
     let html = '';
 
-    // Clear stale cached HTML from localStorage so old layouts never reappear
     try {
         localStorage.removeItem('importedCVHtml');
     } catch(e) {}
@@ -439,75 +449,75 @@ function renderParsedJsonToHtml(parsed, templateClass) {
     const upperLanguages = titleLanguages.toUpperCase();
     const upperInterests = titleInterests.toUpperCase();
 
-    // Determine grid rendering for core sections
-    const eduHtml = isShortItemsList(education) ? renderShortItemsGrid(education, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(education)}</ul>`;
-    const formHtml = isShortItemsList(formations) ? renderShortItemsGrid(formations, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(formations)}</ul>`;
-    const expHtml = isShortItemsList(experiences) ? renderShortItemsGrid(experiences, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(experiences)}</ul>`;
+    // Determine grid rendering for core sections with 1.15 line-height
+    const eduHtml = isShortItemsList(education) ? renderShortItemsGrid(education, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(education)}</ul>`;
+    const formHtml = isShortItemsList(formations) ? renderShortItemsGrid(formations, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(formations)}</ul>`;
+    const expHtml = isShortItemsList(experiences) ? renderShortItemsGrid(experiences, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.15; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(experiences)}</ul>`;
     const skillsHtml = renderShortItemsGrid(skills, themeColor);
     const langHtml = renderShortItemsGrid(languages, themeColor);
     const intHtml = renderShortItemsGrid(interests, themeColor);
 
     if (chosenTemplate === 'cv-template-minimal' || !chosenTemplate) {
-        // Modèle Classique Pro (Prioritaire par défaut) avec Remplissage Naturel A4 & Grille 2-3 Colonnes
+        // Modèle Classique Pro (Prioritaire par défaut) avec Interligne 1.15 & Anti-coupure de rubrique
         html = `
-            <div class="cv-minimal-container" style="padding: 28px 32px; background: #ffffff; min-height: 297mm; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.12); border-radius: 6px; position: relative;">
+            <div class="cv-minimal-container" style="padding: 24px 28px; background: #ffffff; min-height: 297mm; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.12); border-radius: 6px; position: relative;">
                 
                 <!-- En-tête Classique Pro avec Contact & Photo -->
-                <div class="cv-minimal-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 2.5px solid ${themeColor}; margin-bottom: 22px;">
+                <div class="cv-minimal-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 2.5px solid ${themeColor}; margin-bottom: 16px;">
                     <div style="flex: 1;">
-                        ${(p.firstName || p.lastName) ? `<h1 style="font-size: 24pt; font-weight: 900; color: ${themeColor}; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">${p.firstName} <span style="color:#2563eb;">${p.lastName}</span></h1>` : ''}
-                        ${p.jobTitle ? `<div style="font-size: 13pt; font-weight: 700; color: #334155; margin-bottom: 10px;">${p.jobTitle}</div>` : ''}
-                        <div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 9.5pt; color: #475569; font-weight: 600; align-items: center;">
+                        ${(p.firstName || p.lastName) ? `<h1 style="font-size: 22pt; font-weight: 900; color: ${themeColor} !important; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">${p.firstName} <span style="color:${themeColor};">${p.lastName}</span></h1>` : ''}
+                        ${p.jobTitle ? `<div style="font-size: 12pt; font-weight: 700; color: #334155; margin-bottom: 8px; line-height: 1.15;">${p.jobTitle}</div>` : ''}
+                        <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 9pt; color: #475569; font-weight: 600; align-items: center; line-height: 1.15;">
                             ${p.phone ? `<div><i class="fa-solid fa-phone" style="color:${themeColor};"></i> ${p.phone}</div>` : ''}
                             ${p.email ? `<div><i class="fa-solid fa-envelope" style="color:${themeColor};"></i> ${p.email}</div>` : ''}
                             ${p.city ? `<div><i class="fa-solid fa-location-dot" style="color:${themeColor};"></i> ${p.city}</div>` : ''}
                             ${p.birth ? `<div><i class="fa-solid fa-cake-candles" style="color:${themeColor};"></i> ${p.birth}</div>` : ''}
                         </div>
                     </div>
-                    <div class="cv-photo-container" onclick="triggerProfilePhotoUpload(event)" style="cursor: pointer; width: 95px; height: 95px; border-radius: 50%; overflow: hidden; border: 2.5px solid ${themeColor}; background: #fafafa; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 18px;" title="Cliquez pour insérer votre photo">
-                        ${userPhotoUrl ? `<img src="${userPhotoUrl}" class="cv-photo" style="width:100%; height:100%; object-fit:cover;">` : `<div style="text-align:center; color:${themeColor}; font-size:0.7rem; font-weight:bold;"><i class="fa-solid fa-camera" style="font-size:1.4rem; display:block; margin-bottom:2px;"></i>Photo</div>`}
+                    <div class="cv-photo-container" onclick="triggerProfilePhotoUpload(event)" style="cursor: pointer; width: 90px; height: 90px; border-radius: 50%; overflow: hidden; border: 2.5px solid ${themeColor}; background: #fafafa; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 16px;" title="Cliquez pour insérer votre photo">
+                        ${userPhotoUrl ? `<img src="${userPhotoUrl}" class="cv-photo" style="width:100%; height:100%; object-fit:cover;">` : `<div style="text-align:center; color:${themeColor}; font-size:0.7rem; font-weight:bold;"><i class="fa-solid fa-camera" style="font-size:1.3rem; display:block; margin-bottom:2px;"></i>Photo</div>`}
                     </div>
                 </div>
 
                 ${profileSummary ? `
-                <div class="cv-section-block" style="margin-bottom: 20px;">
-                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperProfile}</div>
-                    <p style="font-size: 9.5pt; color: #334155; line-height: 1.5; margin: 0;">${profileSummary}</p>
+                <div class="cv-section-block" style="margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid;">
+                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor} !important; border-bottom: 2px solid ${themeColor}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperProfile}</div>
+                    <p style="font-size: 9pt; color: #334155; line-height: 1.15; margin: 0;">${profileSummary}</p>
                 </div>` : ''}
 
                 ${experiences.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 20px;">
-                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperExperiences}</div>
+                <div class="cv-section-block" style="margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid;">
+                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor} !important; border-bottom: 2px solid ${themeColor}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperExperiences}</div>
                     ${expHtml}
                 </div>` : ''}
 
                 ${education.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 20px;">
-                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperEducation}</div>
+                <div class="cv-section-block" style="margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid;">
+                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor} !important; border-bottom: 2px solid ${themeColor}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperEducation}</div>
                     ${eduHtml}
                 </div>` : ''}
 
                 ${formations.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 20px;">
-                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperFormations}</div>
+                <div class="cv-section-block" style="margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid;">
+                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor} !important; border-bottom: 2px solid ${themeColor}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperFormations}</div>
                     ${formHtml}
                 </div>` : ''}
 
                 ${skills.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 20px;">
-                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperSkills}</div>
+                <div class="cv-section-block" style="margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid;">
+                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor} !important; border-bottom: 2px solid ${themeColor}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperSkills}</div>
                     ${skillsHtml}
                 </div>` : ''}
 
                 ${languages.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 20px;">
-                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperLanguages}</div>
+                <div class="cv-section-block" style="margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid;">
+                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor} !important; border-bottom: 2px solid ${themeColor}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperLanguages}</div>
                     ${langHtml}
                 </div>` : ''}
 
                 ${interests.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 20px;">
-                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperInterests}</div>
+                <div class="cv-section-block" style="margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid;">
+                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor} !important; border-bottom: 2px solid ${themeColor}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperInterests}</div>
                     ${intHtml}
                 </div>` : ''}
 
