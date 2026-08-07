@@ -391,87 +391,82 @@ function renderParsedJsonToHtml(parsed, templateClass) {
         localStorage.removeItem('importedCVHtml');
     } catch(e) {}
 
-    // Ensure dropdown is synchronized to cv-template-minimal
-    const templateSelect = document.getElementById('style-cv-template');
-    if (templateSelect && (!templateClass || templateClass === 'cv-template-canva')) {
-        templateSelect.value = 'cv-template-minimal';
-    }
+    const upperProfile = titleProfile.toUpperCase();
+    const upperContact = titleContact.toUpperCase();
+    const upperExperiences = titleExperiences.toUpperCase();
+    const upperEducation = titleEducation.toUpperCase();
+    const upperFormations = titleFormations.toUpperCase();
+    const upperSkills = titleSkills.toUpperCase();
+    const upperLanguages = titleLanguages.toUpperCase();
+    const upperInterests = titleInterests.toUpperCase();
 
     if (chosenTemplate === 'cv-template-minimal' || !chosenTemplate) {
-        // Modèle Classique Pro (Prioritaire par défaut) avec Découpage Feuille par Feuille A4 & Grille 3 Colonnes
+        // Modèle Classique Pro (Prioritaire par défaut) avec Remplissage Naturel A4 & Grille 2-3 Colonnes
         html = `
-            <div class="cv-minimal-container" style="padding: 26px 30px; background: #ffffff; min-height: 297mm; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.12); border-radius: 6px; position: relative;">
-                <!-- Indicateur Vraie Feuille A4 N°1 -->
-                <div style="position: absolute; top: 10px; right: 15px; font-size: 8pt; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">📄 FEUILLE A4 N°1</div>
-
+            <div class="cv-minimal-container" style="padding: 28px 32px; background: #ffffff; min-height: 297mm; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.12); border-radius: 6px; position: relative;">
+                
                 <!-- En-tête Classique Pro avec Contact & Photo -->
-                <div class="cv-minimal-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 2.5px solid #0f172a; margin-bottom: 20px; margin-top: 10px;">
+                <div class="cv-minimal-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 2.5px solid ${themeColor}; margin-bottom: 22px;">
                     <div style="flex: 1;">
                         ${(p.firstName || p.lastName) ? `<h1 style="font-size: 24pt; font-weight: 900; color: ${themeColor}; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">${p.firstName} <span style="color:#2563eb;">${p.lastName}</span></h1>` : ''}
-                        ${p.jobTitle ? `<div style="font-size: 13pt; font-weight: 700; color: #334155; margin-bottom: 8px;">${p.jobTitle}</div>` : ''}
-                        <div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 9pt; color: #475569; font-weight: 600; align-items: center;">
+                        ${p.jobTitle ? `<div style="font-size: 13pt; font-weight: 700; color: #334155; margin-bottom: 10px;">${p.jobTitle}</div>` : ''}
+                        <div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 9.5pt; color: #475569; font-weight: 600; align-items: center;">
                             ${p.phone ? `<div><i class="fa-solid fa-phone" style="color:${themeColor};"></i> ${p.phone}</div>` : ''}
                             ${p.email ? `<div><i class="fa-solid fa-envelope" style="color:${themeColor};"></i> ${p.email}</div>` : ''}
                             ${p.city ? `<div><i class="fa-solid fa-location-dot" style="color:${themeColor};"></i> ${p.city}</div>` : ''}
                             ${p.birth ? `<div><i class="fa-solid fa-cake-candles" style="color:${themeColor};"></i> ${p.birth}</div>` : ''}
                         </div>
                     </div>
-                    <div class="cv-photo-container" onclick="triggerProfilePhotoUpload(event)" style="cursor: pointer; width: 95px; height: 95px; border-radius: 50%; overflow: hidden; border: 2px solid ${themeColor}; background: #fafafa; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 16px;" title="Cliquez pour insérer votre photo">
+                    <div class="cv-photo-container" onclick="triggerProfilePhotoUpload(event)" style="cursor: pointer; width: 95px; height: 95px; border-radius: 50%; overflow: hidden; border: 2.5px solid ${themeColor}; background: #fafafa; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 18px;" title="Cliquez pour insérer votre photo">
                         ${userPhotoUrl ? `<img src="${userPhotoUrl}" class="cv-photo" style="width:100%; height:100%; object-fit:cover;">` : `<div style="text-align:center; color:${themeColor}; font-size:0.7rem; font-weight:bold;"><i class="fa-solid fa-camera" style="font-size:1.4rem; display:block; margin-bottom:2px;"></i>Photo</div>`}
                     </div>
                 </div>
 
                 ${profileSummary ? `
-                <div class="cv-section-block" style="margin-bottom: 18px;">
-                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor}; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">${titleProfile}</div>
+                <div class="cv-section-block" style="margin-bottom: 20px;">
+                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperProfile}</div>
                     <p style="font-size: 9.5pt; color: #334155; line-height: 1.5; margin: 0;">${profileSummary}</p>
                 </div>` : ''}
 
                 ${experiences.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 18px;">
-                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor}; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">${titleExperiences}</div>
+                <div class="cv-section-block" style="margin-bottom: 20px;">
+                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperExperiences}</div>
                     <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
                         ${renderListItemsVerbatim(experiences)}
                     </ul>
                 </div>` : ''}
 
                 ${education.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 18px;">
-                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor}; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">${titleEducation}</div>
+                <div class="cv-section-block" style="margin-bottom: 20px;">
+                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperEducation}</div>
                     <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
                         ${renderListItemsVerbatim(education)}
                     </ul>
                 </div>` : ''}
 
                 ${formations.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 18px;">
-                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor}; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">${titleFormations}</div>
+                <div class="cv-section-block" style="margin-bottom: 20px;">
+                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperFormations}</div>
                     <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
                         ${renderListItemsVerbatim(formations)}
                     </ul>
                 </div>` : ''}
 
-                <!-- Découpage / Saut de Feuille A4 Visuel pour la Page 2 si contenu important -->
-                ${(skills.length > 0 || languages.length > 0 || interests.length > 0) ? `
-                <div class="a4-page-break-visual" style="margin: 25px -30px 25px -30px; padding: 10px; background: #f1f5f9; border-top: 2px dashed #94a3b8; border-bottom: 2px dashed #94a3b8; text-align: center; font-weight: 800; font-size: 8.5pt; color: #475569; letter-spacing: 1px; text-transform: uppercase; page-break-before: always;">
-                    <i class="fa-solid fa-file-invoice"></i> --- FEUILLE A4 N°2 ---
-                </div>` : ''}
-
                 ${skills.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 18px;">
-                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor}; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">${titleSkills}</div>
+                <div class="cv-section-block" style="margin-bottom: 20px;">
+                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperSkills}</div>
                     ${renderShortItemsGrid(skills)}
                 </div>` : ''}
 
                 ${languages.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 18px;">
-                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor}; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">${titleLanguages}</div>
+                <div class="cv-section-block" style="margin-bottom: 20px;">
+                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperLanguages}</div>
                     ${renderShortItemsGrid(languages)}
                 </div>` : ''}
 
                 ${interests.length > 0 ? `
-                <div class="cv-section-block" style="margin-bottom: 18px;">
-                    <div style="font-size: 11pt; font-weight: 800; color: ${themeColor}; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">${titleInterests}</div>
+                <div class="cv-section-block" style="margin-bottom: 20px;">
+                    <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperInterests}</div>
                     ${renderShortItemsGrid(interests)}
                 </div>` : ''}
 
@@ -1080,6 +1075,20 @@ function balanceA4PageLayout() {
         i.style.marginBottom = '4px';
         i.style.lineHeight = '1.45';
     });
+
+    // Remove old page footers if any
+    const oldFooters = docEl.querySelectorAll('.cv-discrete-page-footer');
+    oldFooters.forEach(f => f.remove());
+
+    // Only add discrete page counter if document exceeds 1 page A4
+    if (docEl.scrollHeight > 1080) {
+        const totalPages = Math.ceil(docEl.scrollHeight / 1060);
+        const footer = document.createElement('div');
+        footer.className = 'cv-discrete-page-footer';
+        footer.style.cssText = 'position: absolute; bottom: 12px; right: 25px; font-size: 8.5pt; font-weight: 700; color: #94a3b8; pointer-events: none;';
+        footer.innerText = `Page 1 / ${totalPages}`;
+        docEl.appendChild(footer);
+    }
 }
 window.balanceA4PageLayout = balanceA4PageLayout;
 
