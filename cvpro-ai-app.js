@@ -803,33 +803,39 @@ async function exportPDF() {
     if (scaleWrapper) scaleWrapper.style.display = 'block';
     if (emptyUploadCard) emptyUploadCard.style.display = 'none';
 
-    // Create a clean offscreen clone to avoid mobile screen scale/crop issues
-    const cloneContainer = document.createElement('div');
-    cloneContainer.style.cssText = 'position: fixed; top: 0; left: -9999px; width: 794px; min-height: 1123px; background: #ffffff; z-index: -9999; overflow: visible;';
-    
-    const clone = paper.cloneNode(true);
-    clone.style.width = '794px';
-    clone.style.minHeight = '1123px';
-    clone.style.height = 'auto';
-    clone.style.transform = 'none';
-    clone.style.boxShadow = 'none';
-    clone.style.margin = '0';
-    clone.style.padding = '0';
-    clone.style.overflow = 'visible';
+    // 1. Save and temporarily reset any zoom transform on wrapper
+    const wrapper = document.getElementById('cv-scale-wrapper');
+    const originalTransform = wrapper ? wrapper.style.transform : '';
+    if (wrapper) wrapper.style.transform = 'none';
 
-    // Remove contenteditable focus lines temporarily
+    // 2. Create a clean, 100% full-width A4 container positioned at top:0, left:0
+    const container = document.createElement('div');
+    container.id = 'pdf-export-temp-container';
+    container.style.cssText = 'position: absolute; top: 0; left: 0; width: 210mm; min-height: 297mm; background: #ffffff; z-index: 999999; margin: 0; padding: 0; box-sizing: border-box; overflow: visible;';
+
+    const clone = paper.cloneNode(true);
+    clone.style.cssText = 'width: 210mm !important; min-height: 297mm !important; margin: 0 !important; padding: 24px 28px !important; box-sizing: border-box !important; transform: none !important; box-shadow: none !important; background: #ffffff !important; float: none !important; position: static !important;';
+
+    // Force ALL internal containers (minimal, 2col, modern) to take 100% full width
+    const childContainers = clone.querySelectorAll('.cv-minimal-container, .cv-2col-container, .cv-modern-container');
+    childContainers.forEach(el => {
+        el.style.cssText += 'width: 100% !important; max-width: none !important; min-width: 100% !important; margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; box-sizing: border-box !important;';
+    });
+
+    // Remove contenteditable focus lines & footers
     const editables = clone.querySelectorAll('[contenteditable]');
     editables.forEach(el => el.setAttribute('contenteditable', 'false'));
     
-    // Remove discrete page footers from PDF output
     const footers = clone.querySelectorAll('.cv-discrete-page-footer');
     footers.forEach(f => f.remove());
 
-    cloneContainer.appendChild(clone);
-    document.body.appendChild(cloneContainer);
+    container.appendChild(clone);
+    document.body.appendChild(container);
+
+    window.scrollTo(0, 0);
 
     const opt = {
-        margin: 0,
+        margin: [0, 0, 0, 0],
         filename: 'CV_Professionnel_IA.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
@@ -837,8 +843,8 @@ async function exportPDF() {
             useCORS: true, 
             logging: false, 
             backgroundColor: '#ffffff',
-            windowWidth: 794,
-            width: 794
+            scrollX: 0,
+            scrollY: 0
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
@@ -852,10 +858,11 @@ async function exportPDF() {
         }
     } catch (err) {
         console.error("PDF generation error:", err);
-        alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
+        alert("Erreur lors de la génération du PDF : " + err.message);
     } finally {
-        cloneContainer.remove();
-        closePaymentModal();
+        container.remove();
+        if (wrapper) wrapper.style.transform = originalTransform;
+        if (typeof closePaymentModal === 'function') closePaymentModal();
     }
 }
 window.exportPDF = exportPDF;
