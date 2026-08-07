@@ -278,7 +278,30 @@ function renderListItemsVerbatim(list) {
     return result;
 }
 
-function renderShortItemsGrid(list) {
+function isShortItemsList(list) {
+    if (!list) return false;
+    let items = [];
+    if (typeof list === 'string') {
+        items = list.split(/\n|,|;/).map(s => s.replace(/^[•\-\*]\s*/, '').trim()).filter(s => s.length > 0);
+    } else if (Array.isArray(list)) {
+        items = list;
+    }
+    if (items.length === 0) return false;
+
+    let totalLen = 0;
+    items.forEach(it => {
+        if (typeof it === 'string') {
+            totalLen += it.length;
+        } else if (typeof it === 'object' && it !== null) {
+            const str = (it.name || it.title || it.degree || it.text || it.heading || '') + ' ' + (it.school || it.institution || it.company || '');
+            totalLen += str.length;
+        }
+    });
+    const avgLen = totalLen / items.length;
+    return avgLen < 70 || items.length >= 3;
+}
+
+function renderShortItemsGrid(list, themeColor) {
     if (!list) return '';
     let itemsArr = [];
     if (typeof list === 'string') {
@@ -289,16 +312,23 @@ function renderShortItemsGrid(list) {
                 const clean = item.replace(/^[•\-\*]\s*/, '').trim();
                 if (clean) itemsArr.push(clean);
             } else if (typeof item === 'object' && item !== null) {
-                const name = (item.name || item.title || item.text || '').trim();
-                const level = (item.level || '').trim();
-                if (name) itemsArr.push(level ? `${name} (${level})` : name);
+                const name = (item.name || item.title || item.degree || item.heading || item.text || '').trim();
+                const level = (item.level || item.school || item.institution || '').trim();
+                if (name) itemsArr.push(level && level.toLowerCase() !== name.toLowerCase() ? `${name} (${level})` : name);
             }
         });
     }
     if (itemsArr.length === 0) return '';
 
-    return `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px 12px; margin-top: 6px; padding: 2px 0;">
-        ${itemsArr.map(item => `<div style="font-size: 9pt; color: #1e293b; display: flex; align-items: center; gap: 6px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 6px;"><i class="fa-solid fa-circle-check" style="color: #4F46E5; font-size: 7.5pt;"></i> <span style="font-weight: 600;">${item}</span></div>`).join('')}
+    const iconColor = themeColor || '#2563eb';
+
+    return `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px 14px; margin-top: 8px; margin-bottom: 6px; width: 100%; box-sizing: border-box;">
+        ${itemsArr.map(item => `
+            <div style="font-size: 9.5pt; color: #1e293b; display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                <i class="fa-solid fa-check" style="color: ${iconColor}; font-size: 8.5pt; flex-shrink: 0;"></i>
+                <span style="word-break: break-word; line-height: 1.3;">${item}</span>
+            </div>
+        `).join('')}
     </div>`;
 }
 
@@ -368,16 +398,25 @@ function renderParsedJsonToHtml(parsed, templateClass) {
         if (!knownKeys.includes(key.toLowerCase()) && parsed[key]) {
             const val = parsed[key];
             const sectionTitle = key.replace(/_/g, ' ').toUpperCase();
-            const renderedList = renderListItemsVerbatim(val);
-            if (renderedList) {
+            const useShortGrid = isShortItemsList(val);
+            const contentHtml = useShortGrid ? renderShortItemsGrid(val, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(val)}</ul>`;
+
+            if (chosenTemplate === 'cv-template-minimal' || !chosenTemplate) {
+                // Classique Pro line header style (100% unified with other headers!)
+                extraSectionsHtml += `
+                    <div class="cv-section-block" style="margin-bottom: 20px;">
+                        <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${sectionTitle}</div>
+                        ${contentHtml}
+                    </div>
+                `;
+            } else {
+                // Canva banner style
                 extraSectionsHtml += `
                     <div class="cv-section-block" style="margin-bottom: 14px;">
                         <div class="cv-canva-box-title" style="background:${accentColor}; color:white; text-transform:uppercase; font-weight:800; font-size:10pt; letter-spacing:0.5px; padding:5px 12px; text-align:left; border-radius:4px; margin:10px 0 6px 0; display:flex; align-items:center; gap:8px;">
                             <i class="fa-solid fa-bookmark" style="font-size:0.85rem;"></i> ${sectionTitle}
                         </div>
-                        <ul style="padding-left: 18px; margin: 0; font-size: 9pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
-                            ${renderedList}
-                        </ul>
+                        ${contentHtml}
                     </div>
                 `;
             }
@@ -399,6 +438,14 @@ function renderParsedJsonToHtml(parsed, templateClass) {
     const upperSkills = titleSkills.toUpperCase();
     const upperLanguages = titleLanguages.toUpperCase();
     const upperInterests = titleInterests.toUpperCase();
+
+    // Determine grid rendering for core sections
+    const eduHtml = isShortItemsList(education) ? renderShortItemsGrid(education, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(education)}</ul>`;
+    const formHtml = isShortItemsList(formations) ? renderShortItemsGrid(formations, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(formations)}</ul>`;
+    const expHtml = isShortItemsList(experiences) ? renderShortItemsGrid(experiences, themeColor) : `<ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">${renderListItemsVerbatim(experiences)}</ul>`;
+    const skillsHtml = renderShortItemsGrid(skills, themeColor);
+    const langHtml = renderShortItemsGrid(languages, themeColor);
+    const intHtml = renderShortItemsGrid(interests, themeColor);
 
     if (chosenTemplate === 'cv-template-minimal' || !chosenTemplate) {
         // Modèle Classique Pro (Prioritaire par défaut) avec Remplissage Naturel A4 & Grille 2-3 Colonnes
@@ -431,43 +478,37 @@ function renderParsedJsonToHtml(parsed, templateClass) {
                 ${experiences.length > 0 ? `
                 <div class="cv-section-block" style="margin-bottom: 20px;">
                     <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperExperiences}</div>
-                    <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
-                        ${renderListItemsVerbatim(experiences)}
-                    </ul>
+                    ${expHtml}
                 </div>` : ''}
 
                 ${education.length > 0 ? `
                 <div class="cv-section-block" style="margin-bottom: 20px;">
                     <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperEducation}</div>
-                    <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
-                        ${renderListItemsVerbatim(education)}
-                    </ul>
+                    ${eduHtml}
                 </div>` : ''}
 
                 ${formations.length > 0 ? `
                 <div class="cv-section-block" style="margin-bottom: 20px;">
                     <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperFormations}</div>
-                    <ul style="padding-left: 18px; margin: 0; font-size: 9.5pt; line-height: 1.5; color: #1e293b; list-style-type: disc;">
-                        ${renderListItemsVerbatim(formations)}
-                    </ul>
+                    ${formHtml}
                 </div>` : ''}
 
                 ${skills.length > 0 ? `
                 <div class="cv-section-block" style="margin-bottom: 20px;">
                     <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperSkills}</div>
-                    ${renderShortItemsGrid(skills)}
+                    ${skillsHtml}
                 </div>` : ''}
 
                 ${languages.length > 0 ? `
                 <div class="cv-section-block" style="margin-bottom: 20px;">
                     <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperLanguages}</div>
-                    ${renderShortItemsGrid(languages)}
+                    ${langHtml}
                 </div>` : ''}
 
                 ${interests.length > 0 ? `
                 <div class="cv-section-block" style="margin-bottom: 20px;">
                     <div style="font-size: 11.5pt; font-weight: 800; color: ${themeColor}; border-bottom: 2px solid ${themeColor}; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%;">${upperInterests}</div>
-                    ${renderShortItemsGrid(interests)}
+                    ${intHtml}
                 </div>` : ''}
 
                 ${extraSectionsHtml}
@@ -752,40 +793,42 @@ async function exportPDF() {
     if (scaleWrapper) scaleWrapper.style.display = 'block';
     if (emptyUploadCard) emptyUploadCard.style.display = 'none';
 
-    const origWrapperTransform = scaleWrapper ? scaleWrapper.style.transform : '';
-    const origWrapperWidth = scaleWrapper ? scaleWrapper.style.width : '';
-    const origPaperShadow = paper.style.boxShadow;
-    const origPaperWidth = paper.style.width;
-    const origPaperHeight = paper.style.height;
-    const origPaperMaxHeight = paper.style.maxHeight;
-    const origPaperMinHeight = paper.style.minHeight;
-    const origPaperOverflow = paper.style.overflow;
-
-    // Temporarily set A4 dimensions allowing natural multi-page flow if content requires it
-    if (scaleWrapper) {
-        scaleWrapper.style.transform = 'none';
-        scaleWrapper.style.width = '210mm';
-    }
-    paper.style.width = '210mm';
-    paper.style.height = 'auto';
-    paper.style.minHeight = '297mm';
-    paper.style.overflow = 'visible';
-    paper.style.boxShadow = 'none';
+    // Create a clean offscreen clone to avoid mobile screen scale/crop issues
+    const cloneContainer = document.createElement('div');
+    cloneContainer.style.cssText = 'position: fixed; top: 0; left: -9999px; width: 794px; min-height: 1123px; background: #ffffff; z-index: -9999; overflow: visible;';
+    
+    const clone = paper.cloneNode(true);
+    clone.style.width = '794px';
+    clone.style.minHeight = '1123px';
+    clone.style.height = 'auto';
+    clone.style.transform = 'none';
+    clone.style.boxShadow = 'none';
+    clone.style.margin = '0';
+    clone.style.padding = '0';
+    clone.style.overflow = 'visible';
 
     // Remove contenteditable focus lines temporarily
-    const editables = paper.querySelectorAll('[contenteditable]');
+    const editables = clone.querySelectorAll('[contenteditable]');
     editables.forEach(el => el.setAttribute('contenteditable', 'false'));
+    
+    // Remove discrete page footers from PDF output
+    const footers = clone.querySelectorAll('.cv-discrete-page-footer');
+    footers.forEach(f => f.remove());
+
+    cloneContainer.appendChild(clone);
+    document.body.appendChild(cloneContainer);
 
     const opt = {
         margin: 0,
         filename: 'CV_Professionnel_IA.pdf',
-        image: { type: 'jpeg', quality: 1.0 },
+        image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
-            scale: 3, 
+            scale: 2, 
             useCORS: true, 
             logging: false, 
             backgroundColor: '#ffffff',
-            windowWidth: 794
+            windowWidth: 794,
+            width: 794
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
@@ -793,7 +836,7 @@ async function exportPDF() {
 
     try {
         if (typeof html2pdf !== 'undefined') {
-            await html2pdf().set(opt).from(paper).save();
+            await html2pdf().set(opt).from(clone).save();
         } else {
             window.print();
         }
@@ -801,17 +844,7 @@ async function exportPDF() {
         console.error("PDF generation error:", err);
         alert("Erreur lors de la génération du PDF. Veuillez réessayer.");
     } finally {
-        if (scaleWrapper) {
-            scaleWrapper.style.transform = origWrapperTransform;
-            scaleWrapper.style.width = origWrapperWidth;
-        }
-        paper.style.width = origPaperWidth;
-        paper.style.height = origPaperHeight;
-        paper.style.maxHeight = origPaperMaxHeight;
-        paper.style.minHeight = origPaperMinHeight;
-        paper.style.overflow = origPaperOverflow;
-        paper.style.boxShadow = origPaperShadow;
-        editables.forEach(el => el.setAttribute('contenteditable', 'true'));
+        cloneContainer.remove();
         closePaymentModal();
     }
 }
