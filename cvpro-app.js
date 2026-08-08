@@ -568,7 +568,7 @@ function renderCV() {
             <div class="cv-header">
                 ${p.photo ? `<div class="cv-profile-pic" style="margin-right: 25px;"><img src="${p.photo}" alt="Profil" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>` : ''}
                 <div class="cv-header-name" style="flex: 1;">
-                    <h1 style="font-size: 34pt !important; font-weight: 800 !important; color: #ffffff !important; font-family: 'Outfit', sans-serif; margin-bottom: 6px;">${p.firstName || 'Prénom'} <span class="text-primary" style="color: #a5b4fc !important;">${p.lastName || 'Nom'}</span></h1>
+                    <h1 style="font-size: 20pt !important; font-weight: 800 !important; color: #ffffff !important; font-family: 'Outfit', sans-serif; margin-bottom: 4px; line-height: 1.25 !important; word-break: normal; white-space: normal;">${p.firstName || 'Prénom'} <span class="text-primary" style="color: #a5b4fc !important;">${p.lastName || 'Nom'}</span></h1>
                     <h2 style="font-size: 14.5pt !important; font-weight: 600 !important; color: #f8fafc !important; opacity: 0.96; margin: 0;">${p.jobTitle || 'Titre Professionnel'}</h2>
                 </div>
                 <div class="cv-header-contact" style="color: #f1f5f9 !important;">
@@ -1055,21 +1055,18 @@ async function generatePDF() {
     const origWrapperWidth = scaleWrapper ? scaleWrapper.style.width : '';
     const origPaperShadow = paper.style.boxShadow;
     const origPaperWidth = paper.style.width;
-    const origPaperHeight = paper.style.height;
-    const origPaperMaxHeight = paper.style.maxHeight;
     const origPaperMinHeight = paper.style.minHeight;
     const origPaperOverflow = paper.style.overflow;
 
-    // Temporarily set strict single-page A4 dimensions (210mm x 296.5mm)
+    // Temporarily set clean full-width A4 dimensions (210mm) allowing natural multi-page overflow
     if (scaleWrapper) {
         scaleWrapper.style.transform = 'none';
         scaleWrapper.style.width = '210mm';
     }
     paper.style.width = '210mm';
-    paper.style.height = '296.5mm';
-    paper.style.maxHeight = '296.5mm';
-    paper.style.minHeight = '296.5mm';
-    paper.style.overflow = 'hidden';
+    paper.style.height = 'auto';
+    paper.style.minHeight = '297mm';
+    paper.style.overflow = 'visible';
     paper.style.boxShadow = 'none';
 
     // Remove contenteditable focus lines temporarily
@@ -1077,15 +1074,16 @@ async function generatePDF() {
     editables.forEach(el => el.setAttribute('contenteditable', 'false'));
 
     const opt = {
-        margin:       0,
+        margin:       [0, 0, 0, 0],
         filename:     fileName,
-        image:        { type: 'jpeg', quality: 1.0 },
+        image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { 
-            scale: 3, 
+            scale: 2, 
             useCORS: true, 
             logging: false,
             backgroundColor: '#ffffff',
-            windowWidth: 794
+            scrollX: 0,
+            scrollY: 0
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
@@ -1106,10 +1104,9 @@ async function generatePDF() {
             scaleWrapper.style.width = origWrapperWidth;
         }
         paper.style.width = origPaperWidth;
-        paper.style.height = origPaperHeight;
-        paper.style.maxHeight = origPaperMaxHeight;
-        paper.style.minHeight = origPaperMinHeight;
-        paper.style.overflow = origPaperOverflow;
+        paper.style.height = 'auto';
+        paper.style.minHeight = origPaperMinHeight || '297mm';
+        paper.style.overflow = origPaperOverflow || 'visible';
         paper.style.boxShadow = origPaperShadow;
         editables.forEach(el => el.setAttribute('contenteditable', 'true'));
     }

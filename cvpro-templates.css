@@ -10,7 +10,8 @@
     background: #ffffff;
     box-sizing: border-box;
     text-align: left;
-    overflow: hidden;
+    overflow: visible;
+    height: auto;
     min-height: 297mm;
     display: flex;
     flex-direction: column;
@@ -22,7 +23,7 @@
 .cv-nude-left, .cv-nude-right {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 .cv-page-container * {
@@ -36,25 +37,30 @@
     display: flex;
     flex-direction: column;
     min-height: 297mm;
+    height: auto;
+    overflow: visible;
 }
 
 .cv-template-modern .cv-header {
     background: var(--primary, #4F46E5);
     color: #ffffff;
-    padding: 30px 40px;
+    padding: 18px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 15px;
 }
 
 .cv-template-modern .cv-header-name h1 {
     font-family: 'Outfit', 'Inter', sans-serif !important;
-    font-size: 34pt !important;
+    font-size: 20pt !important;
     font-weight: 800 !important;
-    margin: 0 0 6px 0 !important;
-    line-height: 1.1 !important;
+    margin: 0 0 4px 0 !important;
+    line-height: 1.25 !important;
     color: #ffffff !important;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
+    word-break: normal;
+    white-space: normal;
 }
 
 .cv-template-modern .cv-header-name h1 .text-primary {
